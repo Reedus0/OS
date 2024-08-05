@@ -1,0 +1,57 @@
+SRC_DIR := src
+BUILD_DIR := build
+DIST_DIR := dist
+
+AS := nasm
+CC := gcc
+LD := ld
+GRUB_MKRESCUE := grub-mkrescue
+
+QEMU := qemu-system-x86_64
+BOCHS := bochs
+
+# x86_64 target
+
+ASM_FLAGS := -f elf64
+CC_FLAGS := -I $(SRC_DIR) -I -ffreestanding
+LD_FLAGS := -n -T target/x86_64/linker.ld
+
+ASM_DIR :=  $(SRC_DIR)/arch/x86_64
+ISO_DIR := target/x86_64/iso
+
+ASM_FILES := $(shell find $(ASM_DIR) -name *.asm)
+C_FILES := $(shell find $(SRC_DIR) -name *.c)
+OBJ_FILES := $(ASM_FILES:$(ASM_DIR)/%.asm=$(BUILD_DIR)/%.o) $(C_FILES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+
+TARGET := $(DIST_DIR)/x86_64/kernel.bin
+ISO := $(DIST_DIR)/x86_64/kernel.iso
+
+$(ISO): $(TARGET)
+	@mkdir -p $(ISO_DIR)/boot
+	cp $(TARGET) $(ISO_DIR)/boot/kernel.bin
+	$(GRUB_MKRESCUE) /usr/lib/grub/i386-pc -o $(ISO) $(ISO_DIR)
+
+$(TARGET): $(OBJ_FILES)
+	@mkdir -p $(DIST_DIR)
+	@mkdir -p $(DIST_DIR)/x86_64
+	$(LD) $(LD_FLAGS) -o $@ $^
+
+$(BUILD_DIR)/%.o: $(ASM_DIR)/%.asm
+	@mkdir -p $(@D)
+	$(AS) $(ASM_FLAGS) $< -o $@
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(@D)
+	$(CC) $(CC_FLAGS) -c $< -o $@
+
+build-x86_64: $(ISO)
+
+run: $(ISO)
+	make build-x86_64
+	$(QEMU) dist/x86_64/kernel.iso
+
+dbg: $(ISO)
+	make build-x86_64
+
+clean:
+	rm -rf $(BUILD_DIR) $(DIST_DIR)
