@@ -14,7 +14,7 @@ BOCHS := bochs
 
 ASM_FLAGS := -f elf64
 CC_FLAGS := -I $(SRC_DIR) -I -ffreestanding
-LD_FLAGS := -n -T target/x86_64/linker.ld
+LD_FLAGS := -n --allow-multiple-definition -T target/x86_64/linker.ld
 
 ISO_DIR := target/x86_64/iso
 

@@ -8,7 +8,8 @@
 #define GDT_DESCRIPTORS_COUNT 5
 
 struct gdt_descriptor {
-    uint32_t reserved_1;
+    uint16_t limit;
+    uint16_t reserved_1;
     uint8_t reserved_2;
     uint8_t access_byte;
     uint8_t flags;
