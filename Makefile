@@ -16,12 +16,11 @@ ASM_FLAGS := -f elf64
 CC_FLAGS := -I $(SRC_DIR) -I -ffreestanding
 LD_FLAGS := -n -T target/x86_64/linker.ld
 
-ASM_DIR :=  $(SRC_DIR)/arch/x86_64
 ISO_DIR := target/x86_64/iso
 
-ASM_FILES := $(shell find $(ASM_DIR) -name *.asm)
+ASM_FILES := $(shell find $(SRC_DIR) -name *.asm)
 C_FILES := $(shell find $(SRC_DIR) -name *.c)
-OBJ_FILES := $(ASM_FILES:$(ASM_DIR)/%.asm=$(BUILD_DIR)/%.o) $(C_FILES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+OBJ_FILES := $(ASM_FILES:$(SRC_DIR)/%.asm=$(BUILD_DIR)/%.o) $(C_FILES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 
 TARGET := $(DIST_DIR)/x86_64/kernel.bin
 ISO := $(DIST_DIR)/x86_64/kernel.iso
@@ -36,7 +35,7 @@ $(TARGET): $(OBJ_FILES)
 	@mkdir -p $(DIST_DIR)/x86_64
 	$(LD) $(LD_FLAGS) -o $@ $^
 
-$(BUILD_DIR)/%.o: $(ASM_DIR)/%.asm
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.asm
 	@mkdir -p $(@D)
 	$(AS) $(ASM_FLAGS) $< -o $@
 

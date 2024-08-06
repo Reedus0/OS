@@ -1,4 +1,6 @@
 global start
+global gdt
+
 extern long_mode_start
 
 section .text
