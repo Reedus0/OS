@@ -7,8 +7,3 @@ load_gdt:
     lgdt [edi]
 
     ret
-
-section .bss
-gdt:
-    dw 0
-    dq 0

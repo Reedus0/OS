@@ -2,6 +2,7 @@ global io_in
 global io_out
 global enable_irq
 global deisable_irq
+global crash
 
 section .text
 bits 64
@@ -23,4 +24,11 @@ enable_irq:
 
 deisable_irq:
     cli
+    ret
+
+crash:
+    mov ax, 6
+    mov bx, 0
+    div bx
+
     ret

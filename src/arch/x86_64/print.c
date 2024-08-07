@@ -78,3 +78,29 @@ void print_string(char* string) {
         string++;
     }
 }
+
+void print_number(size_t number) {
+    int i = 0;
+    char* string = 0;
+
+    if(number == 0) {
+        print_string("0");
+        return;
+    }
+
+    while (number > 0) {
+        string[i] = number % 10 + '0';
+        number /= 10;
+        i++;
+    }
+
+    string[i] = '\0';
+
+    for (int j = 0; j < i / 2; j++) {
+        char temp = string[j];
+        string[j] = string[i - j - 1];
+        string[i - j - 1] = temp;
+    }
+
+    print_string(string);
+}
