@@ -2,16 +2,16 @@
 #include "include/print.h"
 
 void kmain () {
-    char* string = "Hello, Kernel!\n";
     print_clear();
-    print_string(string);
+    print_string("Hello, Kernel!\n");
 
-    setup_gdt();
+    init_gdt();
 
-    setup_idt();
-    setup_irq_handlers();
+    init_idt();
+    init_irq_handlers();
 
     enable_irq();
-    crash();
+    print_string("IRQ OK\n");
+
     while(1); 
 }

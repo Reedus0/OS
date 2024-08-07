@@ -24,4 +24,4 @@ struct gdt {
 
 struct gdt g_gdt;
 
-void setup_gdt();
+void init_gdt();

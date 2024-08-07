@@ -26,4 +26,4 @@ struct idt {
 
 struct idt g_idt;
 
-void setup_idt();
+void init_idt();

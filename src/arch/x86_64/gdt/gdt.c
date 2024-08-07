@@ -9,7 +9,7 @@ static void gdt_descriptor_set_flags(struct gdt_descriptor* gdt_descriptor, uint
     gdt_descriptor->flags = (flags << 4);
 }
 
-void setup_gdt() {
+void init_gdt() {
     struct gdt_descriptor* kernel_code_segment = &g_gdt_descriptors[1];
     gdt_descriptor_set_access_byte(kernel_code_segment, 0x9a);
     gdt_descriptor_set_flags(kernel_code_segment, 0xa);

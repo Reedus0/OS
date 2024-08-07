@@ -7,6 +7,7 @@ bits 64
 %macro isr_no_code 1
 global isr_%1
 isr_%1:
+    push 0
     push %1
     jmp isr
 %endmacro

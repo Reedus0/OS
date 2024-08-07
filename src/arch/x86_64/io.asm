@@ -25,10 +25,3 @@ enable_irq:
 deisable_irq:
     cli
     ret
-
-crash:
-    mov ax, 6
-    mov bx, 0
-    div bx
-
-    ret
