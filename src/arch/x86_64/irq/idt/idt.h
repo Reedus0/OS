@@ -26,4 +26,5 @@ struct idt {
 
 struct idt g_idt;
 
+void set_isr(struct idt_descriptor* idt_descriptor, void (*isr)());
 void init_idt();

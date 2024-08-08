@@ -1,8 +1,4 @@
-global isr
-extern irq_handler
-
-section .text
-bits 64
+extern isr
 
 %macro isr_no_code 1
 global isr_%1
@@ -18,31 +14,6 @@ isr_%1:
     push %1
     jmp isr
 %endmacro
-
-isr:
-    push rax
-    push rbx
-    push rcx
-    push rdx
-    push rdi
-    push rsi
-    push rbp
-    push rsp
-
-    call irq_handler
-
-    pop rsp
-    pop rbp
-    pop rsi
-    pop rdi
-    pop rdx
-    pop rcx
-    pop rbx
-    pop rax
-
-    add rsp, 8
-
-    iretq
 
 isr_no_code 0
 isr_no_code 1

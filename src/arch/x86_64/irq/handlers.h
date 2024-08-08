@@ -8,6 +8,7 @@
 struct irq_data {
     struct regs regs;
     uint64_t interrupt_number;
+    uint64_t error_code;
     uint64_t original_rip;
     uint64_t cs;
     uint64_t rflags;

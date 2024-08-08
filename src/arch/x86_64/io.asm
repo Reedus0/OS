@@ -1,21 +1,29 @@
-global io_in
-global io_out
+global inb
+global outb
+global io_wait
 global enable_irq
 global deisable_irq
-global crash
 
 section .text
 bits 64
 
-io_in:
+inb:
     mov dx, di
-    in ax, dx
+    in al, dx
     ret
 
-io_out:
+outb:
     mov dx, di
-    mov ax, si
-    out dx, ax
+    mov al, sil
+    out dx, al
+    ret
+
+io_wait:
+    mov di, 0x80
+    mov si, 0
+
+    call outb
+
     ret
 
 enable_irq:

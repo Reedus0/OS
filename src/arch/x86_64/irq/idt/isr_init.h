@@ -1,6 +1,4 @@
-#pragma once
-
-void isr();
+#pragma once 
 
 void isr_0();
 void isr_1();

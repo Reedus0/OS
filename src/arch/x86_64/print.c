@@ -72,6 +72,22 @@ void print_char(char character) {
     current_column++;
 }
 
+void delete_char() {
+    struct Char empty;
+    if(current_column == 0) {
+        current_row -= 1;
+        current_column = 80;
+    }
+
+    current_column -= 1;
+
+    empty.color = WHITE_COLOR;
+    empty.character = ' ';
+    buffer[current_column + COLUMNS * current_row] = empty;
+
+}
+
+
 void print_string(char* string) {
     while(*string != '\0') {
         print_char(*string);

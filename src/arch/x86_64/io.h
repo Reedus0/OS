@@ -3,7 +3,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-int16_t io_in(int16_t port);
-void io_out(int16_t port, int16_t data);
+uint8_t inb(uint16_t port);
+void outb(uint16_t port, uint8_t data);
+void io_wait();
 void enable_irq();
 void disable_irq();

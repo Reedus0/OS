@@ -10,6 +10,8 @@ void kmain () {
     init_idt();
     init_irq_handlers();
 
+    init_pic();
+
     enable_irq();
     print_string("IRQ OK\n");
 
