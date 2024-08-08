@@ -6,6 +6,7 @@
 #include "arch/x86_64/drivers/keyboard/keyboard.h"
 
 void init_hal() {
+    
     init_gdt();
 
     init_idt();
@@ -20,5 +21,4 @@ void init_hal() {
     init_drivers();
 
     enable_irq();
-    print_string("IRQ OK\n");
 }

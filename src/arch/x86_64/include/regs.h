@@ -1,5 +1,8 @@
 #pragma once
 
+#include <stdint.h>
+#include <stddef.h>
+
 struct regs {
     uint64_t rsp;
     uint64_t rbp;

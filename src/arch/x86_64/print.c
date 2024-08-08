@@ -10,10 +10,10 @@ struct Char {
     uint8_t color;
 };
 
-struct Char* buffer = (struct Char*) 0xb8000;
+static struct Char* buffer = (struct Char*) 0xb8000;
 
-size_t current_column = 0;
-size_t current_row = 0;
+size_t g_current_column = 0;
+size_t g_current_row = 0;
 
 static void clear_row(size_t row) {
     struct Char empty;
@@ -30,15 +30,15 @@ void print_clear() {
         clear_row(i);
     }
 
-    current_column = 0;
-    current_row = 0;
+    g_current_column = 0;
+    g_current_row = 0;
 }
 
-static void print_newline() {
-    current_column = 0;
+void print_newline() {
+    g_current_column = 0;
 
-    if (current_row < ROWS - 1) {
-        current_row++;
+    if (g_current_row < ROWS - 1) {
+        g_current_row++;
         return;
     }
 
@@ -58,9 +58,9 @@ void print_char(char character) {
         return;
     }
 
-    if (current_column > COLUMNS) {
+    if (g_current_column > COLUMNS) {
         print_newline();
-        current_column++;
+        g_current_column++;
     }
 
     struct Char new_char;
@@ -68,23 +68,23 @@ void print_char(char character) {
     new_char.color = WHITE_COLOR;
     new_char.character = character;
 
-    buffer[current_column + COLUMNS * current_row] = new_char;
+    buffer[g_current_column + COLUMNS * g_current_row] = new_char;
 
-    current_column++;
+    g_current_column++;
 }
 
 void delete_char() {
     struct Char empty;
-    if(current_column == 0) {
-        current_row -= 1;
-        current_column = 80;
+    if(g_current_column == 0) {
+        g_current_row -= 1;
+        g_current_column = 80;
     }
 
-    current_column -= 1;
+    g_current_column -= 1;
 
     empty.color = WHITE_COLOR;
     empty.character = ' ';
-    buffer[current_column + COLUMNS * current_row] = empty;
+    buffer[g_current_column + COLUMNS * g_current_row] = empty;
 }
 
 
@@ -105,8 +105,39 @@ void print_number(size_t number) {
     }
 
     while (number > 0) {
-        string[i] = number % 10 + '0';
+        string[i] = number % 10 + 0x30;
         number /= 10;
+        i++;
+    }
+
+    string[i] = '\0';
+
+    for (int j = 0; j < i / 2; j++) {
+        char temp = string[j];
+        string[j] = string[i - j - 1];
+        string[i - j - 1] = temp;
+    }
+
+    print_string(string);
+}
+
+void print_hex(size_t number) {
+    int i = 0;
+    char* string = 0;
+
+    if(number == 0) {
+        print_string("0");
+        return;
+    }
+
+    while (number > 0) {
+        size_t current_number = number % 16;
+        if(current_number > 9) {
+            string[i] = (current_number % 10) + 0x60 + 1;
+        } else {
+            string[i] = current_number + 0x30;
+        }
+        number /= 16;
         i++;
     }
 

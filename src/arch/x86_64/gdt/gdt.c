@@ -27,7 +27,7 @@ void init_gdt() {
     gdt_descriptor_set_flags(user_data_segment, 0xa);
 
     g_gdt.size = GDT_DESCRIPTORS_COUNT * sizeof(struct gdt_descriptor) - 1;
-    g_gdt.offset = &g_gdt_descriptors[0];
+    g_gdt.offset = &g_gdt_descriptors;
 
     load_gdt(&g_gdt);
 }

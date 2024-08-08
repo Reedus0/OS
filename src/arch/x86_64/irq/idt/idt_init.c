@@ -1,5 +1,5 @@
 #include "idt.h"
-#include "isr_init.h"
+#include "idt_init.h"
 
 void init_isrs() {
     set_isr(&g_idt_descriptors[0], isr_0);

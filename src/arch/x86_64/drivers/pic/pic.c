@@ -50,11 +50,14 @@ static void deinit_pic() {
 }
 
 struct driver init_pic_driver() {
+	if(g_pic_driver.deinit != NULL) {
+        g_pic_driver.deinit();
+    }
 	g_pic_driver.init = init_pic;
 
-	g_pic_driver.functions[PIC_DRIVER_REMAP] = pic_remap;
-	g_pic_driver.functions[PIC_DRIVER_EOI] = pic_eoi;
-	g_pic_driver.functions[PIC_DRIVER_DISABLE] = pic_disable;
+	driver_function(g_pic_driver, PIC_DRIVER_REMAP) = pic_remap;
+	driver_function(g_pic_driver, PIC_DRIVER_EOI) = pic_eoi;
+	driver_function(g_pic_driver, PIC_DRIVER_DISABLE) = pic_disable;
 
 	g_pic_driver.deinit = deinit_pic;
 

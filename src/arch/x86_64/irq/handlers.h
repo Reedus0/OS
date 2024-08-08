@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "include/regs.h"
+#include "arch/x86_64/include/regs.h"
 
 struct irq_data {
     struct regs regs;

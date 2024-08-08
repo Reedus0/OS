@@ -1,40 +1,24 @@
+#include <stdio.h>
 #include "handlers.h"
-#include "kernel/panic.h"
+#include "exceptions.h"
+#include "include/panic.h"
 #include "arch/x86_64/drivers/pic/pic.h"
 #include "arch/x86_64/drivers/keyboard/keyboard.h"
 
 void __attribute__((__cdecl__)) irq_handler(struct irq_data irq_data) {
+    if(irq_data.interrupt_number < 32) {
+        irq_handle_exception(&irq_data);
+    }
     if(g_interrupt_handlers[irq_data.interrupt_number] != NULL) {
         g_interrupt_handlers[irq_data.interrupt_number](&irq_data);
-    } else {
-        print_string("Unhandeled interrupt: ");
-        print_number(irq_data.interrupt_number);
-        print_string("!\n");
+    }
+    else {
+        printf("Unhandeled interrupt: 0x%x!", irq_data.interrupt_number);
     }
 }
 
 static void set_irq_handler(size_t number, size_t handler) {
     g_interrupt_handlers[number] = handler;
-}
-
-interrupt irq_div_zero(struct irq_data* irq_data) {
-    print_string("Exception: Division error!\n");
-    panic(irq_data->regs);
-}
-
-interrupt irq_invalid_opcode(struct irq_data* irq_data) {
-    print_string("Exception: Invalid opcode!\n");
-    panic(irq_data->regs);
-}
-
-interrupt irq_double_fault(struct irq_data* irq_data) {
-    print_string("Exception: Double fault!\n");
-    panic(irq_data->regs);
-}
-
-interrupt irq_general_protection_fault(struct irq_data* irq_data) {
-    print_string("Exception: General protection fault!\n");
-    panic(irq_data->regs);
 }
 
 interrupt irq_timer(struct irq_data* irq_data) {
@@ -47,10 +31,38 @@ interrupt irq_keyboard(struct irq_data* irq_data) {
 }
 
 void init_irq_handlers() {
-    set_irq_handler(0, irq_div_zero);
-    set_irq_handler(6, irq_invalid_opcode);
-    set_irq_handler(8, irq_double_fault);
-    set_irq_handler(13, irq_general_protection_fault);
+    set_irq_handler(0, irq_handle_exception);
+    set_irq_handler(1, irq_handle_exception);
+    set_irq_handler(2, irq_handle_exception);
+    set_irq_handler(3, irq_handle_exception);
+    set_irq_handler(4, irq_handle_exception);
+    set_irq_handler(5, irq_handle_exception);
+    set_irq_handler(6, irq_handle_exception);
+    set_irq_handler(7, irq_handle_exception);
+    set_irq_handler(8, irq_handle_exception);
+    set_irq_handler(9, irq_handle_exception);
+    set_irq_handler(10, irq_handle_exception);
+    set_irq_handler(11, irq_handle_exception);
+    set_irq_handler(12, irq_handle_exception);
+    set_irq_handler(13, irq_handle_exception);
+    set_irq_handler(14, irq_handle_exception);
+    set_irq_handler(15, irq_handle_exception);
+    set_irq_handler(16, irq_handle_exception);
+    set_irq_handler(17, irq_handle_exception);
+    set_irq_handler(18, irq_handle_exception);
+    set_irq_handler(19, irq_handle_exception);
+    set_irq_handler(20, irq_handle_exception);
+    set_irq_handler(21, irq_handle_exception);
+    set_irq_handler(22, irq_handle_exception);
+    set_irq_handler(23, irq_handle_exception);
+    set_irq_handler(24, irq_handle_exception);
+    set_irq_handler(25, irq_handle_exception);
+    set_irq_handler(26, irq_handle_exception);
+    set_irq_handler(27, irq_handle_exception);
+    set_irq_handler(28, irq_handle_exception);
+    set_irq_handler(29, irq_handle_exception);
+    set_irq_handler(30, irq_handle_exception);
+    set_irq_handler(31, irq_handle_exception);
     set_irq_handler(32, irq_timer);
     set_irq_handler(33, irq_keyboard);
 }

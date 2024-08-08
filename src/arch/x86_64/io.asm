@@ -2,7 +2,7 @@ global inb
 global outb
 global io_wait
 global enable_irq
-global deisable_irq
+global disable_irq
 
 section .text
 bits 64
@@ -30,6 +30,6 @@ enable_irq:
     sti
     ret
 
-deisable_irq:
+disable_irq:
     cli
     ret

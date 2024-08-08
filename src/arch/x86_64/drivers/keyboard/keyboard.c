@@ -20,9 +20,12 @@ static void deinit_keyboard() {
 }
 
 struct driver init_keyboard_driver() {
+    if(g_keyboard_driver.deinit != NULL) {
+        g_keyboard_driver.deinit();
+    }
     g_keyboard_driver.init = init_keyboard;
 
-    g_keyboard_driver.functions[KEYBOARD_DRIVER_PROCESS_KEY] = keyboard_process_key;
+    driver_function(g_keyboard_driver, KEYBOARD_DRIVER_PROCESS_KEY) = keyboard_process_key;
 
     g_keyboard_driver.deinit = deinit_keyboard;
 }
