@@ -1,5 +1,7 @@
 #include "handlers.h"
 #include "kernel/panic.h"
+#include "arch/x86_64/drivers/pic/pic.h"
+#include "arch/x86_64/drivers/keyboard/keyboard.h"
 
 void __attribute__((__cdecl__)) irq_handler(struct irq_data irq_data) {
     if(g_interrupt_handlers[irq_data.interrupt_number] != NULL) {
@@ -36,12 +38,12 @@ interrupt irq_general_protection_fault(struct irq_data* irq_data) {
 }
 
 interrupt irq_timer(struct irq_data* irq_data) {
-    pic_eoi(32);
+    driver_function(g_pic_driver, PIC_DRIVER_EOI)(32);
 }
 
 interrupt irq_keyboard(struct irq_data* irq_data) {
-    keyboard_process_key();
-    pic_eoi(33);
+    driver_function(g_keyboard_driver, KEYBOARD_DRIVER_PROCESS_KEY)();
+    driver_function(g_pic_driver, PIC_DRIVER_EOI)(33);
 }
 
 void init_irq_handlers() {

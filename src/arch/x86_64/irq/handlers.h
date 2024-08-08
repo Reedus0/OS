@@ -23,8 +23,3 @@ interrupt g_interrupt_handlers[256];
 
 void __attribute__((cdecl)) irq_handler(irq_data);
 void init_irq_handlers();
-
-interrupt irq_div_zero(struct irq_data* irq_data);
-interrupt irq_invalid_opcode(struct irq_data* irq_data);
-interrupt irq_double_fault(struct irq_data* irq_data);
-interrupt irq_general_protection_fault(struct irq_data* irq_data);

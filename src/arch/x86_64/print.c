@@ -60,6 +60,7 @@ void print_char(char character) {
 
     if (current_column > COLUMNS) {
         print_newline();
+        current_column++;
     }
 
     struct Char new_char;
@@ -84,7 +85,6 @@ void delete_char() {
     empty.color = WHITE_COLOR;
     empty.character = ' ';
     buffer[current_column + COLUMNS * current_row] = empty;
-
 }
 
 
