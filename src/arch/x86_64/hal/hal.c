@@ -4,8 +4,10 @@
 #include "arch/x86_64/drivers/driver.h"
 #include "arch/x86_64/drivers/pic/pic.h"
 #include "arch/x86_64/drivers/keyboard/keyboard.h"
+#include "arch/x86_64/memory/memory.h"
+#include "arch/x86_64/boot/multiboot2.h"
 
-void init_hal() {
+void init_hal(multiboot2_info_t* mbd) {
     
     init_gdt();
 
@@ -21,4 +23,6 @@ void init_hal() {
     init_drivers();
 
     enable_irq();
+
+    discover_memory(mbd);
 }

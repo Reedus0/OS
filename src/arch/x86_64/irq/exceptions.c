@@ -48,5 +48,5 @@ static void print_exception_info(struct irq_data* irq_data) {
 interrupt irq_handle_exception(struct irq_data* irq_data) {
     printf("Exception: %s!\n", exceptions[irq_data->interrupt_number]);
     print_exception_info(irq_data);
-    panic();
+    panic("Got an exception!");
 }

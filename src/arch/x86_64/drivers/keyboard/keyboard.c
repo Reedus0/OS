@@ -1,4 +1,5 @@
 #include "keyboard.h"
+#include "include/print.h"
 
 static void keyboard_process_key() {
     uint8_t key = inb(KEYBOARD_PORT);

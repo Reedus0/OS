@@ -7,7 +7,7 @@ section .text
 bits 32
 start:
     mov esp, stack_bottom
-
+    
     call check_cpuid
     call check_long_mode
 
@@ -32,7 +32,9 @@ check_cpuid:
     je stop
 
     ret
+
 check_long_mode:
+    push ebx
     mov eax, 0x80000000
     cpuid
     cmp eax, 0x80000001
@@ -42,8 +44,10 @@ check_long_mode:
     cpuid
     test edx, 1 << 29
     jz stop
+    pop ebx
 
     ret
+
 setup_pages:
     mov eax, page_table_l3
     or eax, 0b11
@@ -66,6 +70,7 @@ setup_pages:
     jne .loop
 
     ret
+    
 enable_paging:
     mov eax, page_table_l4
     mov cr3, eax

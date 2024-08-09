@@ -2,8 +2,8 @@
 #include "include/panic.h"
 #include "arch/x86_64/io.h"
 
-void panic() {
+void panic(char* string) {
     disable_irq();
-    printf("Kernel panic!!!\n");
+    printf("Kernel panic: %s\n", string);
     while(1);
 }
