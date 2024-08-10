@@ -16,15 +16,17 @@ struct idt_descriptor {
     uint32_t offset_3;
     uint32_t reserved;  
 } __attribute__((packed));
+typedef struct idt_descriptor idt_descriptor_t;
 
-struct idt_descriptor g_idt_descriptors[IDT_DESCRIPTORS_COUNT];
+idt_descriptor_t g_idt_descriptors[IDT_DESCRIPTORS_COUNT];
 
 struct idt {
     uint16_t size;
     uint64_t offset;
 } __attribute__((packed));
+typedef struct idt idt_t;
 
-struct idt g_idt;
+ idt_t g_idt;
 
-void set_isr(struct idt_descriptor* idt_descriptor, void (*isr)());
+void set_isr(idt_descriptor_t* idt_descriptor, void (*isr)());
 void init_idt();

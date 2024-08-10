@@ -10,9 +10,10 @@ struct driver {
     void (*functions[16])();
     void (*deinit)();
 };
+typedef struct driver driver_t;
 
-struct driver g_drivers[16];
+driver_t g_drivers[16];
 size_t g_drivers_count;
 
-void register_driver(struct driver driver);
+void register_driver(driver_t driver);
 void init_drivers();

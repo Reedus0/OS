@@ -20,7 +20,7 @@ static void deinit_keyboard() {
 
 }
 
-struct driver init_keyboard_driver() {
+driver_t init_keyboard_driver() {
     if(g_keyboard_driver.deinit != NULL) {
         g_keyboard_driver.deinit();
     }

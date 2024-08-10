@@ -3,4 +3,4 @@
 #include <stdint.h>
 #include <stddef.h>
 
-void load_gdt(struct gdt* gdt_pointer);
+void load_gdt(gdt_t* gdt_pointer);

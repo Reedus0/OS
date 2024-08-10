@@ -14,14 +14,16 @@ struct gdt_descriptor {
     uint8_t flags;
     uint8_t reserved_3;
 } __attribute__((packed));
+typedef struct gdt_descriptor gdt_descriptor_t;
 
-struct gdt_descriptor g_gdt_descriptors[GDT_DESCRIPTORS_COUNT];
+gdt_descriptor_t g_gdt_descriptors[GDT_DESCRIPTORS_COUNT];
 
 struct gdt {
     uint16_t size;
     uint64_t offset;
 } __attribute__((packed));
+typedef struct gdt gdt_t;
 
-struct gdt g_gdt;
+gdt_t g_gdt;
 
 void init_gdt();

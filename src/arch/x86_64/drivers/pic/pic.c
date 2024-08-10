@@ -49,7 +49,7 @@ static void deinit_pic() {
 
 }
 
-struct driver init_pic_driver() {
+driver_t init_pic_driver() {
 	if(g_pic_driver.deinit != NULL) {
         g_pic_driver.deinit();
     }

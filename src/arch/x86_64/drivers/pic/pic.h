@@ -25,5 +25,5 @@
 #define PIC_DRIVER_EOI 1
 #define PIC_DRIVER_DISABLE 2
 
-struct driver g_pic_driver;
-struct driver init_pic_driver();
+driver_t g_pic_driver;
+driver_t init_pic_driver();

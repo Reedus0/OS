@@ -20,5 +20,5 @@ uint8_t g_key_map[256] = {
 
 #define KEYBOARD_DRIVER_PROCESS_KEY 0
 
-struct driver g_keyboard_driver;
-struct driver init_keyboard_driver();
+driver_t g_keyboard_driver;
+driver_t init_keyboard_driver();

@@ -8,6 +8,8 @@
 #define TAG_MMAP 0x6
 #define TAG_BASE_ADDRESS 0x15
 
+#define MEMORY_AVAILABLE 1
+
 struct multiboot2_tag {
     uint32_t type;
     uint32_t size;
@@ -44,3 +46,5 @@ struct multiboot2_tag_mmap {
   struct multiboot2_mmap_entry entries;  
 };
 typedef struct multiboot2_tag_mmap multiboot2_tag_mmap_t;
+
+multiboot2_tag_t* get_tag(multiboot2_info_t* mbd, size_t type);
