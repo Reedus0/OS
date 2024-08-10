@@ -1,6 +1,10 @@
 global start
 global gdt
 
+extern g_page_table_l4
+extern g_page_table_l3
+extern g_page_table_l2
+
 extern long_mode_start
 
 section .text
@@ -42,20 +46,25 @@ check_long_mode:
 
     mov eax, 0x80000001
     cpuid
-    test edx, 1 << 29
+    test edx, 1 << 29 ; Extended features flag
+    jz stop
+    
+    mov eax, 1
+    cpuid
+    test edx, 1 << 3 ; PSE flag
     jz stop
     pop ebx
 
     ret
 
 setup_pages:
-    mov eax, page_table_l3
+    mov eax, g_page_table_l3
     or eax, 0b11
-    mov [page_table_l4], eax
+    mov [g_page_table_l4], eax
 
-    mov eax, page_table_l2
+    mov eax, g_page_table_l2
     or eax, 0b11
-    mov [page_table_l3], eax
+    mov [g_page_table_l3], eax
 
     mov ecx, 0
     
@@ -63,7 +72,7 @@ setup_pages:
     mov eax, 0x200000
     mul ecx
     or eax, 0b10000011
-    mov [page_table_l2 + ecx * 8], eax
+    mov [g_page_table_l2 + ecx * 8], eax
 
     inc ecx
     cmp ecx, 512
@@ -72,7 +81,7 @@ setup_pages:
     ret
     
 enable_paging:
-    mov eax, page_table_l4
+    mov eax, g_page_table_l4
     mov cr3, eax
 
     mov eax, cr4
@@ -93,12 +102,6 @@ stop:
     hlt
 section .bss
 align 4096
-page_table_l4:
-    resb 4096
-page_table_l3:
-    resb 4096
-page_table_l2:
-    resb 4096
 stack_top:
     resb 4096 * 4
 stack_bottom:

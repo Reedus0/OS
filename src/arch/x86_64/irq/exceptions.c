@@ -36,7 +36,7 @@ static char* exceptions[] = {
     ""
 };
 
-static void print_exception_info(struct irq_data* irq_data) {
+static void print_exception_info(irq_data_t* irq_data) {
     printf("error code: 0x%x\noriginal rip: 0x%x\nrflags: 0x%x\noriginal rsp: 0x%x\n", 
      irq_data->error_code, irq_data->original_rip, irq_data->rflags, irq_data->original_rsp);
     printf("rsp: 0x%x\nrbp: 0x%x\nrsi: 0x%x\nrdi: 0x%x\n",
@@ -45,7 +45,7 @@ static void print_exception_info(struct irq_data* irq_data) {
      irq_data->regs.rdx, irq_data->regs.rcx, irq_data->regs.rbx, irq_data->regs.rax);
 }
 
-interrupt irq_handle_exception(struct irq_data* irq_data) {
+interrupt irq_handle_exception(irq_data_t* irq_data) {
     printf("Exception: %s!\n", exceptions[irq_data->interrupt_number]);
     print_exception_info(irq_data);
     panic("Got an exception!");

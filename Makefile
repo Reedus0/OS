@@ -10,6 +10,9 @@ GRUB_MKRESCUE := grub-mkrescue
 QEMU := qemu-system-x86_64
 BOCHS := bochs
 
+QEMU_FLAGS := -m 1024
+BOCHS_FLAGS := -f bochs_config.bxrc
+
 # x86_64 target
 
 ASM_FLAGS := -f elf64
@@ -47,7 +50,7 @@ build-x86_64: $(ISO)
 
 run: $(ISO)
 	make build-x86_64
-	$(QEMU) dist/x86_64/kernel.iso
+	$(QEMU) $(QEMU_FLAGS) dist/x86_64/kernel.iso
 
 dbg: $(ISO)
 	make build-x86_64

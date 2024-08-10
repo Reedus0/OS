@@ -13,3 +13,4 @@ struct regs {
     uint64_t rbx;
     uint64_t rax;
 } __attribute__((packed));
+typedef struct regs regs_t;

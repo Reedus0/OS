@@ -6,7 +6,7 @@
 #include "arch/x86_64/include/regs.h"
 
 struct irq_data {
-    struct regs regs;
+    regs_t regs;
     uint64_t interrupt_number;
     uint64_t error_code;
     uint64_t original_rip;
@@ -15,11 +15,12 @@ struct irq_data {
     uint64_t original_rsp;
     uint64_t ss;
 } __attribute__((packed));
+typedef struct irq_data irq_data_t;
 
 
-typedef void (*interrupt)(struct irq_data* irq_data);
+typedef void (*interrupt)(irq_data_t* irq_data);
 
 interrupt g_interrupt_handlers[256];
 
-void __attribute__((cdecl)) irq_handler(irq_data);
+void __attribute__((cdecl)) irq_handler(irq_data_t);
 void init_irq_handlers();

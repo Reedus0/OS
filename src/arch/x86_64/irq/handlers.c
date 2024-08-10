@@ -5,7 +5,7 @@
 #include "arch/x86_64/drivers/pic/pic.h"
 #include "arch/x86_64/drivers/keyboard/keyboard.h"
 
-void __attribute__((__cdecl__)) irq_handler(struct irq_data irq_data) {
+void __attribute__((__cdecl__)) irq_handler(irq_data_t irq_data) {
     if(irq_data.interrupt_number < 32) {
         irq_handle_exception(&irq_data);
     }
@@ -21,11 +21,11 @@ static void set_irq_handler(size_t number, size_t handler) {
     g_interrupt_handlers[number] = handler;
 }
 
-interrupt irq_timer(struct irq_data* irq_data) {
+interrupt irq_timer(irq_data_t* irq_data) {
     driver_function(g_pic_driver, PIC_DRIVER_EOI)(32);
 }
 
-interrupt irq_keyboard(struct irq_data* irq_data) {
+interrupt irq_keyboard(irq_data_t* irq_data) {
     driver_function(g_keyboard_driver, KEYBOARD_DRIVER_PROCESS_KEY)();
     driver_function(g_pic_driver, PIC_DRIVER_EOI)(33);
 }

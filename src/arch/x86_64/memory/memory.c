@@ -37,13 +37,10 @@ void discover_memory(multiboot2_info_t* mbd) {
 
             size_t map_size = chunk.end - chunk.start;
 
-            printf("0x%x\n", map_size);
-
             g_available_memory += map_size;
             g_memory_chunk_count += 1;
         }
     }
 
     printf("Available memory: 0x%x\n", g_available_memory);
-    while(1);
 }

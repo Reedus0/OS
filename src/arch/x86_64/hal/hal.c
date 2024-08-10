@@ -5,6 +5,7 @@
 #include "arch/x86_64/drivers/pic/pic.h"
 #include "arch/x86_64/drivers/keyboard/keyboard.h"
 #include "arch/x86_64/memory/memory.h"
+#include "arch/x86_64/memory/paging.h"
 #include "arch/x86_64/boot/multiboot2.h"
 
 void init_hal(multiboot2_info_t* mbd) {
@@ -25,4 +26,6 @@ void init_hal(multiboot2_info_t* mbd) {
     enable_irq();
 
     discover_memory(mbd);
+
+    init_pages();
 }
