@@ -1,5 +1,5 @@
 #include "idt.h"
-#include "lidt.h"
+#include "arch/x86_64/asm/lidt.h"
 #include "isr.h"
 #include "idt_init.h"
 
@@ -26,7 +26,21 @@ static void idt_descriptor_enable(idt_descriptor_t* idt_descriptor) {
 }
 
 static void idt_descriptor_disable(idt_descriptor_t* idt_descriptor) {
-    idt_descriptor->type &= 0 << 7;
+    idt_descriptor->type ^= ((idt_descriptor->type >> 7) & 1);
+}
+
+static void init_interrupt(idt_descriptor_t* idt_descriptor) {
+    idt_descriptor_set_ist(idt_descriptor, 0);
+    idt_descriptor_set_selector(idt_descriptor, 0 | (0 << 2) | (1 << 3));
+    idt_descriptor_set_type(idt_descriptor, 0xE | (0 << 4));
+    idt_descriptor_enable(idt_descriptor);
+}
+
+static void init_trap(idt_descriptor_t* idt_descriptor) {
+    idt_descriptor_set_ist(idt_descriptor, 0);
+    idt_descriptor_set_selector(idt_descriptor, 0 | (0 << 2) | (1 << 3));
+    idt_descriptor_set_type(idt_descriptor, 0xF | (0 << 4));
+    idt_descriptor_enable(idt_descriptor);
 }
 
 void set_isr(idt_descriptor_t* idt_descriptor, void (*isr)()) {
@@ -36,10 +50,11 @@ void set_isr(idt_descriptor_t* idt_descriptor, void (*isr)()) {
 void init_idt() {
     for (size_t i = 0; i < IDT_DESCRIPTORS_COUNT; i++) {
         idt_descriptor_t* current_idt_descriptor = &g_idt_descriptors[i];
-        idt_descriptor_set_ist(current_idt_descriptor, 0);
-        idt_descriptor_set_selector(current_idt_descriptor, 0 | (0 << 2) | (1 << 3));
-        idt_descriptor_set_type(current_idt_descriptor, 0xe | (0 << 4));
-        idt_descriptor_enable(current_idt_descriptor);
+        if (i != 14) {
+            init_interrupt(current_idt_descriptor);
+        } else {
+            init_trap(current_idt_descriptor);
+        }
     };
 
     init_isrs();

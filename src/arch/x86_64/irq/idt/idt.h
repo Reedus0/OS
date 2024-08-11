@@ -26,7 +26,7 @@ struct idt {
 } __attribute__((packed));
 typedef struct idt idt_t;
 
- idt_t g_idt;
+idt_t g_idt;
 
 void set_isr(idt_descriptor_t* idt_descriptor, void (*isr)());
 void init_idt();

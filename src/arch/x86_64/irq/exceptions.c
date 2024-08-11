@@ -1,5 +1,7 @@
 #include "handlers.h"
 #include "include/panic.h"
+#include "arch/x86_64/memory/paging.h"
+#include "arch/x86_64/asm/paging.h"
 
 static char* exceptions[] = {
     "Division error",
@@ -49,4 +51,12 @@ interrupt irq_handle_exception(irq_data_t* irq_data) {
     printf("Exception: %s!\n", exceptions[irq_data->interrupt_number]);
     print_exception_info(irq_data);
     panic("Got an exception!");
+}
+
+interrupt irq_page_fault(irq_data_t* irq_data) {
+    uint64_t page_fault_address = get_page_fault_address();
+    printf("Page fault address: 0x%x\n", page_fault_address);
+    size_t page = get_page_index(page_fault_address);
+    map_page(page);
+    flush_page();
 }

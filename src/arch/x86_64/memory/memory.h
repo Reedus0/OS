@@ -1,9 +1,9 @@
 #pragma once
 
-// Reference: https://wiki.osdev.org/Detecting_Memory_(x86)
-
 #include <stdint.h>
 #include <stddef.h>
+
+// Reference: https://wiki.osdev.org/Detecting_Memory_(x86)
 
 #include "include/list.h"
 #include "arch/x86_64/boot/multiboot2.h"

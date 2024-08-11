@@ -1,5 +1,5 @@
 #include "gdt.h"
-#include "lgdt.h"
+#include "arch/x86_64/asm/lgdt.h"
 
 static void gdt_descriptor_set_access_byte(gdt_descriptor_t* gdt_descriptor, uint8_t access_byte) {
     gdt_descriptor->access_byte = access_byte;

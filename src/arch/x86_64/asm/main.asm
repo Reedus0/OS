@@ -71,6 +71,7 @@ setup_pages:
 .loop:
     mov eax, 0x200000
     mul ecx
+
     or eax, 0b10000011
     mov [g_page_table_l2 + ecx * 8], eax
 

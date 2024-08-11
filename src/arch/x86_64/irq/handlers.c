@@ -6,9 +6,6 @@
 #include "arch/x86_64/drivers/keyboard/keyboard.h"
 
 void __attribute__((__cdecl__)) irq_handler(irq_data_t irq_data) {
-    if(irq_data.interrupt_number < 32) {
-        irq_handle_exception(&irq_data);
-    }
     if(g_interrupt_handlers[irq_data.interrupt_number] != NULL) {
         g_interrupt_handlers[irq_data.interrupt_number](&irq_data);
     }
@@ -45,7 +42,7 @@ void init_irq_handlers() {
     set_irq_handler(11, irq_handle_exception);
     set_irq_handler(12, irq_handle_exception);
     set_irq_handler(13, irq_handle_exception);
-    set_irq_handler(14, irq_handle_exception);
+    set_irq_handler(14, irq_page_fault);
     set_irq_handler(15, irq_handle_exception);
     set_irq_handler(16, irq_handle_exception);
     set_irq_handler(17, irq_handle_exception);

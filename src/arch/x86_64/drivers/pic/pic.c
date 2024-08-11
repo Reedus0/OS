@@ -1,5 +1,5 @@
 #include "pic.h"
-#include "arch/x86_64/io.h"
+#include "arch/x86_64/asm/io.h"
 
 static void pic_remap(uint8_t offset_1, uint8_t offset_2) {
     uint8_t a1, a2;
