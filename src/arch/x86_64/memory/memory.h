@@ -20,4 +20,6 @@ size_t g_available_memory;
 size_t g_memory_chunk_count;
 memory_chunk_t g_memory_list[16];
 
+size_t g_pages;
+
 void discover_memory(multiboot2_info_t* mbd);
