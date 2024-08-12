@@ -76,7 +76,7 @@ setup_pages:
     mov [g_page_table_l2 + ecx * 8], eax
 
     inc ecx
-    cmp ecx, 512
+    cmp ecx, 128
     jne .loop
 
     ret

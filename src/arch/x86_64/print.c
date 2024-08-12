@@ -44,23 +44,22 @@ void print_newline() {
 
     for (size_t i = 1; i < ROWS; i++) {
         for (size_t j = 0; j < COLUMNS; j++) {
-            struct Char current_char = *(buffer + i + (j * COLUMNS));
-            *(buffer + i + ((j - 1) * COLUMNS)) = current_char;
+            struct Char current_char = *(buffer + j + (i * COLUMNS));
+            *(buffer + j + ((i - 1) * COLUMNS)) = current_char;
         }
     }
 
-    clear_row(COLUMNS - 1);
+    clear_row(ROWS - 1);
 }
 
 void print_char(char character) {
-    if(character == '\n') {
+    if (character == '\n') {
         print_newline();
         return;
     }
 
-    if (g_current_column > COLUMNS) {
+    if (g_current_column > COLUMNS - 1) {
         print_newline();
-        g_current_column++;
     }
 
     struct Char new_char;
@@ -75,7 +74,7 @@ void print_char(char character) {
 
 void delete_char() {
     struct Char empty;
-    if(g_current_column == 0) {
+    if (g_current_column == 0) {
         g_current_row -= 1;
         g_current_column = 80;
     }
@@ -99,7 +98,7 @@ void print_number(size_t number) {
     int i = 0;
     char* string = 0;
 
-    if(number == 0) {
+    if (number == 0) {
         print_string("0");
         return;
     }
@@ -125,7 +124,7 @@ void print_hex(size_t number) {
     int i = 0;
     char* string = 0;
 
-    if(number == 0) {
+    if (number == 0) {
         print_string("0");
         return;
     }

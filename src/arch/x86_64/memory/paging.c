@@ -3,12 +3,12 @@
 #include "paging.h"
 
 static void page_table_entry_set_flags(page_table_entry_t* page_table_entry, uint8_t flags) {
-    page_table_entry->address |= flags;
+    page_table_entry->flags |= flags;
 }
 
 static void page_table_entry_set_address(page_table_entry_t* page_table_entry, char* address) {
-    page_table_entry->address ^= (page_table_entry->address & ~0xFFF);
-    page_table_entry->address |= (uint64_t)address & ~0xFFF;
+    page_table_entry->address ^= (page_table_entry->address & ~0x3FF);
+    page_table_entry->address |= (uint64_t)address & ~0x3FF;
 }
 
 static void page_table_entry_map(page_table_entry_t* page_table_entry) {
@@ -19,72 +19,48 @@ static void page_table_entry_unmap(page_table_entry_t* page_table_entry) {
     page_table_entry->address ^= page_table_entry->address & 1;
 }
 
-static void fill_table() {
-    page_table_entry_t* l3_address = g_page_table_l4.address & ~0xFFF;
+void map_page(size_t physical_address, size_t virtual_address, size_t flags) {
+    size_t masked_address = virtual_address;
 
-    for (size_t i = 1; i < TABLE_SIZE; i++) {
-        page_table_entry_t* l3_table = l3_address + i;
-        page_table_entry_t* l2_table = &g_page_table_pool + i * TABLE_SIZE;
+    size_t l4_offset = (masked_address >> 39);
+    size_t l3_offset = (masked_address >> 30);
+    size_t l2_offset = (masked_address >> 21);
 
-        page_table_entry_set_flags(l3_table, 0x2);
-        page_table_entry_set_address(l3_table, l2_table);
+    page_table_entry_t* l4_address = &g_page_table_l4 + l4_offset;
+    page_table_entry_t* l3_address = &g_page_table_l3 + l3_offset;
+    page_table_entry_t* l2_address = &g_page_table_l2 + l2_offset;
 
-        for (size_t j = 0; j < TABLE_SIZE; j++) {
-            page_table_entry_t* current_page = l2_table + j;
-            page_table_entry_set_flags(current_page, 0x82);
-        }
-    }
+    page_table_entry_set_address(l3_address, l2_address);
+    page_table_entry_set_address(l2_address, physical_address);
+
+    page_table_entry_set_flags(l3_address, 0x2);
+    page_table_entry_set_flags(l2_address, flags);
+
+    page_table_entry_map(l3_address);
+    page_table_entry_map(l2_address);
 }
 
-page_table_entry_t* get_page_by_index(size_t index, size_t depth) {
-    if (index > TABLE_SIZE * TABLE_SIZE) {
-        panic("Address out of range");
-    }
+void unmap_page(size_t virtual_address) {
+    size_t masked_address = virtual_address;
 
-    page_table_entry_t* prev_address = g_page_table_l4.address & ~0xFFF;
-    page_table_entry_t* next_table;
+    size_t l4_offset = (masked_address >> 39);
+    size_t l3_offset = (masked_address >> 30);
+    size_t l2_offset = (masked_address >> 21);
 
-    size_t original_depth = depth;
+    page_table_entry_t* l4_address = &g_page_table_l4 + l4_offset;
+    page_table_entry_t* l3_address = &g_page_table_l3 + l3_offset;
+    page_table_entry_t* l2_address = &g_page_table_l2 + l2_offset;
 
-    while(depth > 0) {
-        size_t ln = (index / TABLE_SIZE) % TABLE_SIZE;
-        next_table = prev_address + ln;
-        prev_address = next_table->address & ~0xFFF;
-        index *= TABLE_SIZE;
-        depth--;
-    }
+    page_table_entry_set_address(l3_address, 0);
+    page_table_entry_set_address(l2_address, 0);
 
-    return next_table;
-}
+    page_table_entry_set_flags(l3_address, 0);
+    page_table_entry_set_flags(l2_address, 0);
 
-size_t get_page_index(size_t address) {
-    return address / PAGE_SIZE;
-}
-
-void map_page(size_t index) {
-    page_table_entry_t* l3_table = get_page_by_index(index, 1);
-    page_table_entry_t* l2_table = get_page_by_index(index, 2);
-
-    page_table_entry_set_address(l2_table, (MAX_PAGE_COUNT - g_page_count) * PAGE_SIZE);
-
-    page_table_entry_map(l3_table);
-    page_table_entry_map(l2_table);
-
-    g_page_count -= 1;
-}
-
-void unmap_page(size_t index) {
-    page_table_entry_t* l3_table = get_page_by_index(index, 1);
-    page_table_entry_t* l2_table = get_page_by_index(index, 2);
-
-    page_table_entry_set_address(l2_table, 0);
-
-    page_table_entry_unmap(l3_table);
-    page_table_entry_unmap(l2_table);
-
-    g_page_count += 1;
+    page_table_entry_unmap(l3_address);
+    page_table_entry_unmap(l2_address);
 }
 
 void init_pages() {
-    fill_table();
+
 }

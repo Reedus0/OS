@@ -10,7 +10,7 @@ GRUB_MKRESCUE := grub-mkrescue
 QEMU := qemu-system-x86_64
 BOCHS := bochs
 
-QEMU_FLAGS := -m 1024
+QEMU_FLAGS := -m 2048
 BOCHS_FLAGS := -f bochs_config.bxrc
 
 # x86_64 target

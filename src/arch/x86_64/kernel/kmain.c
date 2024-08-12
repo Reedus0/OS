@@ -8,8 +8,14 @@ void kmain (multiboot2_info_t* mbd) {
 
     printf("Hello, Kernel!\n");
 
-    int* ptr = 0x7fffe01233;
+    size_t* ptr = 0x80000000;
     *ptr = 1;
-    printf("%x", *ptr);
+    printf("%x\n", *ptr);
+    size_t* ptr2 = 0x40000000;
+    *ptr2 = 1;
+    printf("%x\n", *ptr2);
+    size_t* ptr3 = 0x7ffffff00;
+    *ptr3 = 1;
+    printf("%x\n", *ptr3);
     while(1); 
 }

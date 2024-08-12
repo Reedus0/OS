@@ -1,7 +1,6 @@
 global g_page_table_l4
 global g_page_table_l3
 global g_page_table_l2
-global g_page_table_pool
 
 global get_page_fault_address
 global flush_page
@@ -26,5 +25,4 @@ g_page_table_l4:
 g_page_table_l3:
     resb 4096
 g_page_table_l2:
-g_page_table_pool:
-    resb 4096 * 4096
+    resb 4096 * 512
