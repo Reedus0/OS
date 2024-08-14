@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "memory.h"
 #include "paging.h"
+#include "arch/x86_64/asm/paging.h"
 
 static void page_table_entry_set_flags(page_table_entry_t* page_table_entry, uint8_t flags) {
     page_table_entry->flags |= flags;
@@ -59,8 +60,4 @@ void unmap_page(size_t virtual_address) {
 
     page_table_entry_unmap(l3_address);
     page_table_entry_unmap(l2_address);
-}
-
-void init_pages() {
-
 }

@@ -23,13 +23,6 @@ struct multiboot2_info {
 };
 typedef struct multiboot2_info multiboot2_info_t;
 
-struct multiboot2_tag_base_address {
-    uint32_t type;
-    uint32_t size;
-    uint32_t base_address;
-};
-typedef struct multiboot2_tag_base_address multiboot2_tag_base_address_t;
-
 struct multiboot2_mmap_entry {
   uint64_t address;
   uint64_t length;

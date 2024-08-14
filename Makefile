@@ -16,7 +16,7 @@ BOCHS_FLAGS := -f bochs_config.bxrc
 # x86_64 target
 
 ASM_FLAGS := -f elf64
-CC_FLAGS := -I $(SRC_DIR) -ffreestanding
+CC_FLAGS := -I $(SRC_DIR) -ffreestanding -fno-asynchronous-unwind-tables
 LD_FLAGS := -n --allow-multiple-definition -T target/x86_64/linker.ld
 
 ISO_DIR := target/x86_64/iso

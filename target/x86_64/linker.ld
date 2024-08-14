@@ -10,4 +10,8 @@ SECTIONS {
     .text : {
         *(.text)
     }
+    . = 128M;
+    .bss : {
+        *(.bss)
+    }
 }

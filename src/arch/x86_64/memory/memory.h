@@ -6,20 +6,16 @@
 // Reference: https://wiki.osdev.org/Detecting_Memory_(x86)
 
 #include "include/list.h"
+#include "include/types.h"
 #include "arch/x86_64/boot/multiboot2.h"
 
-#define KERNEL_OFFSET 0x100000
+#define KERNEL_OFFSET 0x10000000
+#define MAX_ADDRESS_SIZE 40
 
 struct memory_chunk {
-    char* start;
-    char* end;
+    byte* start;
+    byte* end;
 };
 typedef struct memory_chunk memory_chunk_t;
-
-size_t g_available_memory;
-size_t g_memory_chunk_count;
-memory_chunk_t g_memory_list[16];
-
-size_t g_pages;
 
 void discover_memory(multiboot2_info_t* mbd);

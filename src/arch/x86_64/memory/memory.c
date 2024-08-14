@@ -2,45 +2,52 @@
 #include "memory.h"
 #include "arch/x86_64/boot/multiboot2.h"
 
-static size_t get_base_address(multiboot2_info_t* mbd) {
-    multiboot2_tag_base_address_t* base_address_tag = get_tag(mbd, TAG_BASE_ADDRESS);
+static size_t validate_chunk(multiboot2_memory_map_t* map) {
+    char* start = map->address;
+    char* end = map->length + start;
 
-    return base_address_tag->base_address;
+    size_t memory_is_available = map->type == MEMORY_AVAILABLE;
+    size_t not_zero_address = map->address != 0;
+
+    return memory_is_available && not_zero_address;
 }
 
-static memory_chunk_t get_memory_chunk(multiboot2_memory_map_t* map, size_t base_address) {
+static memory_chunk_t get_memory_chunk(multiboot2_memory_map_t* map) {
     memory_chunk_t result;
 
     result.start = map->address;
     result.end = map->length + result.start;
 
-    if (result.start == base_address) {
-        result.start += KERNEL_OFFSET;
+    if(result.start < KERNEL_OFFSET && result.end > KERNEL_OFFSET) {
+        result.start = KERNEL_OFFSET;
+    } else {
+        result.start = 0;
+        result.end = 0;
     }
     
     return result;
 }
 
-void discover_memory(multiboot2_info_t* mbd) {
-    size_t base_address = get_base_address(mbd);
+static void process_map(multiboot2_memory_map_t* map) {
+    if (validate_chunk(map)) {
+        memory_chunk_t chunk = get_memory_chunk(map);
 
+        if (chunk.start == 0) {
+            return;
+        }
+            
+        size_t map_size = chunk.end - chunk.start;
+        printf("Start: 0x%x, End: 0x%x\n", chunk.start, chunk.end);
+    }
+}
+
+void discover_memory(multiboot2_info_t* mbd) {
     multiboot2_tag_mmap_t* mmap_tag = get_tag(mbd, TAG_MMAP);
     size_t map_count = (mmap_tag->size - sizeof(multiboot2_tag_mmap_t)) / sizeof(multiboot2_memory_map_t);
 
     for (size_t i = 0; i < map_count; i++) {
         multiboot2_memory_map_t* map = &mmap_tag->entries + i;
 
-        if(map->type == MEMORY_AVAILABLE && map->address != 0) {
-            memory_chunk_t chunk = get_memory_chunk(map, base_address);
-
-            g_memory_list[g_memory_chunk_count] = chunk;
-
-            size_t map_size = chunk.end - chunk.start;
-
-            g_available_memory += map_size;
-            g_memory_chunk_count += 1;
-        }
+        process_map(map);
     }
-
-    printf("Available memory: 0x%x\n", g_available_memory);
 }

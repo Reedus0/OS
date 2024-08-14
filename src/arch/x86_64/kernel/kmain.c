@@ -1,21 +1,36 @@
 #include <stdio.h>
 #include "arch/x86_64/boot/multiboot2.h"
 #include "arch/x86_64/hal/hal.h"
-#include "include/print.h"
+#include "include/kalloc.h"
 
 void kmain (multiboot2_info_t* mbd) {
     init_hal(mbd);
 
     printf("Hello, Kernel!\n");
 
-    size_t* ptr = 0x80000000;
-    *ptr = 1;
-    printf("%x\n", *ptr);
-    size_t* ptr2 = 0x40000000;
-    *ptr2 = 1;
-    printf("%x\n", *ptr2);
-    size_t* ptr3 = 0x7ffffff00;
-    *ptr3 = 1;
-    printf("%x\n", *ptr3);
+    void* ptr = kalloc(16);
+
+    printf("%p\n", ptr);
+    kfree(ptr);
+    void* ptr2 = kalloc(8);
+    printf("%p\n", ptr2);
+
+    void* ptr3 = kalloc(8);
+    printf("%p\n", ptr3);
+
+    void* ptr4 = kalloc(8);
+    printf("%p\n", ptr4);
+
+    kfree(ptr3);
+
+    void* ptr5 = kalloc(86);
+    printf("%p\n", ptr5);
+    
+    void* ptr6 = kalloc(8);
+    printf("%p\n", ptr6);
+
+    void* ptr7 = kalloc(816);
+    printf("%p\n", ptr7);
+
     while(1); 
 }

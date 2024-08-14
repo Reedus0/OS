@@ -14,10 +14,6 @@ union page_table_entry {
 } __attribute__((packed));
 typedef union page_table_entry page_table_entry_t;
 
-extern page_table_entry_t g_page_table_l4;
-extern page_table_entry_t g_page_table_l3;
-extern page_table_entry_t g_page_table_l2;
-
 void map_page(size_t physical_address, size_t virtual_address, size_t flags);
 void unmap_page(size_t virtual_address);
 void init_pages();

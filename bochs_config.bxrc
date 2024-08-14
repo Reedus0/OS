@@ -1,4 +1,4 @@
-megs: 2048
+megs: 1024
 romimage: file=E:\Bochs\BIOS-bochs-latest, address=0xfffe0000
 vgaromimage: file=E:\Bochs\VGABIOS-lgpl-latest
 ata0-master: type=cdrom, path=dist\x86_64\kernel.iso, status=inserted

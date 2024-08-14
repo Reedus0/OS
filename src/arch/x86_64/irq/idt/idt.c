@@ -26,7 +26,7 @@ static void idt_descriptor_enable(idt_descriptor_t* idt_descriptor) {
 }
 
 static void idt_descriptor_disable(idt_descriptor_t* idt_descriptor) {
-    idt_descriptor->type ^= ((idt_descriptor->type >> 7) & 1);
+    idt_descriptor->type &= idt_descriptor->type ^ 1 << 7;
 }
 
 static void init_interrupt(idt_descriptor_t* idt_descriptor) {
