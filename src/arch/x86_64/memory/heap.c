@@ -2,23 +2,23 @@
 #include "arch/x86_64/memory/memory.h"
 #include "heap.h"
 
-void heap_descriptor_set_address(heap_descriptor_t* heap_descriptor, uint64_t address) {
+static void heap_descriptor_set_address(heap_descriptor_t* heap_descriptor, uint64_t address) {
     heap_descriptor->address = address;
 }
 
-void heap_descriptor_set_size(heap_descriptor_t* heap_descriptor, uint64_t size) {
+static void heap_descriptor_set_size(heap_descriptor_t* heap_descriptor, uint64_t size) {
     heap_descriptor->size = size;
 }
 
-void heap_descriptor_set_available(heap_descriptor_t* heap_descriptor) {
+static void heap_descriptor_set_available(heap_descriptor_t* heap_descriptor) {
     heap_descriptor->available |= ((size_t)1 << MAX_ADDRESS_SIZE);
 }
 
-void heap_descriptor_clear_available(heap_descriptor_t* heap_descriptor) {
+static void heap_descriptor_clear_available(heap_descriptor_t* heap_descriptor) {
     heap_descriptor->available &= heap_descriptor->available ^ (size_t)1 << MAX_ADDRESS_SIZE;
 }
 
-char heap_descriptor_is_available(heap_descriptor_t* heap_descriptor) {
+static char heap_descriptor_is_available(heap_descriptor_t* heap_descriptor) {
     return heap_descriptor->available >> MAX_ADDRESS_SIZE;
 }
 
@@ -33,7 +33,7 @@ void init_heap() {
     g_heap_descriptor_count += 1;
 } 
 
-void insert_heap_descriptor(heap_descriptor_t new_descriptor) {
+static void insert_heap_descriptor(heap_descriptor_t new_descriptor) {
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
         if (current_descriptor->address > new_descriptor.address) {
@@ -53,29 +53,58 @@ void* heap_alloc(size_t bytes) {
 
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
-        printf("curr: 0x%x\n", *current_descriptor);
         if (!heap_descriptor_is_available(current_descriptor)) {
             continue;
         }
+        
         if (current_descriptor->size >= bytes) {
             uint32_t old_size = current_descriptor->size;
             if (current_descriptor->size > bytes) {
                 heap_descriptor_t new_descriptor;
 
                 heap_descriptor_set_address(&new_descriptor, current_descriptor->address + bytes);
-                heap_descriptor_set_size(&new_descriptor, old_size);
+                heap_descriptor_set_size(&new_descriptor, old_size - bytes);
                 heap_descriptor_set_available(&new_descriptor);
 
-                printf("new 0x%x\n", new_descriptor);
                 insert_heap_descriptor(new_descriptor);
             }
             heap_descriptor_set_size(current_descriptor, bytes);
             heap_descriptor_clear_available(current_descriptor);
-            printf("count 0x%x\n", g_heap_descriptor_count);
             return current_descriptor->address;
         }
     }
     panic("Couldn't allocate memory!");
+}
+
+static void shift_heap_descriptors(size_t index) {
+    for (size_t i = index + 1; i < g_heap_descriptor_count - 1; i++) {
+        heap_descriptor_t current_descriptor = g_heap_descriptors[i + 1];
+        g_heap_descriptors[i] = current_descriptor;
+    }
+}
+
+static void merge_descriptors(heap_descriptor_t* available_descriptor) {
+    for (size_t i = 0; i < g_heap_descriptor_count; i++) { 
+        heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
+        if (!heap_descriptor_is_available(current_descriptor)) {
+            continue;
+        }
+
+        if (current_descriptor->address + current_descriptor->size == available_descriptor->address) {
+            current_descriptor->size += available_descriptor->size;
+            available_descriptor = current_descriptor;
+            shift_heap_descriptors(i);
+            g_heap_descriptor_count -= 1;
+            continue;
+        }
+
+        if (available_descriptor->address + available_descriptor->size == current_descriptor->address) {
+            available_descriptor->size += current_descriptor->size;
+            shift_heap_descriptors(i - 1);
+            g_heap_descriptor_count -= 1;
+            continue;
+        }
+    }
 }
 
 void heap_free(void* ptr) {
@@ -86,6 +115,7 @@ void heap_free(void* ptr) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
         if (current_descriptor->address == (uint64_t)ptr) {
             heap_descriptor_set_available(current_descriptor);
+            merge_descriptors(current_descriptor);
             return; 
         }
     }
