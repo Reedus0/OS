@@ -1,3 +1,4 @@
+global g_phisycal_pages
 global g_page_table_l4
 global g_page_table_l3
 global g_page_table_l2
@@ -19,6 +20,8 @@ flush_page:
     ret
 
 section .bss
+g_phisycal_pages:
+    resb 0x10000
 align 4096
 g_page_table_l4:
     resb 4096
