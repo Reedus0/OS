@@ -7,7 +7,7 @@
 
 struct driver {
     void (*init)();
-    void (*functions[16])();
+    size_t (*functions[16])();
     void (*deinit)();
 };
 typedef struct driver driver_t;

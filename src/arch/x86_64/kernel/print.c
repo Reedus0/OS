@@ -1,19 +1,5 @@
 #include "include/print.h"
-
-#define COLUMNS 80
-#define ROWS 25
-
-#define WHITE_COLOR 15
-
-struct Char {
-    uint8_t character;
-    uint8_t color;
-};
-
-static struct Char* buffer = (struct Char*) 0xb8000;
-
-size_t g_current_column = 0;
-size_t g_current_row = 0;
+#include "arch/x86_64/include/print.h"
 
 static void clear_row(size_t row) {
     struct Char empty;
@@ -21,7 +7,7 @@ static void clear_row(size_t row) {
     empty.character = ' ';
 
     for (size_t i = 0; i < COLUMNS; i++) {
-        *(buffer + i + (row * COLUMNS)) = empty;
+        *(g_buffer + i + (row * COLUMNS)) = empty;
     }
 }
 
@@ -32,6 +18,7 @@ void print_clear() {
 
     g_current_column = 0;
     g_current_row = 0;
+    update_cursor(g_current_column, g_current_row);
 }
 
 void print_newline() {
@@ -44,8 +31,8 @@ void print_newline() {
 
     for (size_t i = 1; i < ROWS; i++) {
         for (size_t j = 0; j < COLUMNS; j++) {
-            struct Char current_char = *(buffer + j + (i * COLUMNS));
-            *(buffer + j + ((i - 1) * COLUMNS)) = current_char;
+            struct Char current_char = *(g_buffer + j + (i * COLUMNS));
+            *(g_buffer + j + ((i - 1) * COLUMNS)) = current_char;
         }
     }
 
@@ -55,6 +42,12 @@ void print_newline() {
 void print_char(char character) {
     if (character == '\n') {
         print_newline();
+        update_cursor(g_current_column, g_current_row);
+        return;
+    }
+
+    if (character == '\b') {
+        delete_char();
         return;
     }
 
@@ -67,23 +60,29 @@ void print_char(char character) {
     new_char.color = WHITE_COLOR;
     new_char.character = character;
 
-    buffer[g_current_column + COLUMNS * g_current_row] = new_char;
+    g_buffer[g_current_column + COLUMNS * g_current_row] = new_char;
 
     g_current_column++;
+    update_cursor(g_current_column, g_current_row);
 }
 
 void delete_char() {
     struct Char empty;
     if (g_current_column == 0) {
-        g_current_row -= 1;
-        g_current_column = 80;
+        if (g_current_row > 0) {
+            g_current_row -= 1;
+            g_current_column = 80;
+        } else {
+            g_current_column = 1;
+        }
     }
 
     g_current_column -= 1;
 
     empty.color = WHITE_COLOR;
     empty.character = ' ';
-    buffer[g_current_column + COLUMNS * g_current_row] = empty;
+    g_buffer[g_current_column + COLUMNS * g_current_row] = empty;
+    update_cursor(g_current_column, g_current_row);
 }
 
 

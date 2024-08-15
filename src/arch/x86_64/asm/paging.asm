@@ -20,9 +20,9 @@ flush_page:
     ret
 
 section .bss
-g_phisycal_pages:
-    resb 0x10000
 align 4096
+g_phisycal_pages:
+    resb 65536
 g_page_table_l4:
     resb 4096
 g_page_table_l3:
