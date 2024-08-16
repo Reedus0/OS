@@ -25,6 +25,7 @@ interrupt irq_timer(irq_data_t* irq_data) {
 
 interrupt irq_keyboard(irq_data_t* irq_data) {
     char key = driver_function(g_keyboard_driver, KEYBOARD_DRIVER_PROCESS_KEY)();
+    io_wait();
     if (key != NULL) {
         if (key != '\b') {
             stdin_add_char(key);

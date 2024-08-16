@@ -4,14 +4,17 @@
 #include <stddef.h>
 
 #include "include/types.h"
+#include "kernel/stream.h"
 
-#define STDIN_SIZE 256
+#define STDIN_BUFFER_SIZE 256
 
-struct stdin {
-    char buffer[STDIN_SIZE];
-    size_t size;
-    byte updated;
-} g_stdin;
+char g_stdin_buffer[STDIN_BUFFER_SIZE];
+
+stream_t g_stdin = {
+    g_stdin_buffer,
+    0,
+    0
+};
 
 void stdin_add_char(char character);
 void stdin_delete_char();
