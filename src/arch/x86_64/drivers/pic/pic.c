@@ -41,6 +41,10 @@ static void pic_disable() {
     outb(PIC2_DATA, 0xff);
 }
 
+static char* info_pic() {
+	return "PIC driver";
+}
+
 static void init_pic() {
     pic_remap(REMAP_OFFSET, REMAP_OFFSET + 8);
 }
@@ -53,6 +57,9 @@ driver_t init_pic_driver() {
 	if(g_pic_driver.deinit != NULL) {
         g_pic_driver.deinit();
     }
+	g_pic_driver.name = "PIC driver";
+	g_pic_driver.info = info_pic;
+
 	g_pic_driver.init = init_pic;
 
 	driver_function(g_pic_driver, PIC_DRIVER_REMAP) = pic_remap;

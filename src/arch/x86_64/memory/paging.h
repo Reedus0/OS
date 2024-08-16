@@ -30,6 +30,8 @@ typedef struct physical_page physical_page_t;
 size_t g_total_pages;
 size_t g_available_pages;
 
-void map_page(size_t virtual_address, size_t flags);
+size_t allocate_physical_address(size_t virtual_address);
+void map_page(size_t physical_address, size_t virtual_address, size_t flags);
+void unmap_page(size_t virtual_address);
 void add_physical_pages(memory_chunk_t chunk);
 void init_pages();

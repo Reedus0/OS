@@ -23,7 +23,7 @@ static void physical_page_set_virtual_address(physical_page_t* physical_page, ui
     physical_page->virtual_address = virtual_address;
 }
 
-static size_t get_physical_address(size_t virtual_address) {
+size_t allocate_physical_address(size_t virtual_address) {
     if (g_available_pages == 0) {
         for (size_t i = 0; i < g_total_pages; i++) {
             physical_page_t* current_page = &g_phisycal_pages[i];
@@ -98,7 +98,7 @@ void unmap_page(size_t virtual_address) {
     g_available_pages += 1;
 }
 
-void map_page(size_t virtual_address, size_t flags) {
+void map_page(size_t physical_address, size_t virtual_address, size_t flags) {
     size_t masked_address = virtual_address;
 
     size_t l4_offset = (masked_address >> 39);
@@ -108,8 +108,6 @@ void map_page(size_t virtual_address, size_t flags) {
     page_table_entry_t* l4_address = &g_page_table_l4 + l4_offset;
     page_table_entry_t* l3_address = &g_page_table_l3 + l3_offset;
     page_table_entry_t* l2_address = &g_page_table_l2 + l2_offset;
-
-    size_t physical_address = get_physical_address(virtual_address);
 
     page_table_entry_set_address(l3_address, l2_address);
     page_table_entry_set_address(l2_address, physical_address);

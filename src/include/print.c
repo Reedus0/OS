@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "include/print.h"
 #include "arch/x86_64/include/print.h"
 
@@ -95,57 +96,18 @@ void print_string(char* string) {
 
 void print_number(size_t number) {
     int i = 0;
-    char* string = 0;
+    char string[256];
 
-    if (number == 0) {
-        print_string("0");
-        return;
-    }
-
-    while (number > 0) {
-        string[i] = number % 10 + 0x30;
-        number /= 10;
-        i++;
-    }
-
-    string[i] = '\0';
-
-    for (int j = 0; j < i / 2; j++) {
-        char temp = string[j];
-        string[j] = string[i - j - 1];
-        string[i - j - 1] = temp;
-    }
+    itoa(number, string, 10);
 
     print_string(string);
 }
 
 void print_hex(size_t number) {
     int i = 0;
-    char* string = 0;
+    char string[256];
 
-    if (number == 0) {
-        print_string("0");
-        return;
-    }
-
-    while (number > 0) {
-        size_t current_number = number % 16;
-        if(current_number > 9) {
-            string[i] = (current_number % 10) + 0x60 + 1;
-        } else {
-            string[i] = current_number + 0x30;
-        }
-        number /= 16;
-        i++;
-    }
-
-    string[i] = '\0';
-
-    for (int j = 0; j < i / 2; j++) {
-        char temp = string[j];
-        string[j] = string[i - j - 1];
-        string[i - j - 1] = temp;
-    }
+    itoa(number, string, 16);
 
     print_string(string);
 }

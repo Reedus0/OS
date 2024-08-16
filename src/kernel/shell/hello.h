@@ -5,4 +5,4 @@
 
 #include "kernel/shell.h"
 
-shell_command sh_hello();
+shell_command sh_hello(char* command);

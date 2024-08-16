@@ -1,15 +1,15 @@
-#include "include/io.h"
+#include "kernel/stdin.h"
 #include "scanf.h"
 
-int scanf(const char* format, ...) {
+int scanf(const char *format, ...) {
     int result = 0;
     size_t current_arg = 0;
 
     va_list arg;
     va_start(arg, format);
     
-    clear_io_buffer();
- 
+    clear_stdin();
+
     while(*format != '\0') {
         char current_char = *format;
         if(current_char == '%') {
@@ -17,25 +17,30 @@ int scanf(const char* format, ...) {
             switch(type) {
                 case 's':
                     current_arg = va_arg(arg, char*);
-                    int index = 0;
+                    size_t last_size = 0;
+                    size_t read = 1;
                     while (1) {
-                        char last_char = io_buffer_get_last_char();
-                        if (last_char != '\b') {
+                        char last_char = stdin_get_last_char();
+                        size_t stdin_size = stdin_get_size();
+                        if (stdin_size > last_size) {
                             print_char(last_char);
+                        }
+                        if (last_char == ' ') {
+                            read = 0;
                         }
                         if (last_char == '\n') {
                             break;
                         }
-                        if (last_char == '\b') {
-                            *((char*)current_arg + index) = 0;
-                            if (index > 0) {
-                                print_char(last_char);
-                                index--;
+                        if (stdin_size <= last_size) {
+                            if (last_size > 0) {
+                                delete_char();
+                                last_size--;
                             }
-                            continue;
                         }
-                        *((char*)current_arg + index) = last_char;
-                        index++;
+                        if (read) {
+                            *((char*)current_arg + last_size) = last_char;
+                            last_size = stdin_size;
+                        }
                     };
                     break;
                 default:

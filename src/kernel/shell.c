@@ -3,26 +3,28 @@
 
 #include "kernel/shell/hello.h"
 #include "kernel/shell/clear.h"
+#include "kernel/shell/driver.h"
 
 static size_t (*shell_commnads[])() = {
-    NULL, sh_hello, sh_clear,
+    NULL, sh_hello, sh_clear, sh_driver
 };
 
 static char* command_names[] = {
     NULL,
     "hello",
-    "clear"
+    "clear",
+    "driver"
 };
 
 static size_t search_command(char* command) {
     for (size_t i = 1; i < sizeof(shell_commnads) / sizeof(shell_commnads[0]); i++) {
         char* current_command = command_names[i];
         while(1) {
-            if (*current_command != *command) {
-                break;
-            }
             if (*current_command == '\0') {
                 return i;
+            }
+            if (*current_command != *command) {
+                break;
             }
             current_command++;
             command++;
@@ -51,8 +53,8 @@ void init_shell() {
 size_t shell_execute(char* command) {
     size_t index = search_command(command);
     if (index == 0) {
-        printf("Unknown command\n");
+        printf("Unknown command!\n");
         return 1;
     }
-    return shell_commnads[index]();
+    return shell_commnads[index](command);
 }

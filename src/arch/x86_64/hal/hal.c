@@ -5,6 +5,7 @@
 #include "arch/x86_64/drivers/keyboard/keyboard.h"
 #include "arch/x86_64/memory/discover.h"
 #include "arch/x86_64/boot/multiboot2.h"
+#include "arch/x86_64/bus/pci/pci.h"
 #include "kernel/driver.h"
 
 void init_hal(multiboot2_info_t* mbd) {
@@ -14,11 +15,14 @@ void init_hal(multiboot2_info_t* mbd) {
     init_idt();
     init_irq_handlers();
 
-    struct driver pic_driver = init_pic_driver();
+    driver_t pic_driver = init_pic_driver();
     register_driver(pic_driver);
 
-    struct driver keyboard_driver = init_keyboard_driver();
+    driver_t keyboard_driver = init_keyboard_driver();
     register_driver(keyboard_driver);
+
+    driver_t pci_driver = init_pci_driver();
+    register_driver(pci_driver);
 
     init_drivers();
 

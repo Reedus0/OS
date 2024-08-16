@@ -6,6 +6,8 @@
 #define driver_function(driver_instance, function) (driver_instance.functions[function])
 
 struct driver {
+    char* name;
+    char* (*info)();
     void (*init)();
     size_t (*functions[16])();
     void (*deinit)();

@@ -57,6 +57,9 @@ interrupt irq_page_fault(irq_data_t* irq_data) {
     uint64_t page_fault_address = get_page_fault_address();
     printf("Page fault address: 0x%x\n", page_fault_address);
 
-    map_page(page_fault_address & 0xFFFFFFF00000, 0x82);
+    size_t virtual_address = page_fault_address & 0xFFFFFFF00000;
+    size_t physical_address = allocate_physical_address(virtual_address);
+
+    map_page(physical_address, virtual_address, 0x82);
     flush_page();
 }

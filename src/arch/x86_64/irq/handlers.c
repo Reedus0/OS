@@ -2,7 +2,7 @@
 #include "handlers.h"
 #include "exceptions.h"
 #include "include/panic.h"
-#include "include/io.h"
+#include "kernel/stdin.h"
 #include "arch/x86_64/drivers/pic/pic.h"
 #include "arch/x86_64/drivers/keyboard/keyboard.h"
 
@@ -26,8 +26,12 @@ interrupt irq_timer(irq_data_t* irq_data) {
 interrupt irq_keyboard(irq_data_t* irq_data) {
     char key = driver_function(g_keyboard_driver, KEYBOARD_DRIVER_PROCESS_KEY)();
     if (key != NULL) {
-        io_buffer_add_char(key);
-        io_buffer_update();
+        if (key != '\b') {
+            stdin_add_char(key);
+        } else {
+            stdin_delete_char();
+        }
+        stdin_update();
     }
     driver_function(g_pic_driver, PIC_DRIVER_EOI)(33);
 }

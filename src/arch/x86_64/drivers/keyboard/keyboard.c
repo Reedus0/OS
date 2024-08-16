@@ -30,6 +30,10 @@ static char keyboard_process_key() {
     return g_key_map[key - 1];
 }
 
+static char* info_keyboard() {
+    return "Keyboard driver";
+}
+
 static void init_keyboard() {
     enable_cursor(14, 15);
 }
@@ -42,6 +46,9 @@ driver_t init_keyboard_driver() {
     if(g_keyboard_driver.deinit != NULL) {
         g_keyboard_driver.deinit();
     }
+    g_keyboard_driver.name = "Keyboard driver";
+    g_keyboard_driver.info = info_keyboard;
+
     g_keyboard_driver.init = init_keyboard;
 
     driver_function(g_keyboard_driver, KEYBOARD_DRIVER_PROCESS_KEY) = keyboard_process_key;
