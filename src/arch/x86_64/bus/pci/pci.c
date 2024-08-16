@@ -26,9 +26,7 @@ static char* info_pci() {
 }
 
 static void init_pci() {
-
-    uint32_t num = ind(PCI_CONFIG_DATA);
-    printf("%d", num);
+    
 }
 
 static void deinit_pci() {

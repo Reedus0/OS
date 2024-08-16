@@ -4,7 +4,8 @@ char *itoa(int num, char *str, int radix) {
     int i = 0;
 
     if (num == 0) {
-        return "0";
+        *str = "0";
+        return str;
     }
 
     while (num > 0) {
