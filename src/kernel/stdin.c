@@ -1,18 +1,18 @@
 #include "stdin.h"
 
-void stdin_add_char(char character) {
+void stdin_add_byte(byte new_byte) {
     if (g_stdin.size < STDIN_BUFFER_SIZE) {
-        stream_add_byte(&g_stdin, character);
+        stream_add_byte(&g_stdin, new_byte);
     }
 }
 
-void stdin_delete_char() {
+void stdin_delete_byte() {
     if (g_stdin.size > 0) {
         stream_delete_byte(&g_stdin);
     }
 }
 
-char stdin_get_last_char() {
+byte stdin_get_last_byte() {
     return stream_get_last_byte(&g_stdin);
 }
 
