@@ -7,7 +7,7 @@
 
 struct stream {
     byte* buffer;
-    byte updated;
+    bool updated;
     size_t size;
 };
 typedef struct stream stream_t;

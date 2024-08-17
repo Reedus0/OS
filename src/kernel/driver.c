@@ -13,3 +13,12 @@ void init_drivers() {
         }
     }
 }
+
+void deinit_drivers() {
+    for (size_t i = 0; i < g_drivers_count; i++) {
+        driver_t* current_driver = &g_drivers[i];
+        if(current_driver->deinit != NULL) {
+            current_driver->deinit();
+        }
+    }
+}

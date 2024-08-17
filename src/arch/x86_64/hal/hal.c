@@ -5,7 +5,7 @@
 #include "arch/x86_64/drivers/keyboard/keyboard.h"
 #include "arch/x86_64/memory/discover.h"
 #include "arch/x86_64/boot/multiboot2.h"
-#include "arch/x86_64/bus/pci/pci.h"
+#include "arch/x86_64/drivers/bus/pci/pci.h"
 #include "kernel/driver.h"
 
 void init_hal(multiboot2_info_t* mbd) {

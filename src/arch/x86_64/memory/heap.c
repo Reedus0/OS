@@ -76,8 +76,8 @@ void* heap_alloc(size_t bytes) {
     panic("Couldn't allocate memory!");
 }
 
-static void shift_heap_descriptors(size_t index) {
-    for (size_t i = index + 1; i < g_heap_descriptor_count - 1; i++) {
+static void shift_heap_descriptors(size_t in32ex) {
+    for (size_t i = in32ex + 1; i < g_heap_descriptor_count - 1; i++) {
         heap_descriptor_t current_descriptor = g_heap_descriptors[i + 1];
         g_heap_descriptors[i] = current_descriptor;
     }

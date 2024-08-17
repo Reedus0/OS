@@ -7,7 +7,6 @@
 
 struct driver {
     char* name;
-    char* (*info)();
     void (*init)();
     size_t (*functions[16])();
     void (*deinit)();
@@ -19,3 +18,4 @@ size_t g_drivers_count;
 
 void register_driver(driver_t driver);
 void init_drivers();
+void deinit_drivers();

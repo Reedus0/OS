@@ -95,19 +95,17 @@ void print_string(char* string) {
 }
 
 void print_number(size_t number) {
-    int i = 0;
-    char string[256];
+    char buffer[256];
 
-    itoa(number, string, 10);
+    itoa(number, buffer, 10);
 
-    print_string(string);
+    print_string(buffer);
 }
 
 void print_hex(size_t number) {
-    int i = 0;
-    char string[256];
+    char buffer[256];
 
-    itoa(number, string, 16);
+    itoa(number, buffer, 16);
 
-    print_string(string);
+    print_string(buffer);
 }

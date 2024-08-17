@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #include "include/types.h"
-#include "kernel/stream.h"
+#include "include/stream.h"
 
 #define STDIN_BUFFER_SIZE 256
 
