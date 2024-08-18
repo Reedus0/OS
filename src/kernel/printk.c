@@ -1,7 +1,7 @@
 #include "include/print.h"
-#include "printf.h"
+#include "printk.h"
 
-int printf(const char *format, ...) {
+int printk(const char* format, ...) {
     int result = 0;
     size_t current_arg = 0;
 

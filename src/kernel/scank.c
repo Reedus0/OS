@@ -1,7 +1,7 @@
 #include "kernel/stdin.h"
-#include "scanf.h"
+#include "scank.h"
 
-int scanf(const char *format, ...) {
+int scank(const char* format, ...) {
     int result = 0;
     size_t current_arg = 0;
 

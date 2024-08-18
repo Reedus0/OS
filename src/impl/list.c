@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "list.h"
 
 list_t init_list() {

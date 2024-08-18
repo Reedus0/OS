@@ -15,7 +15,7 @@ void stream_delete_byte(stream_t* stream) {
 byte stream_get_last_byte(stream_t* stream) {
     while (stream->updated == 0);
     stream->updated = 0;
-    printf("");
+    printk("");
     return *(stream->buffer + stream->size - 1);
 }
 

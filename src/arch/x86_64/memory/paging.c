@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "memory.h"
 #include "paging.h"
 #include "arch/x86_64/asm/paging.h"

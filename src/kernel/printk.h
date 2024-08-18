@@ -4,4 +4,4 @@
 #include <stddef.h>
 #include <stdarg.h>
 
-int printf(const char *format, ...);
+int printk(const char* format, ...);

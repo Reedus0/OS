@@ -45,10 +45,13 @@
 #define PCI_BRIDGE_PRIMARY_BUS 24
 #define PCI_BRIDGE_SECONDARY_BUS 25
 
-#define PCI_READ_WORD 0
-#define PCI_DEVICE_GET_VALUE 1
+#define PCI_DEVICE_GET_VALUE 0
+#define PCI_DEVICE_SET_VALUE 1
 
 struct pci_device {
+    uint16_t vendor;
+    uint16_t device_id;
+
     uint8_t bus;
     uint8_t device;
     uint8_t function;

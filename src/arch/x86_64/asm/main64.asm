@@ -14,6 +14,5 @@ long_mode_start:
     mov rdi, rbx
 
     call kmain
-
-
+    
     hlt

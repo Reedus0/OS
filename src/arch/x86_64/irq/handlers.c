@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "handlers.h"
 #include "exceptions.h"
 #include "include/panic.h"
@@ -11,7 +10,7 @@ void __attribute__((__cdecl__)) irq_handler(irq_data_t irq_data) {
         g_interrupt_handlers[irq_data.interrupt_number](&irq_data);
     }
     else {
-        printf("Unhandeled interrupt: 0x%x!", irq_data.interrupt_number);
+        printk("Unhandeled interrupt: 0x%x!", irq_data.interrupt_number);
     }
 }
 

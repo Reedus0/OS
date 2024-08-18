@@ -4,4 +4,4 @@
 #include <stddef.h>
 #include <stdarg.h>
 
-int scanf(const char *format, ...);
+int scank(const char* format, ...);

@@ -5,7 +5,6 @@
 
 // Reference: https://wiki.osdev.org/Detecting_Memory_(x86)
 
-#include "include/list.h"
 #include "include/types.h"
 #include "arch/x86_64/boot/multiboot2.h"
 

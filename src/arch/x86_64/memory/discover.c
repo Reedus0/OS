@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "memory.h"
 #include "discover.h"
 #include "arch/x86_64/boot/multiboot2.h"
@@ -21,9 +20,6 @@ static memory_chunk_t get_memory_chunk(multiboot2_memory_map_t* map) {
 
     if (result.start < KERNEL_OFFSET && result.end > KERNEL_OFFSET) {
         result.start = KERNEL_OFFSET;
-    } else {
-        result.start = 0;
-        result.end = 0;
     }
     
     return result;
@@ -36,7 +32,6 @@ static void process_map(multiboot2_memory_map_t* map) {
         if (chunk.start == 0) {
             return;
         }
-            
         add_physical_pages(chunk);
     }
 }

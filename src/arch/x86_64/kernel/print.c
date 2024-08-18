@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "include/print.h"
 #include "arch/x86_64/include/print.h"
 
@@ -92,6 +91,37 @@ void print_string(char* string) {
         print_char(*string);
         string++;
     }
+}
+
+static char* itoa(size_t num, char* str, int radix) {
+    size_t i = 0;
+
+    if (num == 0) {
+        *str = '0';
+        *(str + 1) = '\0';
+        return str;
+    }
+
+    while (num > 0) {
+        size_t current_number = num % radix;
+        if(current_number > 9) {
+            *(str + i) = (current_number % 10) + 0x60 + 1;
+        } else {
+            *(str + i) = current_number + 0x30;
+        }
+        num /= radix;
+        i++;
+    }
+
+    *(str + i) = '\0';
+
+    for (int j = 0; j < i / 2; j++) {
+        char tmp = *(str + j);
+        *(str + j) = *(str + i - j - 1);
+        *(str + i - j - 1) = tmp;
+    }
+
+    return str;
 }
 
 void print_number(size_t number) {
