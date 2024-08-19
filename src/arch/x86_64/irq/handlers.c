@@ -2,8 +2,8 @@
 #include "exceptions.h"
 #include "include/panic.h"
 #include "kernel/stdin.h"
-#include "arch/x86_64/drivers/pic/pic.h"
-#include "arch/x86_64/drivers/keyboard/keyboard.h"
+#include "drivers/pic/pic.h"
+#include "drivers/keyboard/keyboard.h"
 
 void __attribute__((__cdecl__)) irq_handler(irq_data_t irq_data) {
     if(g_interrupt_handlers[irq_data.interrupt_number] != NULL) {
@@ -19,11 +19,11 @@ static void set_irq_handler(size_t number, size_t handler) {
 }
 
 interrupt irq_timer(irq_data_t* irq_data) {
-    driver_function(g_pic_driver, PIC_DRIVER_EOI)(32);
+    MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(32);
 }
 
 interrupt irq_keyboard(irq_data_t* irq_data) {
-    char character = driver_function(g_keyboard_driver, KEYBOARD_DRIVER_PROCESS_KEY)();
+    char character = MODULE_FUNCTION(g_keyboard_module, KEYBOARD_PROCESS_KEY)();
     if (character != NULL) {
         if (character != '\b') {
             stdin_add_byte(character);
@@ -32,7 +32,7 @@ interrupt irq_keyboard(irq_data_t* irq_data) {
         }
         stdin_update();
     }
-    driver_function(g_pic_driver, PIC_DRIVER_EOI)(33);
+    MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(33);
 }
 
 void init_irq_handlers() {

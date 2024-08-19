@@ -1,15 +1,15 @@
 #include "arch/x86_64/gdt/gdt.h"
 #include "arch/x86_64/irq/idt/idt.h"
 #include "arch/x86_64/irq/handlers.h"
-#include "arch/x86_64/drivers/pic/pic.h"
-#include "arch/x86_64/drivers/keyboard/keyboard.h"
 #include "arch/x86_64/memory/discover.h"
 #include "arch/x86_64/boot/multiboot2.h"
-#include "arch/x86_64/drivers/bus/pci/pci.h"
-#include "kernel/driver.h"
+#include "drivers/bus/pci/pci.h"
+#include "drivers/pic/pic.h"
+#include "drivers/keyboard/keyboard.h"
+#include "include/module.h"
 
 void init_hal(multiboot2_info_t* mbd) {
-    
+
     init_gdt();
 
     init_idt();
@@ -17,16 +17,16 @@ void init_hal(multiboot2_info_t* mbd) {
 
     init_heap();
 
-    driver_t pic_driver = init_pic_driver();
-    register_driver(pic_driver);
+    init_pic_module();
+    register_module(g_pic_module);
+    MODULE_FUNCTION(g_pic_module, PIC_REMAP)(0x20, 0x28);
 
-    driver_t keyboard_driver = init_keyboard_driver();
-    register_driver(keyboard_driver);
+    init_keyboard_module();
+    register_module(g_keyboard_module);
 
-    driver_t pci_driver = init_pci_driver();
-    register_driver(pci_driver);
-
-    init_drivers();
+    init_pci_module();
+    register_module(g_pci_module);
+    MODULE_FUNCTION(g_pci_module, PCI_CHECK_BUSES)();
 
     enable_irq();
 

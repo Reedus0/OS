@@ -1,4 +1,15 @@
-#include "stream.h"
+#pragma once
+
+#include <stdint.h>
+#include <stddef.h>
+
+#include "include/types.h"
+
+struct stream {
+    byte* buffer;
+    size_t size;
+};
+typedef struct stream stream_t;
 
 void stream_add_byte(stream_t* stream, char new_byte) {
     *(stream->buffer + stream->size) = new_byte;

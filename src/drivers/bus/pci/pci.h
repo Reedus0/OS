@@ -5,11 +5,11 @@
 
 // Reference: https://wiki.osdev.org/PCI
 
-#include "kernel/driver.h"
+#include "include/module.h"
 #include "kernel/shell.h"
 
-#define PCI_CONFIG_ADDRESS 0xCF8
-#define PCI_CONFIG_DATA 0xCFC
+#define PCI_DEFAULT_CONFIG_ADDRESS 0xCF8
+#define PCI_DEFAULT_CONFIG_DATA 0xCFC
 
 #define PCI_VENDOR 0
 #define PCI_DEVICE 2
@@ -45,8 +45,10 @@
 #define PCI_BRIDGE_PRIMARY_BUS 24
 #define PCI_BRIDGE_SECONDARY_BUS 25
 
-#define PCI_DEVICE_GET_VALUE 0
-#define PCI_DEVICE_SET_VALUE 1
+#define PCI_SET_PORTS 0
+#define PCI_CHECK_BUSES 1
+#define PCI_DEVICE_GET_VALUE 2
+#define PCI_DEVICE_SET_VALUE 3
 
 struct pci_device {
     uint16_t vendor;
@@ -54,17 +56,12 @@ struct pci_device {
 
     uint8_t bus;
     uint8_t device;
-    uint8_t function;
-
-    uint8_t class_code;
-    uint8_t subclass;
-    uint8_t programming_interface;
 };
 typedef struct pci_device pci_device_t;
 
 pci_device_t g_pci_devices[16];
 size_t g_pci_devices_count;
 
-driver_t g_pci_driver;
-driver_t init_pci_driver();
+module_t g_pci_module;
+module_t init_pci_module();
 shell_command sh_pci(char* command);

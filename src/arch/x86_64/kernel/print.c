@@ -1,5 +1,6 @@
 #include "include/print.h"
 #include "arch/x86_64/include/print.h"
+#include "arch/x86_64/include/cursor.h"
 
 static void clear_row(size_t row) {
     struct Char empty;

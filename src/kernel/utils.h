@@ -7,4 +7,4 @@
 
 shell_command sh_hello(char* command);
 shell_command sh_clear(char* command);
-shell_command sh_driver(char* command);
+shell_command sh_module(char* command);
