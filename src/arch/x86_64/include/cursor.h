@@ -13,8 +13,8 @@ void disable_cursor() {
 	out8(0x3D5, 0x20);
 }
 
-void update_cursor(int x, int y) {
-	uint16_t pos = y * COLUMNS + x;
+void update_cursor(uint8_t x, uint8_t y, uint8_t max_columns) {
+	uint16_t pos = y * max_columns + x;
 
 	out8(0x3D4, 0x0F);
 	out8(0x3D5, (uint8_t)(pos & 0xFF));

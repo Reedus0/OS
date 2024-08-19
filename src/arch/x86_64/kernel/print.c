@@ -19,7 +19,7 @@ void print_clear() {
 
     g_current_column = 0;
     g_current_row = 0;
-    update_cursor(g_current_column, g_current_row);
+    update_cursor(g_current_column, g_current_row, COLUMNS);
 }
 
 void print_newline() {
@@ -43,7 +43,7 @@ void print_newline() {
 void print_char(char character) {
     if (character == '\n') {
         print_newline();
-        update_cursor(g_current_column, g_current_row);
+        update_cursor(g_current_column, g_current_row, COLUMNS);
         return;
     }
 
@@ -64,7 +64,7 @@ void print_char(char character) {
     g_buffer[g_current_column + COLUMNS * g_current_row] = new_char;
 
     g_current_column++;
-    update_cursor(g_current_column, g_current_row);
+    update_cursor(g_current_column, g_current_row, COLUMNS);
 }
 
 void delete_char() {
@@ -83,7 +83,7 @@ void delete_char() {
     empty.color = WHITE_COLOR;
     empty.character = ' ';
     g_buffer[g_current_column + COLUMNS * g_current_row] = empty;
-    update_cursor(g_current_column, g_current_row);
+    update_cursor(g_current_column, g_current_row, COLUMNS);
 }
 
 
