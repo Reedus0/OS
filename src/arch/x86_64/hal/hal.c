@@ -15,6 +15,8 @@ void init_hal(multiboot2_info_t* mbd) {
     init_idt();
     init_irq_handlers();
 
+    init_heap();
+
     driver_t pic_driver = init_pic_driver();
     register_driver(pic_driver);
 
@@ -29,6 +31,4 @@ void init_hal(multiboot2_info_t* mbd) {
     enable_irq();
 
     discover_memory(mbd);
-
-    init_heap();
 }

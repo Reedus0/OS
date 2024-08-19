@@ -13,6 +13,8 @@ void stdin_delete_byte() {
 }
 
 byte stdin_get_last_byte() {
+    while(g_stdin_updated == 0);
+    g_stdin_updated = 0;
     return stream_get_last_byte(&g_stdin);
 }
 
@@ -21,7 +23,7 @@ size_t stdin_get_size() {
 }
 
 void stdin_update() {
-    stream_update(&g_stdin);
+    g_stdin_updated = 1;
 }
 
 void clear_stdin() {

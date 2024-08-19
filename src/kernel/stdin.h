@@ -8,11 +8,11 @@
 
 #define STDIN_BUFFER_SIZE 256
 
+bool g_stdin_updated;
 byte g_stdin_buffer[STDIN_BUFFER_SIZE];
 
 stream_t g_stdin = {
     g_stdin_buffer,
-    0,
     0
 };
 

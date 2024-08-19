@@ -13,18 +13,11 @@ void stream_delete_byte(stream_t* stream) {
 }
 
 byte stream_get_last_byte(stream_t* stream) {
-    while (stream->updated == 0);
-    stream->updated = 0;
-    printk("");
     return *(stream->buffer + stream->size - 1);
 }
 
 size_t stream_get_size(stream_t* stream) {
     return stream->size;
-}
-
-void stream_update(stream_t* stream) {
-    stream->updated = 1;
 }
 
 void clear_stream(stream_t* stream) {
