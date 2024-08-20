@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "arch/x86_64/memory/discover.h"
+#include "memory/discover.h"
 
 extern physical_page_t g_phisycal_pages[];
 

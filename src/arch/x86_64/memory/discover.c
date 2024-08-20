@@ -1,6 +1,6 @@
 #include "memory.h"
 #include "discover.h"
-#include "arch/x86_64/boot/multiboot2.h"
+#include "boot/multiboot2.h"
 
 static size_t validate_chunk(multiboot2_memory_map_t* map) {
     char* start = map->address;

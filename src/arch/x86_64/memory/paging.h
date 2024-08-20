@@ -5,7 +5,7 @@
 
 // Reference: https://wiki.osdev.org/Paging
 
-#include "arch/x86_64/memory/discover.h"
+#include "memory/discover.h"
 
 #define PAGE_SIZE 0x200000
 #define KERNEL_OFFSET 0x10000000

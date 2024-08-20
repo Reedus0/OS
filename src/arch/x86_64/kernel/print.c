@@ -1,6 +1,20 @@
 #include "include/print.h"
-#include "arch/x86_64/include/print.h"
-#include "arch/x86_64/include/cursor.h"
+#include "include/cursor.h"
+
+#define COLUMNS 80
+#define ROWS 25
+
+#define WHITE_COLOR 15
+
+struct Char {
+    uint8_t character;
+    uint8_t color;
+};
+
+static struct Char* g_buffer = (struct Char*) 0xb8000;
+
+size_t g_current_column = 0;
+size_t g_current_row = 0;
 
 static void clear_row(size_t row) {
     struct Char empty;

@@ -16,14 +16,17 @@ BOCHS_FLAGS := -f bochs_config.bxrc
 # x86_64 target
 
 ASM_FLAGS := -f elf64
-CC_FLAGS := -I $(SRC_DIR) -ffreestanding -fno-asynchronous-unwind-tables
+CC_FLAGS := -I $(SRC_DIR) -I $(SRC_DIR)/arch/x86_64 -ffreestanding -MMD -fno-asynchronous-unwind-tables
 LD_FLAGS := -n --allow-multiple-definition -T target/x86_64/linker.ld
 
 ISO_DIR := target/x86_64/iso
 
 ASM_FILES := $(shell find $(SRC_DIR) -name *.asm)
 C_FILES := $(shell find $(SRC_DIR) -name *.c)
+DEPEND_FILES := $(C_FILES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.d)
 OBJ_FILES := $(ASM_FILES:$(SRC_DIR)/%.asm=$(BUILD_DIR)/%.o) $(C_FILES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+
+-include $(DEPEND_FILES)
 
 TARGET := $(DIST_DIR)/x86_64/kernel.bin
 ISO := $(DIST_DIR)/x86_64/kernel.iso

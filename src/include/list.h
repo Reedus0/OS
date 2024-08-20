@@ -2,8 +2,6 @@
 
 #include <stddef.h>
 
-#define list_parent(ptr, parent_struct, list_name) (parent_struct*)((char*)ptr - offsetof(parent_struct, list_name))
-
 struct list {
 	struct list* prev;
 	struct list* next;

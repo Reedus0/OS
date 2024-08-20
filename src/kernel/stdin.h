@@ -13,6 +13,7 @@ byte g_stdin_buffer[STDIN_BUFFER_SIZE];
 
 stream_t g_stdin = {
     g_stdin_buffer,
+    0,
     0
 };
 

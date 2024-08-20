@@ -1,6 +1,6 @@
 #include "memory.h"
 #include "paging.h"
-#include "arch/x86_64/asm/paging.h"
+#include "asm/paging.h"
 
 static void physical_page_set_address(physical_page_t* physical_page, uint64_t address) {
     physical_page->address = address;

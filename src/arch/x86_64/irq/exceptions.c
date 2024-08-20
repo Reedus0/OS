@@ -1,7 +1,7 @@
 #include "handlers.h"
 #include "include/panic.h"
-#include "arch/x86_64/memory/paging.h"
-#include "arch/x86_64/asm/paging.h"
+#include "memory/paging.h"
+#include "asm/paging.h"
 
 static char* exceptions[] = {
     "Division error",

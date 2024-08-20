@@ -6,7 +6,7 @@
 // Reference: https://wiki.osdev.org/Detecting_Memory_(x86)
 
 #include "include/types.h"
-#include "arch/x86_64/boot/multiboot2.h"
+#include "boot/multiboot2.h"
 
 struct memory_chunk {
     byte* start;
