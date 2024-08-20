@@ -21,7 +21,7 @@ static void deinit_keyboard() {
 }
 
 module_t init_keyboard_module() {
-    if(g_keyboard_module.deinit != NULL) {
+    if (g_keyboard_module.deinit != NULL) {
         g_keyboard_module.deinit();
     }
     g_keyboard_module.name = "Keyboard module";

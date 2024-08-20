@@ -6,6 +6,7 @@
 #include "drivers/bus/pci/pci.h"
 #include "drivers/pic/pic.h"
 #include "drivers/keyboard/keyboard.h"
+#include "drivers/piix/piix.h"
 #include "include/module.h"
 
 void init_hal(multiboot2_info_t* mbd) {
@@ -27,6 +28,9 @@ void init_hal(multiboot2_info_t* mbd) {
     init_pci_module();
     register_module(&g_pci_module);
     MODULE_FUNCTION(g_pci_module, PCI_CHECK_BUSES)();
+
+    init_piix_module();
+    register_module(&g_piix_module);
 
     enable_irq();
 

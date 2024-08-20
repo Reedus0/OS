@@ -59,7 +59,7 @@ static void deinit_pic() {
 }
 
 module_t init_pic_module() {
-	if(g_pic_module.deinit != NULL) {
+	if (g_pic_module.deinit != NULL) {
         g_pic_module.deinit();
     }
 	g_pic_module.name = "PIC module";

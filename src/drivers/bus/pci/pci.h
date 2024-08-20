@@ -56,6 +56,7 @@ struct pci_device {
 
     uint8_t bus;
     uint8_t device;
+    uint8_t function;
 };
 typedef struct pci_device pci_device_t;
 

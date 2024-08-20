@@ -47,13 +47,21 @@ static uint32_t pci_get_value32(uint8_t bus, uint8_t slot, uint8_t function, uin
     return result;
 }
 
-static void add_pci_device(uint8_t bus, uint8_t device) {
+static void add_pci_device(uint8_t bus, uint8_t device, uint8_t function) {
     pci_device_t pci_device;
-    pci_device.vendor = pci_get_value16(bus, device, 0, PCI_VENDOR);
-    pci_device.device_id = pci_get_value16(bus, device, 0, PCI_DEVICE);
+    uint16_t vendor = pci_get_value16(bus, device, function, PCI_VENDOR);
+    uint16_t device_id = pci_get_value16(bus, device, function, PCI_DEVICE);
+
+    if (vendor == 0xFFFF && device_id == 0xFFFF) {
+        return;
+    }
+
+    pci_device.vendor = vendor;
+    pci_device.device_id = device_id;
 
     pci_device.bus = bus,
     pci_device.device = device;
+    pci_device.function = function;
 
     g_pci_devices[g_pci_devices_count] = pci_device;
     g_pci_devices_count += 1;
@@ -68,6 +76,7 @@ static void pci_check_function(uint8_t bus, uint8_t device, uint8_t function) {
         uint8_t secondary_bus = pci_get_value8(bus, device, function, PCI_BRIDGE_SECONDARY_BUS);
         pci_check_bus(secondary_bus);
     }
+    add_pci_device(bus, device, function);
 }
 
 static void pci_check_device(uint8_t bus, uint8_t device) {
@@ -76,8 +85,6 @@ static void pci_check_device(uint8_t bus, uint8_t device) {
         return;
     }
     pci_check_function(bus, device, 0);
-
-    add_pci_device(bus, device);
     
     uint8_t header_type = pci_get_value16(bus, device, 0, PCI_HEADER_TYPE);
     if ((header_type & 0x80) != 0) {
@@ -100,12 +107,12 @@ static void pci_check_buses() {
     }
 }
 
-static uint32_t pci_device_get_value(pci_device_t pci_device, uint8_t function, uint8_t offset) {
-    return pci_get_value32(pci_device.bus, pci_device.device, function, offset);
+static uint32_t pci_device_get_value(pci_device_t pci_device, uint8_t offset) {
+    return pci_get_value32(pci_device.bus, pci_device.device, pci_device.function, offset);
 }
 
-static void pci_device_set_value(pci_device_t pci_device, uint8_t function,  uint8_t offset, uint32_t data) {
-    pci_write(pci_device.bus, pci_device.device, function, offset, data);
+static void pci_device_set_value(pci_device_t pci_device,  uint8_t offset, uint32_t data) {
+    pci_write(pci_device.bus, pci_device.device, pci_device.function, offset, data);
 }
 
 static void pci_set_ports(uint16_t config_address, uint16_t config_data) {
@@ -123,7 +130,7 @@ static void deinit_pci() {
 }
 
 module_t init_pci_module() {
-    if(g_pci_module.deinit != NULL) {
+    if (g_pci_module.deinit != NULL) {
         g_pci_module.deinit();
     }
     g_pci_module.name = "PCI module";
