@@ -115,6 +115,16 @@ static void pci_device_set_value(pci_device_t pci_device,  uint8_t offset, uint3
     pci_write(pci_device.bus, pci_device.device, pci_device.function, offset, data);
 }
 
+static void pci_device_set_master(pci_device_t pci_device) {
+    uint16_t old_command = pci_get_value32(pci_device.bus, pci_device.device, pci_device.function, PCI_COMMAND);
+    pci_write(pci_device.bus, pci_device.device, pci_device.function, PCI_COMMAND, old_command | 1 << 2);
+}
+
+static void pci_device_clear_master(pci_device_t pci_device) {
+    uint16_t old_command = pci_get_value32(pci_device.bus, pci_device.device, pci_device.function, PCI_COMMAND);
+    pci_write(pci_device.bus, pci_device.device, pci_device.function, PCI_COMMAND, old_command & old_command ^ (1 << 2));
+}
+
 static void pci_set_ports(uint16_t config_address, uint16_t config_data) {
     config_address_port = config_address;
     config_data_port = config_data;
@@ -141,6 +151,8 @@ module_t init_pci_module() {
     MODULE_FUNCTION(g_pci_module, PCI_CHECK_BUSES) = pci_check_buses;
     MODULE_FUNCTION(g_pci_module, PCI_DEVICE_GET_VALUE) = pci_device_get_value;
     MODULE_FUNCTION(g_pci_module, PCI_DEVICE_SET_VALUE) = pci_device_set_value;
+    MODULE_FUNCTION(g_pci_module, PCI_DEVICE_SET_MASTER) = pci_device_set_master;
+    MODULE_FUNCTION(g_pci_module, PCI_DEVICE_CLEAR_MASTER) = pci_device_clear_master;
 
     g_pci_module.deinit = deinit_pci;
 

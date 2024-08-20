@@ -51,7 +51,7 @@ static void pic_disable() {
 
 static void init_pic() {
     pic_port_1 = PIC_DEFAULT_PORT_1;
-    //pic_port_2 = PIC_DEFAULT_PORT_2;
+    pic_port_2 = PIC_DEFAULT_PORT_2;
 }
 
 static void deinit_pic() {

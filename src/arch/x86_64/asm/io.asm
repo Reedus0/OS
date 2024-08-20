@@ -1,5 +1,7 @@
 global in8
 global out8
+global in16
+global out16
 global in32
 global out32
 global io_wait
@@ -18,6 +20,20 @@ out8:
     mov dx, di
     mov al, sil
     out dx, al
+    ret
+
+in16:
+    mov dx, di
+    mov rdi, io_buffer
+    insw
+    mov eax, [io_buffer]
+    ret
+
+out16:
+    mov dx, di
+    mov [io_buffer], rsi
+    mov rsi, io_buffer
+    outsw
     ret
 
 in32:

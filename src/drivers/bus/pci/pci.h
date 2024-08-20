@@ -49,6 +49,8 @@
 #define PCI_CHECK_BUSES 1
 #define PCI_DEVICE_GET_VALUE 2
 #define PCI_DEVICE_SET_VALUE 3
+#define PCI_DEVICE_SET_MASTER 4 
+#define PCI_DEVICE_CLEAR_MASTER 5
 
 struct pci_device {
     uint16_t vendor;
