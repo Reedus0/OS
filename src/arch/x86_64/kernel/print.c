@@ -6,18 +6,19 @@
 
 #define WHITE_COLOR 15
 
-struct Char {
+struct terminal_char {
     uint8_t character;
     uint8_t color;
 };
+typedef struct terminal_char terminal_char_t;
 
-static struct Char* g_buffer = (struct Char*) 0xb8000;
+static terminal_char_t* g_buffer = (terminal_char_t*) 0xb8000;
 
-size_t g_current_column = 0;
-size_t g_current_row = 0;
+static size_t g_current_column = 0;
+static size_t g_current_row = 0;
 
 static void clear_row(size_t row) {
-    struct Char empty;
+    terminal_char_t empty;
     empty.color = WHITE_COLOR;
     empty.character = ' ';
 
@@ -46,7 +47,7 @@ void print_newline() {
 
     for (size_t i = 1; i < ROWS; i++) {
         for (size_t j = 0; j < COLUMNS; j++) {
-            struct Char current_char = *(g_buffer + j + (i * COLUMNS));
+            terminal_char_t current_char = *(g_buffer + j + (i * COLUMNS));
             *(g_buffer + j + ((i - 1) * COLUMNS)) = current_char;
         }
     }
@@ -70,7 +71,7 @@ void print_char(char character) {
         print_newline();
     }
 
-    struct Char new_char;
+    terminal_char_t new_char;
 
     new_char.color = WHITE_COLOR;
     new_char.character = character;
@@ -82,7 +83,7 @@ void print_char(char character) {
 }
 
 void delete_char() {
-    struct Char empty;
+    terminal_char_t empty;
     if (g_current_column == 0) {
         if (g_current_row > 0) {
             g_current_row -= 1;

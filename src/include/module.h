@@ -10,9 +10,11 @@
 struct module {
     char* name;
     list_t list;
+
     void (*init)();
-    size_t (*functions[16])();
     void (*deinit)();
+    
+    size_t (*functions[16])();
 };
 typedef struct module module_t;
 
