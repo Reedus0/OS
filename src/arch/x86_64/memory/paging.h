@@ -27,18 +27,11 @@ struct physical_page {
 };
 typedef struct physical_page physical_page_t;
 
-extern physical_page_t g_phisycal_pages[4096];
+physical_page_t g_phisycal_pages[4096];
 
-extern page_table_entry_t g_page_table_l4[512];
-extern page_table_entry_t g_page_table_l3[512];
-extern page_table_entry_t g_page_table_l2[512 * 512];
-
-// physical_page_t g_phisycal_pages[PHYSICAL_PAGE_COUNT];
-
-// byte g_page_table_l4[0x1000] __attribute__((aligned (4096)));
-// byte g_page_table_l3[0x1000] __attribute__((aligned (4096)));
-// byte g_page_table_l2[0x1000 * 512] __attribute__((aligned (4096)));
-
+page_table_entry_t g_page_table_l4[512] __attribute__((aligned (4096)));
+page_table_entry_t g_page_table_l3[512] __attribute__((aligned (4096)));
+page_table_entry_t g_page_table_l2[512 * 512] __attribute__((aligned (4096)));
 
 size_t g_total_pages;
 size_t g_available_pages;
