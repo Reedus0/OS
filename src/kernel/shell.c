@@ -1,5 +1,6 @@
 #include "shell.h"
 #include "include/print.h"
+#include "kernel/kget.h"
 
 static size_t search_command(char* command, shell_function_t functions[]) {
     size_t i = 1;
@@ -39,9 +40,10 @@ static size_t shell_execute(char* command, shell_function_t functions[]) {
 
 void init_shell(shell_function_t functions[]) {
     print_clear();
+    g_shell_path = &g_vfs_root;
     while (1) {
-        printk("%s", g_prompt);
-        scank("%s", g_shell_buffer);
+        printk(g_prompt, g_shell_path->name);
+        kget(g_shell_buffer);
         shell_execute(g_shell_buffer, functions);
         clear_shell_buffer();
     }

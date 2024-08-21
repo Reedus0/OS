@@ -2,13 +2,7 @@
 
 static uint16_t ide_port;
 
-static void ide_read_sectors(uint16_t port, byte* buffer, size_t count, size_t offset) {
-    out8(IDE_HEAD_REGISTER(ide_port), port | (0xE0 << 4) | (((uint8_t)(offset >> 24)) & 0x0F));
-    out8(IDE_SECTOR_COUNT_REGISTER(ide_port), count);
-    out8(IDE_LBA_LOW_REGISTER(ide_port), (uint8_t)offset);
-    out8(IDE_LBA_MID_REGISTER(ide_port), (uint8_t)(offset >> 8));
-    out8(IDE_LBA_HIGH_REGISTER(ide_port), (uint8_t)(offset >> 16));
-    out8(IDE_COMMAND_REGISTER(ide_port), 0x20);
+static void write_bytes(byte* buffer, size_t count) {
     size_t i = 0;
     while(i < count * 512) {
         while(in8(IDE_STATUS_REGISTER(ide_port)) == 0xD0);
@@ -20,6 +14,17 @@ static void ide_read_sectors(uint16_t port, byte* buffer, size_t count, size_t o
             i += 2;
         }
     }
+}
+
+static void ide_read_sectors(uint16_t port, byte* buffer, size_t count, size_t offset) {
+    out8(IDE_HEAD_REGISTER(ide_port), port | (0xE0 << 4) | (((uint8_t)(offset >> 24)) & 0x0F));
+    out8(IDE_SECTOR_COUNT_REGISTER(ide_port), count);
+    out8(IDE_LBA_LOW_REGISTER(ide_port), (uint8_t)offset);
+    out8(IDE_LBA_MID_REGISTER(ide_port), (uint8_t)(offset >> 8));
+    out8(IDE_LBA_HIGH_REGISTER(ide_port), (uint8_t)(offset >> 16));
+    out8(IDE_COMMAND_REGISTER(ide_port), 0x20);
+    
+    write_bytes(buffer, count);
 }
 
 static void ide_read_sectors_master(byte* buffer, size_t count, size_t offset) {

@@ -4,6 +4,7 @@
 #include "drivers/bus/pci/pci.h"
 #include "kernel/shell.h"
 #include "kernel/utils.h"
+#include "fs/vfs.h"
 
 void kmain(multiboot2_info_t* mbd) {
     init_hal(mbd);
@@ -15,8 +16,11 @@ void kmain(multiboot2_info_t* mbd) {
         {"module", sh_module},
         {"pci", sh_pci},
         {"memory", sh_memory},
+        {"cd", sh_cd},
+        {"ls", sh_ls},
         {NULL, NULL},
     };
-    //init_shell(functions);
+    init_vfs();
+    init_shell(functions);
     while(1);
 }

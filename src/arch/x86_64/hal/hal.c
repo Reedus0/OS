@@ -33,12 +33,6 @@ void init_hal(multiboot2_info_t* mbd) {
 
     init_ide_module();
     register_module(&g_ide_module);
-    MODULE_FUNCTION(g_ide_module, IDE_READ_SECTORS_SLAVE)(buf, 1, 0);
-
-    for (size_t j = 0; j < 512; j++) {
-
-        printk("%x", buf[j]);
-    }
 
     enable_irq();
 

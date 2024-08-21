@@ -25,3 +25,12 @@ shell_command sh_module(char* command) {
     }
     return 0;
 }
+
+shell_command sh_cd(char* command) {
+    return 0;
+}
+
+shell_command sh_ls(char* command) {
+    
+    return 0;
+}
