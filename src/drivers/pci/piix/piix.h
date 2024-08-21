@@ -5,7 +5,7 @@
 
 #include "include/module.h"
 
-#define PIIX_DEFAULT_BASE_ADDRESS 0xE041
+#define PIIX_DEFAULT_BASE_ADDRESS 0xC041
 
 #define PIIX_VENDOR 0
 #define PIIX_DEVICE 2

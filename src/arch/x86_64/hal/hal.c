@@ -6,10 +6,12 @@
 #include "drivers/bus/pci/pci.h"
 #include "drivers/pic/pic.h"
 #include "drivers/keyboard/keyboard.h"
-#include "drivers/piix/piix.h"
+#include "drivers/ata/ide.h"
 #include "include/module.h"
 
 void init_hal(multiboot2_info_t* mbd) {
+
+    byte buf[1024];
 
     init_gdt();
 
@@ -29,8 +31,14 @@ void init_hal(multiboot2_info_t* mbd) {
     register_module(&g_pci_module);
     MODULE_FUNCTION(g_pci_module, PCI_CHECK_BUSES)();
 
-    init_piix_module();
-    register_module(&g_piix_module);
+    init_ide_module();
+    register_module(&g_ide_module);
+    MODULE_FUNCTION(g_ide_module, IDE_READ_SECTORS_SLAVE)(buf, 1, 0);
+
+    for (size_t j = 0; j < 512; j++) {
+
+        printk("%x", buf[j]);
+    }
 
     enable_irq();
 

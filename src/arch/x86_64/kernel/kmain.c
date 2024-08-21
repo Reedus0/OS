@@ -17,6 +17,6 @@ void kmain(multiboot2_info_t* mbd) {
         {"memory", sh_memory},
         {NULL, NULL},
     };
-    init_shell(functions);
+    //init_shell(functions);
     while(1);
 }

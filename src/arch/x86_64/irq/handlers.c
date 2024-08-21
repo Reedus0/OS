@@ -11,12 +11,16 @@ void __attribute__((__cdecl__)) irq_handler(irq_data_t irq_data) {
     }
     else {
         printk("Unhandeled interrupt: 0x%x!\n", irq_data.interrupt_number);
-        panic("Unhandeled interrup");
+        panic("Unhandeled interrupt");
     }
 }
 
 static void set_irq_handler(size_t number, size_t handler) {
     g_interrupt_handlers[number] = handler;
+}
+
+interrupt irq_ide(irq_data_t* irq_data) {
+    MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(46);
 }
 
 interrupt irq_timer(irq_data_t* irq_data) {
@@ -71,4 +75,5 @@ void init_irq_handlers() {
     set_irq_handler(31, irq_handle_exception);
     set_irq_handler(32, irq_timer);
     set_irq_handler(33, irq_keyboard);
+    set_irq_handler(46, irq_ide);
 }
