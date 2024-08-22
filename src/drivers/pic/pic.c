@@ -58,20 +58,19 @@ static void deinit_pic() {
 	pic_disable();
 }
 
-module_t init_pic_module() {
-	if (g_pic_module.deinit != NULL) {
-        g_pic_module.deinit();
-    }
-	g_pic_module.name = "PIC module";
+module_t* init_pic_module() {
+	module_t* pic_module = kalloc(sizeof(module_t));
 
-	g_pic_module.init = init_pic;
+	pic_module->name = "PIC module";
 
-	MODULE_FUNCTION(g_pic_module, PIC_REMAP) = pic_remap;
-	MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI) = pic_send_eoi;
-	MODULE_FUNCTION(g_pic_module, PIC_DISABLE) = pic_disable;
-	MODULE_FUNCTION(g_pic_module, PIC_SET_PORTS) = pic_set_ports;
+	pic_module->init = init_pic;
 
-	g_pic_module.deinit = deinit_pic;
+	MODULE_FUNCTION(pic_module, PIC_REMAP) = pic_remap;
+	MODULE_FUNCTION(pic_module, PIC_SEND_EOI) = pic_send_eoi;
+	MODULE_FUNCTION(pic_module, PIC_DISABLE) = pic_disable;
+	MODULE_FUNCTION(pic_module, PIC_SET_PORTS) = pic_set_ports;
 
-	return g_pic_module;
+	pic_module->deinit = deinit_pic;
+
+	return pic_module;
 }

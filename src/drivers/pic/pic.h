@@ -18,5 +18,5 @@
 #define PIC_DISABLE 2
 #define PIC_SET_PORTS 3
 
-module_t g_pic_module;
-module_t init_pic_module();
+module_t* g_pic_module;
+module_t* init_pic_module();

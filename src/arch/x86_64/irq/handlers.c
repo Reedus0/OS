@@ -1,9 +1,9 @@
 #include "handlers.h"
 #include "exceptions.h"
 #include "include/panic.h"
+#include "include/dev.h"
 #include "kernel/stdin.h"
 #include "drivers/pic/pic.h"
-#include "drivers/keyboard/keyboard.h"
 
 void __attribute__((__cdecl__)) irq_handler(irq_data_t irq_data) {
     if(g_interrupt_handlers[irq_data.interrupt_number] != NULL) {
@@ -28,7 +28,7 @@ interrupt irq_timer(irq_data_t* irq_data) {
 }
 
 interrupt irq_keyboard(irq_data_t* irq_data) {
-    char character = MODULE_FUNCTION(g_keyboard_module, KEYBOARD_PROCESS_KEY)();
+    char character = sdev_get_byte(&g_keyboard);
     if (character != NULL) {
         if (character != '\b') {
             stdin_add_byte(character);

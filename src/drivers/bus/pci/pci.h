@@ -65,6 +65,6 @@ typedef struct pci_device pci_device_t;
 pci_device_t g_pci_devices[16];
 size_t g_pci_devices_count;
 
-module_t g_pci_module;
-module_t init_pci_module();
+module_t* g_pci_module;
+module_t* init_pci_module();
 shell_command sh_pci(char* command);

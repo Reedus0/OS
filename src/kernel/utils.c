@@ -30,7 +30,7 @@ shell_command sh_module(char* command) {
 shell_command sh_cd(char* command) {
     char* arg = strchr(command, ' ');
     if (strlen(arg) == 0) {
-        printk("Specify folder!\n");
+        printk("Specify directory!\n");
         return 1;
     }
     if (strcmp(arg, ".")) {
@@ -47,9 +47,11 @@ shell_command sh_cd(char* command) {
         dir_t* current_dir = container_of(last_list, dir_t, subdirs);
         if (strcmp(arg, current_dir->name)) {
             g_shell_path = current_dir;
+            return 0;
         }
     }
-    return 0;
+    printk("Unknown directory!\n");
+    return 1;
 }
 
 shell_command sh_ls(char* command) {
@@ -58,6 +60,13 @@ shell_command sh_ls(char* command) {
         last_list = last_list->next;
         dir_t* current_dir = container_of(last_list, dir_t, subdirs);
         printk("%s\n", current_dir->name);
+    }
+
+    last_list = &g_shell_path->files;
+    while (last_list->next != NULL) {
+        last_list = last_list->next;
+        file_t* current_file = container_of(last_list, file_t, list);
+        printk("%s\n", current_file->name);
     }
     return 0;
 }

@@ -18,11 +18,9 @@ uint8_t g_key_map[256] = {
     32, NULL, 
 };
 
-#define KEYBOARD_PROCESS_KEY 0
 #define KEYBOARD_SET_PORT 1
 
 void enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
 void update_cursor(int x, int y);
 
-module_t g_keyboard_module;
-module_t init_keyboard_module();
+module_t* init_keyboard_module();

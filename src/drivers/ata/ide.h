@@ -9,6 +9,7 @@
 #include "include/module.h"
 
 #define IDE_DEFAULT_PORT 0x1F0
+#define IDE_DEFAULT_DRIVE 0xE0
 
 #define IDE_DATA_REGISTER(port) (port)
 #define IDE_ERROR_REGISTER(port) (port+1)
@@ -21,8 +22,6 @@
 #define IDE_STATUS_REGISTER(port) (port+7)
 #define IDE_COMMAND_REGISTER(port) (port+7)
 
-#define IDE_READ_SECTORS_MASTER 0
-#define IDE_READ_SECTORS_SLAVE 1
+#define IDE_SET_PORT 2
 
-module_t g_ide_module;
-module_t init_ide_module();
+module_t* init_ide_module();

@@ -139,24 +139,23 @@ static void deinit_pci() {
 
 }
 
-module_t init_pci_module() {
-    if (g_pci_module.deinit != NULL) {
-        g_pci_module.deinit();
-    }
-    g_pci_module.name = "PCI module";
+module_t* init_pci_module() {
+    module_t* pci_module = kalloc(sizeof(module_t));
 
-    g_pci_module.init = init_pci;
+    pci_module->name = "PCI module";
 
-    MODULE_FUNCTION(g_pci_module, PCI_SET_PORTS) = pci_set_ports;
-    MODULE_FUNCTION(g_pci_module, PCI_CHECK_BUSES) = pci_check_buses;
-    MODULE_FUNCTION(g_pci_module, PCI_DEVICE_GET_VALUE) = pci_device_get_value;
-    MODULE_FUNCTION(g_pci_module, PCI_DEVICE_SET_VALUE) = pci_device_set_value;
-    MODULE_FUNCTION(g_pci_module, PCI_DEVICE_SET_MASTER) = pci_device_set_master;
-    MODULE_FUNCTION(g_pci_module, PCI_DEVICE_CLEAR_MASTER) = pci_device_clear_master;
+    pci_module->init = init_pci;
 
-    g_pci_module.deinit = deinit_pci;
+    MODULE_FUNCTION(pci_module, PCI_SET_PORTS) = pci_set_ports;
+    MODULE_FUNCTION(pci_module, PCI_CHECK_BUSES) = pci_check_buses;
+    MODULE_FUNCTION(pci_module, PCI_DEVICE_GET_VALUE) = pci_device_get_value;
+    MODULE_FUNCTION(pci_module, PCI_DEVICE_SET_VALUE) = pci_device_set_value;
+    MODULE_FUNCTION(pci_module, PCI_DEVICE_SET_MASTER) = pci_device_set_master;
+    MODULE_FUNCTION(pci_module, PCI_DEVICE_CLEAR_MASTER) = pci_device_clear_master;
 
-    return g_pci_module;
+    pci_module->deinit = deinit_pci;
+
+    return pci_module;
 }
 
 shell_command sh_pci(char* command) {

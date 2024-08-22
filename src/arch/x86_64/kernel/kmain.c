@@ -20,6 +20,7 @@ void kmain(multiboot2_info_t* mbd) {
         {"ls", sh_ls},
         {NULL, NULL},
     };
+
     init_vfs();
     init_shell(functions);
     while(1);

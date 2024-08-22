@@ -4,8 +4,9 @@
 #include <stddef.h>
 
 #include "include/list.h"
+#include "include/kalloc.h"
 
-#define MODULE_FUNCTION(module_instance, function) (module_instance.functions[function])
+#define MODULE_FUNCTION(module_ptr, function) ((module_ptr)->functions[function])
 
 struct module {
     char* name;
@@ -27,4 +28,13 @@ void register_module(module_t* module) {
     g_modules = module;
 
     module->init();
+}
+
+void unregister_module(module_t* module) {
+    if (g_modules != NULL) {
+        list_remove(&module->list);
+    }
+
+    module->deinit();
+    kfree(module);
 }
