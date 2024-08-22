@@ -13,10 +13,10 @@
 #define ICW1_INIT 0x10
 #define ICW4_8086 0x01
 
-#define PIC_REMAP 0
-#define PIC_SEND_EOI 1
-#define PIC_DISABLE 2
-#define PIC_SET_PORTS 3
+#define PIC_REMAP 16
+#define PIC_SEND_EOI 17
+#define PIC_DISABLE 18
+#define PIC_SET_PORTS 19
 
 module_t* g_pic_module;
 module_t* init_pic_module();

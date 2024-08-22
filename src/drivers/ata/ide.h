@@ -22,6 +22,6 @@
 #define IDE_STATUS_REGISTER(port) (port+7)
 #define IDE_COMMAND_REGISTER(port) (port+7)
 
-#define IDE_SET_PORT 2
+#define IDE_SET_PORT 16
 
 module_t* init_ide_module();

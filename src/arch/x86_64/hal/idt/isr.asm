@@ -29,4 +29,4 @@ isr:
 
     iretq
 
-%include "src/arch/x86_64/irq/idt/isr_inc.asm"
+%include "src/arch/x86_64/hal/idt/isr_inc.asm"

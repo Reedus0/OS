@@ -30,15 +30,19 @@ static void ide_read_sectors(byte* buffer, size_t offset, size_t count) {
     write_bytes(buffer, count);
 }
 
+static void ide_write_sectors(byte* buffer, size_t offset, size_t count) {
+
+}
+
 static size_t ide_get_block_size() {
     return 512;
 }
 
-static void ide_set_port(uint16_t port, bool master) {
-    if (master) {
-        ide_drive = 0xE0;
-    } else {
+static void ide_set_port(uint16_t port, bool slave) {
+    if (slave) {
         ide_drive = 0xF0;
+    } else {
+        ide_drive = 0xE0;
     }
     ide_port = port;
 }
@@ -61,6 +65,7 @@ module_t* init_ide_module() {
     ide_module->init = init_ide;
     
     MODULE_FUNCTION(ide_module, BDEV_DRIVER_GET_BLOCK) = ide_read_sectors;
+    MODULE_FUNCTION(ide_module, BDEV_DRIVER_WRITE_BLOCK) = ide_write_sectors;
     MODULE_FUNCTION(ide_module, BDEV_DRIVER_GET_BLOCK_SIZE) = ide_get_block_size;
     MODULE_FUNCTION(ide_module, IDE_SET_PORT) = ide_set_port;
 

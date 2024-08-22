@@ -15,7 +15,7 @@ struct module {
     void (*init)();
     void (*deinit)();
     
-    size_t (*functions[16])();
+    size_t (*functions[32])();
 };
 typedef struct module module_t;
 

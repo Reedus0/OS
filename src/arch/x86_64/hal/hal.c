@@ -1,5 +1,5 @@
-#include "gdt/gdt.h"
-#include "irq/idt/idt.h"
+#include "hal/gdt/gdt.h"
+#include "hal/idt/idt.h"
 #include "irq/handlers.h"
 #include "memory/discover.h"
 #include "boot/multiboot2.h"
@@ -34,7 +34,7 @@ void init_hal(multiboot2_info_t* mbd) {
 
     module_t* ide_module = init_ide_module();
     register_module(ide_module);
-    MODULE_FUNCTION(ide_module, IDE_SET_PORT)(0x1F0, 0xF0);
+    MODULE_FUNCTION(ide_module, IDE_SET_PORT)(0x1F0, 1);
 
     g_hdd.driver = ide_module;
 
