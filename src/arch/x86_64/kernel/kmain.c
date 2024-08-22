@@ -16,7 +16,7 @@ void kmain(multiboot2_info_t* mbd) {
         {"module", sh_module},
         {"pci", sh_pci},
         {"memory", sh_memory},
-        {"cd", sh_cd},
+        {"cd ", sh_cd},
         {"ls", sh_ls},
         {NULL, NULL},
     };

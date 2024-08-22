@@ -6,15 +6,7 @@ struct list {
 };
 typedef struct list list_t;
 
-list_t init_list() {
-	list_t new_list;
-	new_list.prev = NULL;
-	new_list.next = NULL;
-
-	return new_list;
-}
-
-void list_insert(list_t* base_list, list_t* new_list) {
+void list_insert_after(list_t* base_list, list_t* new_list) {
 	new_list->next = base_list->next;
 	base_list->next = new_list;
 	new_list->prev = base_list;

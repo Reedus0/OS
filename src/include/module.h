@@ -22,7 +22,7 @@ module_t* g_modules;
 
 void register_module(module_t* module) {
     if (g_modules != NULL) {
-        list_insert(&g_modules->list, &module->list);
+        list_insert_after(&g_modules->list, &module->list);
     }
     g_modules = module;
 

@@ -1,22 +1,15 @@
 #include "shell.h"
 #include "include/print.h"
 #include "kernel/kget.h"
+#include "lib/string.h"
 
 static size_t search_command(char* command, shell_function_t functions[]) {
     size_t i = 1;
     char* current_command = functions[i].name;
     while (current_command != NULL) {
         current_command = functions[i].name;
-        char* user_command = command;
-        while(1) {
-            if (*current_command == '\0') {
-                return i;
-            }
-            if (*current_command != *user_command) {
-                break;
-            }
-            current_command++;
-            user_command++;
+        if (strncmp(command, current_command, strlen(current_command))) {
+            return i;
         }
         i++;
     }
