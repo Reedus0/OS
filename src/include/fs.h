@@ -7,13 +7,7 @@
 #include "include/dev.h"
 #include "include/types.h"
 
-struct fdata {
-    size_t id;
-};
-typedef struct fdata fdata_t;
-
 struct file {
-    fdata_t* fdata;
     char* name;
     char* path;
     list_t list;
@@ -22,15 +16,25 @@ typedef struct file file_t;
 
 struct dir {
     char* name;
-    fdata_t* fdata; 
-    struct dir* parent;
-    bool mount_point;
     list_t subdirs;
     list_t files;
+    struct dir* parent;
+    bool mount_point;
 };
 typedef struct dir dir_t;
 
 struct fs {
     char* name;
+    void* fs_data;
+
+    void (*init)(dev_t* dev, dir_t* root);
+
+    void (*write_file)(dev_t* dev, char* path, byte* buffer, size_t count);
+    void (*read_file)(dev_t* dev, char* path, byte* buffer, size_t count);
+    void (*create_file)(dev_t* dev, char* path);
+    void (*delete_file)(dev_t* dev, char* path);
+
+    void (*create_dir)(dev_t* dev, char* path);
+    void (*delete_dir)(dev_t* dev, char* path);
 };
 typedef struct fs fs_t;

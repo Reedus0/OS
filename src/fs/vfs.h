@@ -14,7 +14,10 @@ struct vfs_entry {
 };
 typedef struct vfs_entry vfs_entry_t;
 
-fdata_t g_root_fdata;
 dir_t g_vfs_root;
+
+vfs_entry_t g_vfs_fat;
+
+vfs_entry_t* g_vfs_entries;
 
 void init_vfs();

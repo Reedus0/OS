@@ -37,3 +37,14 @@ char* strchr(const char* string, char character) {
     }
     return 0;
 }
+
+char* strrchr(const char* string, char character) {
+    char* result = 0;
+    while (*string != '\0') {
+        if (*string == character) {
+            result = string;
+        }
+        string++;
+    }
+    return result;
+}
