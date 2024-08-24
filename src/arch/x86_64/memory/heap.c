@@ -50,6 +50,10 @@ static void insert_heap_descriptor(heap_descriptor_t new_descriptor) {
 void* heap_alloc(size_t bytes) {
     bytes = bytes % 8 == 0 ? bytes : (((bytes / 8) + 1) * 8);
 
+    if (bytes == 0) {
+        panic("Tying to allocate 0 bytes!");
+    }
+
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
         if (!heap_descriptor_is_available(current_descriptor)) {

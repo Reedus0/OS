@@ -115,7 +115,7 @@ void init_vfs() {
 
     g_vfs_fat.dev = &g_hdd;
     g_vfs_fat.fs = &g_fs_fat;
-
+    
     vfs_mount(&g_vfs_root, &g_vfs_fat);
 
     g_vfs_entries->fs->read_file(g_vfs_entries->dev, "/test", buffer, 100);
