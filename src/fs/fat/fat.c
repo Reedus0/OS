@@ -13,6 +13,7 @@ struct fat_info* get_fat_info(dev_t* dev) {
     fat_info->sectors_per_claster = bpb->sec_per_clus;
     fat_info->sector_size = bpb->byts_per_sec;
     fat_info->total_fats = bpb->num_fats;
+    fat_info->cluster_size = fat_info->sector_size * fat_info->sectors_per_claster;
 
     fat_info->total_root_dir_sectors = ((bpb->root_ent_cnt * 32) + (bpb->byts_per_sec - 1)) / bpb->byts_per_sec;
     fat_info->fat_size = bpb->fat_sz_16 != 0 ? bpb->fat_sz_16 : bpb->fat_bpb_32.fat_sz_32;
@@ -48,7 +49,7 @@ struct fat_info* get_fat_info(dev_t* dev) {
 }
 
 fat_entry_t* fat_get_cluster(dev_t* dev, struct fat_info* fat_info, size_t cluster) {
-    fat_entry_t* fat_entry = kalloc(fat_info->sector_size * fat_info->sectors_per_claster);
+    fat_entry_t* fat_entry = kalloc(fat_info->cluster_size);
 
     size_t entry_sector = ((cluster - 2) * fat_info->sectors_per_claster) + fat_info->data_region;
 
@@ -57,15 +58,20 @@ fat_entry_t* fat_get_cluster(dev_t* dev, struct fat_info* fat_info, size_t clust
     return fat_entry;
 }
 
-fat_data_t* fat_get_data(dev_t* dev, struct fat_info* fat_info, fat_entry_t* fat_entry) {
+fat_data_t* fat_write_data(dev_t* dev, struct fat_info* fat_info, size_t cluster) {
+
+}
+
+fat_data_t* fat_read_data(dev_t* dev, struct fat_info* fat_info, size_t cluster) {
     fat_data_t* file_data = NULL;
 
-    size_t cluster = fat_entry->cluster_low | fat_entry->cluster_high << 16;
     size_t fat_cluster = cluster;
 
+
     while ((fat_cluster & 0xFFF) != 0xFFF) {
-        
+
         fat_data_t* file_data_chunk = kalloc(sizeof(fat_data_t));
+        
         file_data_chunk->entry = fat_get_cluster(dev, fat_info, fat_cluster);
 
         file_data_chunk->list.next = NULL;
@@ -95,15 +101,22 @@ fat_data_t* fat_get_data(dev_t* dev, struct fat_info* fat_info, fat_entry_t* fat
 }
 
 void fat_add_file(dev_t* dev, struct fat_info* fat_info, fat_file_t* file_entry, dir_t* root) {
-    file_t* new_file = vfs_new_file(file_entry->name);
+    fat_file_data_t* file_data = kalloc(sizeof(fat_file_data_t));
+
+    file_data->cluster = file_entry->cluster_low | file_entry->cluster_high << 16;
+    file_t* new_file = vfs_new_file(file_entry->name, file_data);
     vfs_add_file(root, new_file);
 }
 
 void fat_add_dir(dev_t* dev, struct fat_info* fat_info, fat_dir_t* dir_entry, dir_t* root) {
-    dir_t* new_dir = vfs_new_dir(dir_entry->name);
-    vfs_add_subdir(root, new_dir);
+    fat_file_data_t* dir_data = kalloc(sizeof(fat_file_data_t));
 
-    fat_data_t* dir = fat_get_data(dev, fat_info, dir_entry);
+    size_t cluster = dir_entry->cluster_low | dir_entry->cluster_high << 16;
+    fat_data_t* dir = fat_read_data(dev, fat_info, cluster);
+
+    dir_data->cluster = dir_entry->cluster_low | dir_entry->cluster_high << 16;
+    dir_t* new_dir = vfs_new_dir(dir_entry->name, dir_data);
+    vfs_add_subdir(root, new_dir);
 
     while (1) {
         fat_parse_dir(dev, fat_info, dir->entry, new_dir);
@@ -150,7 +163,7 @@ void init(fs_t* fs, dev_t* dev, dir_t* root) {
 
     fat_parse_dir(dev, fat_info, root_dir, root);
     
-    fs = fat_info;
+    fs->fs_data = fat_info;
 }
 
 void deinit(fs_t* fs, dev_t* dev, dir_t* root) {
@@ -159,26 +172,50 @@ void deinit(fs_t* fs, dev_t* dev, dir_t* root) {
     kfree(fat_info);
 }
 
-void write_file(fs_t* fs, dev_t* dev, char* path, byte* buffer, size_t count) {
+void read_file(fs_t* fs, dev_t* dev, file_t* file, byte* buffer, size_t count) {
+    struct fat_info* fat_info = fs->fs_data;
+    fat_file_data_t* file_data = file->fs_data;
+    fat_data_t* file_content = fat_read_data(dev, fat_info, file_data->cluster);
+
+    size_t position = file->position;
+    size_t read_bytes = 0;
+    
+    while (1) {
+        for (size_t i = 0; i < fat_info->cluster_size; i++) {
+            *(buffer + read_bytes) = *(byte*)(file_content->entry + position % fat_info->cluster_size);
+            read_bytes++;
+            position++;
+            if (read_bytes >= count) {
+                break;
+            }
+        }
+
+        list_t* prev = file_content->list.prev;
+        kfree(file_content);
+
+        if (file_content->list.prev == NULL) {
+            break;
+        }
+        file_content = container_of(prev, fat_data_t, list);
+    }
+}
+
+void write_file(fs_t* fs, dev_t* dev, file_t* file, byte* buffer, size_t count) {
 
 }
 
-void read_file(fs_t* fs, dev_t* dev, char* path, byte* buffer, size_t count) {
+void create_file(fs_t* fs, dev_t* dev, dir_t* dir, char* name) {
     
 }
 
-void create_file(fs_t* fs, dev_t* dev, char* path) {
+void delete_file(fs_t* fs, dev_t* dev, dir_t* dir, char* name) {
     
 }
 
-void delete_file(fs_t* fs, dev_t* dev, char* path) {
+void create_dir(fs_t* fs, dev_t* dev, dir_t* parent, char* name) {
     
 }
 
-void create_dir(fs_t* fs, dev_t* dev, char* path) {
-    
-}
-
-void delete_dir(fs_t* fs, dev_t* dev, char* path) {
+void delete_dir(fs_t* fs, dev_t* dev, dir_t* parent, char *name) {
     
 }

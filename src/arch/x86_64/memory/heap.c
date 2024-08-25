@@ -32,13 +32,34 @@ void init_heap() {
     g_heap_descriptor_count += 1;
 } 
 
+static void print_heap() {
+    printk("Heap:\n");
+    for (size_t i = 0; i < g_heap_descriptor_count; i++) {
+        heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
+        printk("desc: %x size: %x\n", current_descriptor->address, current_descriptor->size);
+    }
+}
+
+static void shift_heap_descriptors_right(size_t index) {
+    for (size_t i = g_heap_descriptor_count - 1; i > index - 1; i--) {
+        heap_descriptor_t current_descriptor = g_heap_descriptors[i];
+        g_heap_descriptors[i + 1] = current_descriptor;
+    }
+}
+
+static void shift_heap_descriptors_left(size_t index) {
+    for (size_t i = index + 1; i < g_heap_descriptor_count - 1; i++) {
+        heap_descriptor_t current_descriptor = g_heap_descriptors[i + 1];
+        g_heap_descriptors[i] = current_descriptor;
+    }
+}
+
 static void insert_heap_descriptor(heap_descriptor_t new_descriptor) {
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
         if (current_descriptor->address > new_descriptor.address) {
-            heap_descriptor_t tmp = *current_descriptor;
+            shift_heap_descriptors_right(i);
             g_heap_descriptors[i] = new_descriptor;
-            g_heap_descriptors[i + 1] = tmp;
             g_heap_descriptor_count += 1;
             return;
         }
@@ -54,12 +75,15 @@ void* heap_alloc(size_t bytes) {
         panic("Tying to allocate 0 bytes!");
     }
 
+    if (bytes > HEAP_SIZE) {
+        panic("Trying to allocate bytes > HEAP_SIZE");
+    }
+
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
         if (!heap_descriptor_is_available(current_descriptor)) {
             continue;
         }
-        
         if (current_descriptor->size >= bytes) {
             uint32_t old_size = current_descriptor->size;
             if (current_descriptor->size > bytes) {
@@ -76,14 +100,8 @@ void* heap_alloc(size_t bytes) {
             return current_descriptor->address;
         }
     }
+    print_heap();
     panic("Couldn't allocate memory!");
-}
-
-static void shift_heap_descriptors(size_t index) {
-    for (size_t i = index + 1; i < g_heap_descriptor_count - 1; i++) {
-        heap_descriptor_t current_descriptor = g_heap_descriptors[i + 1];
-        g_heap_descriptors[i] = current_descriptor;
-    }
 }
 
 static void merge_descriptors(heap_descriptor_t* available_descriptor) {
@@ -96,14 +114,14 @@ static void merge_descriptors(heap_descriptor_t* available_descriptor) {
         if (current_descriptor->address + current_descriptor->size == available_descriptor->address) {
             current_descriptor->size += available_descriptor->size;
             available_descriptor = current_descriptor;
-            shift_heap_descriptors(i);
+            shift_heap_descriptors_left(i);
             g_heap_descriptor_count -= 1;
             continue;
         }
 
         if (available_descriptor->address + available_descriptor->size == current_descriptor->address) {
             available_descriptor->size += current_descriptor->size;
-            shift_heap_descriptors(i - 1);
+            shift_heap_descriptors_left(i - 1);
             g_heap_descriptor_count -= 1;
             continue;
         }
@@ -122,5 +140,6 @@ void heap_free(void* ptr) {
             return; 
         }
     }
+    print_heap();
     panic("Couldn't free memory!");
 }

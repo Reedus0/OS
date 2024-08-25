@@ -70,3 +70,7 @@ shell_command sh_ls(char* command) {
     }
     return 0;
 }
+
+shell_command sh_fc(char* command) {
+    return 0;
+}

@@ -24,7 +24,6 @@ enum FAT_ATTRIBUTES {
     LFN = 0xF,
 };
 
-
 struct fat_entry {
     uint8_t name[11];
     uint8_t attributes;
@@ -42,12 +41,6 @@ struct fat_entry {
 typedef struct fat_entry fat_entry_t;
 typedef struct fat_entry fat_file_t;
 typedef struct fat_entry fat_dir_t;
-
-struct fat_data {
-    void* entry;
-    list_t list;
-};
-typedef struct fat_data fat_data_t;
 
 struct fat_long_name {
     uint8_t order;
@@ -71,17 +64,29 @@ struct fat_info {
     size_t data_region;
     size_t sectors_per_claster;
     size_t sector_size;
+    size_t cluster_size;
     byte* fats;
 };
 
+struct fat_file_data {
+    size_t cluster;
+};
+typedef struct fat_file_data fat_file_data_t;
+
+struct fat_data {
+    void* entry;
+    list_t list;
+};
+typedef struct fat_data fat_data_t;
+
 void init(fs_t* fs, dev_t* dev, dir_t* root);
 void deinit(fs_t* fs, dev_t* dev, dir_t* root);
-void write_file(fs_t* fs, dev_t* dev, char* path, byte* buffer, size_t count);
-void read_file(fs_t* fs, dev_t* dev, char* path, byte* buffer, size_t count) ;
-void create_file(fs_t* fs, dev_t* dev, char* path);
-void delete_file(fs_t* fs, dev_t* dev, char* path);
-void create_dir(fs_t* fs, dev_t* dev, char* path);
-void delete_dir(fs_t* fs, dev_t* dev, char* path);
+void read_file(fs_t* fs, dev_t* dev, file_t* file, byte* buffer, size_t count);
+void write_file(fs_t* fs, dev_t* dev, file_t* file, byte* buffer, size_t count);
+void create_file(fs_t* fs, dev_t* dev, dir_t* dir, char* name);
+void delete_file(fs_t* fs, dev_t* dev, dir_t* dir, char* name);
+void create_dir(fs_t* fs, dev_t* dev, dir_t* parent, char* name);
+void delete_dir(fs_t* fs, dev_t* dev, dir_t* parent, char *name);
 
 fs_t g_fs_fat = {
     .name = "FAT",
@@ -90,8 +95,8 @@ fs_t g_fs_fat = {
     .init = init,
     .deinit = deinit,
 
-    .write_file = write_file,
     .read_file = read_file,
+    .write_file = write_file,
     .create_file = create_file,
     .delete_file = delete_file,
 

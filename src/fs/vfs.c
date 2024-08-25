@@ -69,24 +69,32 @@ void vfs_umount(dir_t* root) {
 //     return NULL;
 // }
 
-void vfs_write_file(file_t* file, byte* buffer, size_t count) {
-    g_vfs_entries->fs->write_file(g_vfs_entries->fs, g_vfs_entries->dev, file->path, buffer, count);
+file_t* vfs_open_file(dir_t* dir, char* name) { 
+    g_vfs_entries->fs->create_file(g_vfs_entries->fs, g_vfs_entries->dev, dir, name);
+}
+
+void vfs_seek(file_t* file, size_t offset) {
+    file->position = offset;
 }
 
 void vfs_read_file(file_t* file, byte* buffer, size_t count) {
-    g_vfs_entries->fs->read_file(g_vfs_entries->fs, g_vfs_entries->dev, file->path, buffer, count);
+    g_vfs_entries->fs->read_file(g_vfs_entries->fs, g_vfs_entries->dev, file, buffer, count);
 }
 
-void vfs_delete_file(char* path) {
-    g_vfs_entries->fs->delete_file(g_vfs_entries->fs, g_vfs_entries->dev, path);
+void vfs_write_file(file_t* file, byte* buffer, size_t count) {
+    g_vfs_entries->fs->write_file(g_vfs_entries->fs, g_vfs_entries->dev, file, buffer, count);
 }
 
-void vfs_create_dir(char* path) {
-    g_vfs_entries->fs->create_dir(g_vfs_entries->fs, g_vfs_entries->dev, path);
+void vfs_delete_file(dir_t* dir, char* name) {
+    g_vfs_entries->fs->delete_file(g_vfs_entries->fs, g_vfs_entries->dev, dir, name);
 }
 
-void vfs_delete_dir(char* path) {
-    g_vfs_entries->fs->delete_dir(g_vfs_entries->fs, g_vfs_entries->dev, path);
+void vfs_create_dir(dir_t* parent, char* name) {
+    g_vfs_entries->fs->create_dir(g_vfs_entries->fs, g_vfs_entries->dev, parent, name);
+}
+
+void vfs_delete_dir(dir_t* parent, char* name) {
+    g_vfs_entries->fs->delete_dir(g_vfs_entries->fs, g_vfs_entries->dev, parent, name);
 }
 
 void vfs_add_subdir(dir_t* root, dir_t* subdir) {
@@ -108,7 +116,7 @@ void vfs_add_file(dir_t* root, file_t* file) {
     list_insert_after(last_list, &file->list);
 }
 
-dir_t* vfs_new_dir(char* name) {
+dir_t* vfs_new_dir(char* name, void* fs_data) {
     dir_t* new_dir = kalloc(sizeof(dir_t));
 
     new_dir->name = kalloc(64);
@@ -121,15 +129,20 @@ dir_t* vfs_new_dir(char* name) {
     new_dir->subdirs.next = NULL;
     new_dir->subdirs.prev = NULL;
 
+    new_dir->fs_data = fs_data;
+
     return new_dir;
 }
 
-file_t* vfs_new_file(char* name) {
+file_t* vfs_new_file(char* name, void* fs_data) {
     file_t* new_file = kalloc(sizeof(file_t));
 
     new_file->name = kalloc(64);
     strncpy(new_file->name, name, strlen(name));
     new_file->name[strlen(new_file->name) - 1] = 0;
+
+    new_file->fs_data = fs_data;
+    new_file->position = 0;
 
     return new_file;
 }
@@ -144,7 +157,7 @@ void init_vfs() {
     g_vfs_fat.dev = &g_hdd;
     g_vfs_fat.fs = &g_fs_fat;
     
-    vfs_mount(&g_vfs_root, &g_vfs_fat);
+    vfs_mount(&g_vfs_root, &g_vfs_fat);    
 
-    g_vfs_entries->fs->read_file(g_vfs_entries->fs, g_vfs_entries->dev, "/test", buffer, 100);
+    g_vfs_entries->fs->read_file(g_vfs_entries->fs, g_vfs_entries->dev, container_of(g_vfs_root.files.next->next, file_t, list), buffer, 100);
 }
