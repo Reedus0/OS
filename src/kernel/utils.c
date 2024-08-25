@@ -37,16 +37,16 @@ shell_command sh_cd(char* command) {
         return 0;
     }
     if (strcmp(arg, "..")) {
-        g_shell_path = g_shell_path->parent;
+        g_shell_dir = g_shell_dir->parent;
         return 0;
     }
 
-    list_t* last_list = &g_shell_path->subdirs;
+    list_t* last_list = &g_shell_dir->subdirs;
     while (last_list->next != NULL) {
         last_list = last_list->next;
         dir_t* current_dir = container_of(last_list, dir_t, subdirs);
         if (strcmp(arg, current_dir->name)) {
-            g_shell_path = current_dir;
+            g_shell_dir = current_dir;
             return 0;
         }
     }
@@ -55,14 +55,14 @@ shell_command sh_cd(char* command) {
 }
 
 shell_command sh_ls(char* command) {
-    list_t* last_list = &g_shell_path->subdirs;
+    list_t* last_list = &g_shell_dir->subdirs;
     while (last_list->next != NULL) {
         last_list = last_list->next;
-        dir_t* current_dir = container_of(last_list, dir_t, subdirs);
+        dir_t* current_dir = container_of(last_list, dir_t, list);
         printk("%s\n", current_dir->name);
     }
 
-    last_list = &g_shell_path->files;
+    last_list = &g_shell_dir->files;
     while (last_list->next != NULL) {
         last_list = last_list->next;
         file_t* current_file = container_of(last_list, file_t, list);

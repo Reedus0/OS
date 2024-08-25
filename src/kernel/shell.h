@@ -11,7 +11,7 @@
 char g_prompt[] = "OS:%s>";
 char g_shell_buffer[SHELL_BUFFER_SIZE];
 
-dir_t* g_shell_path;
+dir_t* g_shell_dir;
 
 struct shell_function {
     char* name;

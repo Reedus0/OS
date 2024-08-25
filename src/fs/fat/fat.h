@@ -40,11 +40,14 @@ struct fat_entry {
     uint32_t size;
 } __attribute__((packed));
 typedef struct fat_entry fat_entry_t;
+typedef struct fat_entry fat_file_t;
+typedef struct fat_entry fat_dir_t;
 
-struct fat_file {
-    fat_entry_t* entry;
+struct fat_data {
+    void* entry;
     list_t list;
 };
+typedef struct fat_data fat_data_t;
 
 struct fat_long_name {
     uint8_t order;
@@ -57,7 +60,7 @@ struct fat_long_name {
     uint8_t name_3[2];
 } __attribute__((packed));
 
-struct fat_data {
+struct fat_info {
     enum FAT_TYPE fat_type;
     size_t fat_size;
     size_t total_sectors;
@@ -71,19 +74,21 @@ struct fat_data {
     byte* fats;
 };
 
-void init(dev_t* dev, dir_t* root);
-void write_file(dev_t* dev, char* path, byte* buffer, size_t count);
-void read_file(dev_t* dev, char* path, byte* buffer, size_t count) ;
-void create_file(dev_t* dev, char* path);
-void delete_file(dev_t* dev, char* path);
-void create_dir(dev_t* dev, char* path);
-void delete_dir(dev_t* dev, char* path);
+void init(fs_t* fs, dev_t* dev, dir_t* root);
+void deinit(fs_t* fs, dev_t* dev, dir_t* root);
+void write_file(fs_t* fs, dev_t* dev, char* path, byte* buffer, size_t count);
+void read_file(fs_t* fs, dev_t* dev, char* path, byte* buffer, size_t count) ;
+void create_file(fs_t* fs, dev_t* dev, char* path);
+void delete_file(fs_t* fs, dev_t* dev, char* path);
+void create_dir(fs_t* fs, dev_t* dev, char* path);
+void delete_dir(fs_t* fs, dev_t* dev, char* path);
 
 fs_t g_fs_fat = {
     .name = "FAT",
     .fs_data = NULL,
 
     .init = init,
+    .deinit = deinit,
 
     .write_file = write_file,
     .read_file = read_file,
@@ -93,4 +98,3 @@ fs_t g_fs_fat = {
     .create_dir = create_dir,
     .delete_dir = delete_dir
 };
-

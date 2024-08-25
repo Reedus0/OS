@@ -33,9 +33,9 @@ static size_t shell_execute(char* command, shell_function_t functions[]) {
 
 void init_shell(shell_function_t functions[]) {
     print_clear();
-    g_shell_path = &g_vfs_root;
+    g_shell_dir = &g_vfs_root;
     while (1) {
-        printk(g_prompt, g_shell_path->name);
+        printk(g_prompt, g_shell_dir->name);
         kget(g_shell_buffer);
         shell_execute(g_shell_buffer, functions);
         clear_shell_buffer();
