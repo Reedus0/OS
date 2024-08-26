@@ -34,43 +34,42 @@ void vfs_umount(dir_t* root) {
     }
 }
 
-// dir_t* vfs_find_dir(char* path) {
-//     dir_t* current_dir = &g_vfs_root;
-//     while (*path != '\0') {
-//         path = strchr(path, '/');
-//         while (1) {
-//             size_t current_dir_name_length = strlen(current_dir->name);
-//             if (strncmp(current_dir->name, path, current_dir_name_length)) {
-//                 path += current_dir_name_length;
-//                 break;
-//             }
-//             if (current_dir->subdirs.next == NULL) {
-//                 break;
-//             }
-//             current_dir = container_of(current_dir->subdirs.next, dir_t, subdirs);
-//         }
-//     }
-//     return current_dir;
-// }
+dir_t* vfs_find_dir(char* path) {
+    dir_t* current_dir = &g_vfs_root;
+    while (*path != '\0') {
+        path = strchr(path, '/');
+        while (1) {
+            size_t current_dir_name_length = strlen(current_dir->name);
+            if (strncmp(current_dir->name, path, current_dir_name_length)) {
+                path += current_dir_name_length;
+                break;
+            }
+            if (current_dir->subdirs.next == NULL) {
+                return current_dir->parent;
+            }
+            current_dir = container_of(current_dir->subdirs.next, dir_t, list);
+        }
+    }
+    return current_dir;
+}
 
-// file_t* vfs_open_file(char* path) {
-//     dir_t* file_dir = vfs_find_dir(path);
-//     file_t* current_file = file_dir->files;
-//     char* filename = strrchr(path, '/');
-//     while (1) {
-//         if (strcmp(current_file->name, filename)) {
-//             return current_file;
-//         }
-//         if (current_file->list.next == NULL) {
-//             break;
-//         }
-//         current_file = container_of(current_file->list.next, file_t, list);
-//     }
-//     return NULL;
-// }
-
-file_t* vfs_open_file(dir_t* dir, char* name) { 
-    g_vfs_entries->fs->create_file(g_vfs_entries->fs, g_vfs_entries->dev, dir, name);
+file_t* vfs_open_file(char* path) {
+    dir_t* file_dir = vfs_find_dir(path);
+    file_t* current_file = container_of(file_dir->files.next, file_t, list);
+    char* filename = strrchr(path, '/') + 1;
+    if (current_file == NULL) {
+        return g_vfs_entries->fs->create_file(g_vfs_entries->fs, g_vfs_entries->dev, file_dir, filename);
+    }
+    while (1) {
+        if (strcmp(current_file->name, filename)) {
+            return current_file;
+        }
+        if (current_file->list.next == NULL) {
+            break;
+        }
+        current_file = container_of(current_file->list.next, file_t, list);
+    }
+    return g_vfs_entries->fs->create_file(g_vfs_entries->fs, g_vfs_entries->dev, file_dir, filename);
 }
 
 void vfs_seek(file_t* file, size_t offset) {
@@ -149,7 +148,7 @@ file_t* vfs_new_file(char* name, void* fs_data) {
 
 void init_vfs() {
 
-    byte buffer[512] = { 32, 32, 32, 65, 65 };
+    byte buffer[512] = "fuck me";
 
     g_vfs_root.name = "/";
     g_vfs_root.parent = &g_vfs_root;
@@ -159,6 +158,11 @@ void init_vfs() {
     
     vfs_mount(&g_vfs_root, &g_vfs_fat);    
 
-    //g_vfs_entries->fs->read_file(g_vfs_entries->fs, g_vfs_entries->dev, container_of(g_vfs_root.files.next->next, file_t, list), buffer, 100);
-    g_vfs_entries->fs->write_file(g_vfs_entries->fs, g_vfs_entries->dev, container_of(g_vfs_root.files.next->next, file_t, list), buffer, 5);
+    file_t* file = vfs_open_file("/FILE       ");
+
+    vfs_write_file(file, buffer, 8);
+    vfs_seek(file, 3000);
+    vfs_write_file(file, buffer, 7);
+    vfs_seek(file, 5000);
+    vfs_write_file(file, buffer, 5);
 }

@@ -6,7 +6,7 @@
 static uint16_t ide_port;
 static uint8_t ide_drive;
 
-static void write_bytes(byte* buffer, size_t count) {
+static void read_bytes(byte* buffer, size_t count) {
     size_t i = 0;
     while(i < count * 512) {
         while(in8(IDE_STATUS_REGISTER(ide_port)) == 0xD0);
@@ -28,10 +28,10 @@ static void ide_read_sectors(byte* buffer, size_t offset, size_t count) {
     out8(IDE_LBA_HIGH_REGISTER(ide_port), (uint8_t)(offset >> 16));
     out8(IDE_COMMAND_REGISTER(ide_port), 0x20);
     
-    write_bytes(buffer, count);
+    read_bytes(buffer, count);
 }
 
-static void read_bytes(byte* buffer, size_t count) {
+static void write_bytes(byte* buffer, size_t count) {
     size_t i = 0;
     while(i < count * 512) {
         while(in8(IDE_STATUS_REGISTER(ide_port)) == 0xD0);
@@ -51,9 +51,7 @@ static void ide_write_sectors(byte* buffer, size_t offset, size_t count) {
     out8(IDE_LBA_HIGH_REGISTER(ide_port), (uint8_t)(offset >> 16));
     out8(IDE_COMMAND_REGISTER(ide_port), 0x30);
     
-    read_bytes(buffer, count);
-
-    out8(IDE_COMMAND_REGISTER(ide_port), 0xE7);
+    write_bytes(buffer, count);
 }
 
 static size_t ide_get_block_size() {

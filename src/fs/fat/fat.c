@@ -58,9 +58,9 @@ size_t fat_read_table(struct fat_info* fat_info, size_t index) {
         case FAT12:
             uint16_t fat_index = index + (index / 2);
             if (index % 2 == 0) {
-                return fat_info->fats[fat_index] << 4 | fat_info->fats[fat_index + 1] & 0x0F;
+                return (fat_info->fats[fat_index] & 0xFF) << 4 | (fat_info->fats[fat_index + 1] & 0xF);
             } else {
-                return (fat_info->fats[fat_index] & 0xF0) >> 4 | (fat_info->fats[fat_index + 1] & 0xFF) << 4;
+                return (fat_info->fats[fat_index] & 0xF0) << 4 | (fat_info->fats[fat_index + 1] & 0xFF);
             }
             break;
         case FAT16:
@@ -77,10 +77,10 @@ void fat_write_table(struct fat_info* fat_info, size_t index, size_t data) {
             data = data & 0xFFF;
             if (index % 2 == 0) {
                 fat_info->fats[fat_index] = (data & 0xFF0) >> 4;
-                fat_info->fats[fat_index + 1] = data & 0x0F;
+                fat_info->fats[fat_index + 1] = (data & 0xF) >> 4 | (fat_info->fats[fat_index + 1] & 0xF0);
             } else {
-                fat_info->fats[fat_index] = (data & 0xF) << 4;
-                fat_info->fats[fat_index + 1] = (data & 0xFF0) >> 4;
+                fat_info->fats[fat_index] = ((data & 0xF00) >> 4) | (fat_info->fats[fat_index] & 0xF);
+                fat_info->fats[fat_index + 1] = (data & 0xFF);
             }
             break;
         case FAT16:
@@ -94,6 +94,31 @@ void fat_commit_table(dev_t* dev, struct fat_info* fat_info) {
     bdev_write_block(dev, fat_info->fats, fat_info->fat_region, fat_info->total_fats * fat_info->fat_size);
 }
 
+size_t fat_allocate_new_cluster(dev_t* dev, struct fat_info* fat_info, size_t cluster) {
+    size_t result = 0;
+    size_t fat_size = 0;
+    switch (fat_info->fat_type) {
+    case FAT12:
+        fat_size = (fat_info->fat_size * fat_info->sector_size * 2) / 3;
+        break;
+    case FAT16:
+        break;
+    case FAT32:
+        break;
+    }
+
+    for (size_t i = 5; i < fat_size; i++) {
+        size_t new_cluster = fat_read_table(fat_info, i);
+        if ((new_cluster & fat_info->eof) == 0) {
+            fat_write_table(fat_info, cluster, i);
+            fat_write_table(fat_info, i, fat_info->eof);
+            fat_commit_table(dev, fat_info);
+            printk("%x %x\n", cluster, i);
+            return i;
+        }
+    }
+}
+
 fat_entry_t* fat_read_cluster(dev_t* dev, struct fat_info* fat_info, size_t cluster) {
     fat_entry_t* fat_entry = kalloc(fat_info->cluster_size);
 
@@ -104,19 +129,25 @@ fat_entry_t* fat_read_cluster(dev_t* dev, struct fat_info* fat_info, size_t clus
     return fat_entry;
 }
 
+fat_data_t* fat_create_chunk(dev_t* dev, struct fat_info* fat_info, size_t cluster) {
+    fat_data_t* file_data_chunk = kalloc(sizeof(fat_data_t));
+        
+    file_data_chunk->entry = fat_read_cluster(dev, fat_info, cluster);
+
+    file_data_chunk->list.next = NULL;
+    file_data_chunk->list.prev = NULL;    
+
+    return file_data_chunk;
+}
+
 fat_data_t* fat_read_data(dev_t* dev, struct fat_info* fat_info, size_t cluster) {
     fat_data_t* file_data = NULL;
 
     size_t fat_cluster = cluster;
 
+
     while ((fat_cluster & fat_info->eof) != fat_info->eof) {
-
-        fat_data_t* file_data_chunk = kalloc(sizeof(fat_data_t));
-        
-        file_data_chunk->entry = fat_read_cluster(dev, fat_info, fat_cluster);
-
-        file_data_chunk->list.next = NULL;
-        file_data_chunk->list.prev = NULL;
+        fat_data_t* file_data_chunk = fat_create_chunk(dev, fat_info, fat_cluster);
         
         if (file_data != NULL) {
             list_insert_after(&file_data->list, &file_data_chunk->list);
@@ -132,7 +163,7 @@ void fat_write_cluster(dev_t* dev, struct fat_info* fat_info, size_t cluster, vo
     size_t entry_sector = ((cluster - 2) * fat_info->sectors_per_claster) + fat_info->data_region;
 
     bdev_write_block(dev, data, entry_sector, fat_info->sectors_per_claster);
-}
+} 
 
 void fat_write_data(dev_t* dev, struct fat_info* fat_info, size_t cluster, fat_data_t* fat_data) {
     size_t fat_cluster = cluster;
@@ -142,37 +173,15 @@ void fat_write_data(dev_t* dev, struct fat_info* fat_info, size_t cluster, fat_d
         fat_write_cluster(dev, fat_info, fat_cluster, fat_data->entry);
 
         list_t* prev = fat_data->list.prev;
-        kfree(fat_data);
+        kfree(fat_data->entry);
 
         if (prev == NULL) {
             break;
         }
 
-        if (fat_cluster == fat_info->eof) {
-            size_t fat_size = 0;
-            switch (fat_info->fat_type) {
-            case FAT12:
-                fat_size = (fat_info->fat_size * fat_info->sector_size * 2) / 3;
-                break;
-            case FAT16:
-                break;
-            case FAT32:
-                break;
-            }
-            for (size_t i = 0; i < fat_size; i++) {
-                size_t new_cluster = fat_read_table(fat_info, i);
-                if ((new_cluster & fat_info->eof) == 0) {
-                    fat_cluster = i;
-                    fat_write_table(fat_info, i, fat_info->eof);
-                    break;
-                };
-            }
-        }
-
         fat_cluster = fat_read_table(fat_info, fat_cluster);
         fat_data = container_of(prev, fat_data_t, list);
     }  
-    fat_commit_table(dev, fat_info);
 }
 
 void fat_add_file(dev_t* dev, struct fat_info* fat_info, fat_file_t* file_entry, dir_t* root) {
@@ -254,15 +263,18 @@ void read_file(fs_t* fs, dev_t* dev, file_t* file, byte* buffer, size_t count) {
     fat_data_t* file_content = fat_read_data(dev, fat_info, file_data->cluster);
 
     size_t position = file->position;
+    size_t current_block = 0;
     size_t read_bytes = 0;
     
     while (1) {
-        for (size_t i = 0; i < fat_info->cluster_size; i++) {
-            *(buffer + read_bytes) = *(byte*)(file_content->entry + position % fat_info->cluster_size);
-            read_bytes++;
-            position++;
-            if (read_bytes >= count) {
-                break;
+        if (current_block >= position / fat_info->cluster_size) {
+            for (size_t i = 0; i < fat_info->cluster_size; i++) {
+                *(buffer + read_bytes) = *(byte*)(file_content->entry + position % fat_info->cluster_size);
+                read_bytes++;
+                position++;
+                if (read_bytes >= count) {
+                    break;
+                }
             }
         }
 
@@ -273,6 +285,7 @@ void read_file(fs_t* fs, dev_t* dev, file_t* file, byte* buffer, size_t count) {
             break;
         }
         file_content = container_of(prev, fat_data_t, list);
+        current_block++;
     }
 }
 
@@ -281,32 +294,48 @@ void write_file(fs_t* fs, dev_t* dev, file_t* file, byte* buffer, size_t count) 
     fat_file_data_t* file_data = file->fs_data;
 
     fat_data_t* file_content = fat_read_data(dev, fat_info, file_data->cluster);
+    fat_data_t* original_content = file_content;
+
 
     size_t position = file->position;
+    size_t current_block = 0;
     size_t wrote_bytes = 0;
 
+    size_t current_cluster = file_data->cluster;
     while (1) {
-        for (size_t i = 0; i < fat_info->cluster_size; i++) {
-            *(byte*)(file_content->entry + position % fat_info->cluster_size) = *(buffer + wrote_bytes);
-            wrote_bytes++;
-            position++;
-            if (wrote_bytes >= count) {
-                break;
+        if (current_block >= position / fat_info->cluster_size) {
+            for (size_t i = 0; i < fat_info->cluster_size; i++) {
+                if (wrote_bytes >= count) {
+                    break;
+                }
+                *(byte*)(file_content->entry + position % fat_info->cluster_size) = *(buffer + wrote_bytes);
+                wrote_bytes++;
+                position++;
             }
         }
 
         list_t* prev = file_content->list.prev;
 
         if (prev == NULL) {
-            break;
+            if (wrote_bytes < count) {
+                size_t new_cluster = fat_allocate_new_cluster(dev, fat_info, current_cluster);
+                fat_data_t* new_chunk = fat_create_chunk(dev, fat_info, new_cluster);
+                list_insert_after(&file_content->list, &new_chunk->list);
+                prev = new_chunk->list.prev;
+            } else {
+                break;
+            }
         }
+
         file_content = container_of(prev, fat_data_t, list);
+        current_cluster = fat_read_table(fat_info, current_cluster);
+        current_block++;
     }
-    
-    fat_write_data(dev, fat_info, file_data->cluster, file_content);
+
+    fat_write_data(dev, fat_info, file_data->cluster, original_content);
 }
 
-void create_file(fs_t* fs, dev_t* dev, dir_t* dir, char* name) {
+file_t* create_file(fs_t* fs, dev_t* dev, dir_t* dir, char* name) {
     
 }
 
@@ -314,7 +343,7 @@ void delete_file(fs_t* fs, dev_t* dev, dir_t* dir, char* name) {
     
 }
 
-void create_dir(fs_t* fs, dev_t* dev, dir_t* parent, char* name) {
+dir_t* create_dir(fs_t* fs, dev_t* dev, dir_t* parent, char* name) {
     
 }
 

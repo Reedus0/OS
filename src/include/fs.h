@@ -43,10 +43,10 @@ struct fs {
 
     void (*read_file)(fs_t* fs, dev_t* dev, file_t* file, byte* buffer, size_t count);
     void (*write_file)(fs_t* fs, dev_t* dev, file_t* file, byte* buffer, size_t count);
-    void (*create_file)(fs_t* fs, dev_t* dev, dir_t* dir, char* name);
+    file_t* (*create_file)(fs_t* fs, dev_t* dev, dir_t* dir, char* name);
     void (*delete_file)(fs_t* fs, dev_t* dev, dir_t* dir, char* name);
 
-    void (*create_dir)(fs_t* fs, dev_t* dev, dir_t* parent, char* name);
+    dir_t* (*create_dir)(fs_t* fs, dev_t* dev, dir_t* parent, char* name);
     void (*delete_dir)(fs_t* fs, dev_t* dev, dir_t* parent, char* name);
 };
 typedef struct fs fs_t;
