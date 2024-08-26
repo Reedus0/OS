@@ -12,9 +12,9 @@ bool g_stdin_updated;
 byte g_stdin_buffer[STDIN_BUFFER_SIZE];
 
 stream_t g_stdin = {
-    g_stdin_buffer,
-    0,
-    0
+    .buffer = g_stdin_buffer,
+    .ended = 0,
+    .size = 0
 };
 
 void stdin_add_byte(byte character);

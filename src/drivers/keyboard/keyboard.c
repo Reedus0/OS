@@ -29,7 +29,7 @@ module_t* init_keyboard_module() {
 
     keyboard_module->init = init_keyboard;
 
-    MODULE_FUNCTION(keyboard_module, SDEV_DRIVER_GET_BYTE) = keyboard_process_key;
+    MODULE_FUNCTION(keyboard_module, SDEV_DRIVER_READ_BYTE) = keyboard_process_key;
     MODULE_FUNCTION(keyboard_module, KEYBOARD_SET_PORT) = keyboard_set_port;
 
     keyboard_module->deinit = deinit_keyboard;

@@ -28,7 +28,7 @@ interrupt irq_timer(irq_data_t* irq_data) {
 }
 
 interrupt irq_keyboard(irq_data_t* irq_data) {
-    char character = sdev_get_byte(&g_keyboard);
+    char character = sdev_read_byte(&g_keyboard);
     if (character != NULL) {
         if (character != '\b') {
             stdin_add_byte(character);

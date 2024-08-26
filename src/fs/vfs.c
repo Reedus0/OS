@@ -149,7 +149,7 @@ file_t* vfs_new_file(char* name, void* fs_data) {
 
 void init_vfs() {
 
-    byte buffer[512];
+    byte buffer[512] = { 32, 32, 32, 65, 65 };
 
     g_vfs_root.name = "/";
     g_vfs_root.parent = &g_vfs_root;
@@ -159,5 +159,6 @@ void init_vfs() {
     
     vfs_mount(&g_vfs_root, &g_vfs_fat);    
 
-    g_vfs_entries->fs->read_file(g_vfs_entries->fs, g_vfs_entries->dev, container_of(g_vfs_root.files.next->next, file_t, list), buffer, 100);
+    //g_vfs_entries->fs->read_file(g_vfs_entries->fs, g_vfs_entries->dev, container_of(g_vfs_root.files.next->next, file_t, list), buffer, 100);
+    g_vfs_entries->fs->write_file(g_vfs_entries->fs, g_vfs_entries->dev, container_of(g_vfs_root.files.next->next, file_t, list), buffer, 5);
 }
