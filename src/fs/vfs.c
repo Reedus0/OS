@@ -148,7 +148,8 @@ file_t* vfs_new_file(char* name, void* fs_data) {
 
 void init_vfs() {
 
-    byte buffer[512] = "fuck me";
+    byte buffer[] = "AAAAAAAAAAA";
+    byte buffer2[] = "BBBBBBBBBB";
 
     g_vfs_root.name = "/";
     g_vfs_root.parent = &g_vfs_root;
@@ -160,9 +161,10 @@ void init_vfs() {
 
     file_t* file = vfs_open_file("/FILE       ");
 
-    vfs_write_file(file, buffer, 8);
-    vfs_seek(file, 3000);
-    vfs_write_file(file, buffer, 7);
-    vfs_seek(file, 5000);
-    vfs_write_file(file, buffer, 5);
+    vfs_seek(file, 0);
+    vfs_write_file(file, buffer2, 9);
+    vfs_seek(file, 2048);
+    vfs_write_file(file, buffer2, 9);
+    vfs_seek(file, 4096);
+    vfs_write_file(file, buffer2, 9);
 }

@@ -8,6 +8,8 @@
 
 #include "include/fs.h"
 
+#define FIRST_DATA_CLUSTER 5
+
 enum FAT_TYPE {
     FAT12 = 0,
     FAT16 = 1,

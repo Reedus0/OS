@@ -12,6 +12,12 @@ void list_insert_after(list_t* base_list, list_t* new_list) {
 	new_list->prev = base_list;
 }
 
+void list_insert_before(list_t* base_list, list_t* new_list) {
+	new_list->prev = base_list->prev;
+	base_list->prev = new_list;
+	new_list->next = base_list;
+}
+
 void list_remove(list_t* removed_list) {
 	removed_list->prev->next = removed_list->next;
 	if (removed_list->next != NULL) {
