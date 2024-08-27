@@ -53,12 +53,10 @@ dir_t* vfs_find_dir(char* path) {
     return current_dir;
 }
 
-file_t* vfs_open_file(char* path) {
-    dir_t* file_dir = vfs_find_dir(path);
-    file_t* current_file = container_of(file_dir->files.next, file_t, list);
-    char* filename = strrchr(path, '/') + 1;
+file_t* vfs_find_file(dir_t* dir, char* filename) {
+    file_t* current_file = container_of(dir->files.next, file_t, list);
     if (current_file == NULL) {
-        return g_vfs_entries->fs->create_file(g_vfs_entries->fs, g_vfs_entries->dev, file_dir, filename);
+        return g_vfs_entries->fs->create_file(g_vfs_entries->fs, g_vfs_entries->dev, dir, filename);
     }
     while (1) {
         if (strcmp(current_file->name, filename)) {
@@ -69,7 +67,7 @@ file_t* vfs_open_file(char* path) {
         }
         current_file = container_of(current_file->list.next, file_t, list);
     }
-    return g_vfs_entries->fs->create_file(g_vfs_entries->fs, g_vfs_entries->dev, file_dir, filename);
+    return g_vfs_entries->fs->create_file(g_vfs_entries->fs, g_vfs_entries->dev, dir, filename);
 }
 
 void vfs_seek(file_t* file, size_t offset) {
@@ -107,12 +105,26 @@ void vfs_add_subdir(dir_t* root, dir_t* subdir) {
     subdir->parent = root;
 }
 
+void vfs_remove_subdir(dir_t* root, dir_t* subdir) {
+    list_remove(&subdir->list);
+
+    kfree(subdir->name);
+    kfree(subdir);
+}
+
 void vfs_add_file(dir_t* root, file_t* file) {
     list_t* last_list = &root->files;
     while (last_list->next != NULL) {
         last_list = last_list->next;
     }
     list_insert_after(last_list, &file->list);
+}
+
+void vfs_remove_file(file_t* file) {
+    list_remove(&file->list);
+
+    kfree(file->name);
+    kfree(file);
 }
 
 dir_t* vfs_new_dir(char* name, void* fs_data) {
@@ -159,12 +171,19 @@ void init_vfs() {
     
     vfs_mount(&g_vfs_root, &g_vfs_fat);    
 
-    file_t* file = vfs_open_file("/FILE       ");
+    dir_t* file_dir = vfs_find_dir("/");
+    file_t* file = vfs_find_file(file_dir, "FILE       ");
+
+    printk("file: %s\n", file->name);
 
     vfs_seek(file, 0);
-    vfs_write_file(file, buffer2, 9);
+    vfs_write_file(file, buffer, 9);
     vfs_seek(file, 2048);
-    vfs_write_file(file, buffer2, 9);
+    vfs_write_file(file, buffer, 9);
     vfs_seek(file, 4096);
-    vfs_write_file(file, buffer2, 9);
+    vfs_write_file(file, buffer, 9);
+
+    //dir_t* file_dir = vfs_find_dir("/");
+
+    //vfs_delete_file(file_dir, "FILE       ");
 }
