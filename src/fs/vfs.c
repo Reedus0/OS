@@ -4,33 +4,33 @@
 #include "lib/string.h"
 #include "fs/fat/fat.h"
 
-void vfs_mount(dir_t* root, vfs_entry_t* vfs_entry) {
-    vfs_entry->mount_point = root;
-    vfs_entry->fs->init(vfs_entry->fs, vfs_entry->dev, root);
+void vfs_mount(dir_t* root, fs_t* fs) {
+    fs->mount_point = root;
+    fs->func->init(fs, root);
 
-    if (g_vfs_entries != NULL) {
-        list_insert_after(&g_vfs_entries->list, &vfs_entry->list);
+    if (g_fs_list != NULL) {
+        list_insert_after(&g_fs_list->list, &fs->list);
     }
+    g_fs_list = fs;
     
     root->mount_point = 1;
-    g_vfs_entries = vfs_entry;
 }
 
 void vfs_umount(dir_t* root) {
     root->mount_point = 0;
 
-    vfs_entry_t* current_vfs_entry = g_vfs_entries;
+    fs_t* current_fs = g_fs_list;
 
     while (1) {
-        if (current_vfs_entry->mount_point == root) {
-            current_vfs_entry->fs->deinit(current_vfs_entry->fs, current_vfs_entry->dev, root);
-            list_remove(current_vfs_entry);
+        if (current_fs->mount_point == root) {
+            current_fs->func->deinit(current_fs, root);
+            list_remove(current_fs);
             return;
         }
-        if (current_vfs_entry->list.prev == NULL) {
+        if (current_fs->list.prev == NULL) {
             break;
         }
-        current_vfs_entry = container_of(current_vfs_entry->list.prev, vfs_entry_t, list);
+        current_fs = container_of(current_fs->list.prev, fs_t, list);
     }
 }
 
@@ -56,7 +56,7 @@ dir_t* vfs_find_dir(char* path) {
 file_t* vfs_find_file(dir_t* dir, char* filename) {
     file_t* current_file = container_of(dir->files.next, file_t, list);
     if (current_file == NULL) {
-        return g_vfs_entries->fs->create_file(g_vfs_entries->fs, g_vfs_entries->dev, dir, filename);
+        return g_fs_list->func->create_file(g_fs_list, dir, filename);
     }
     while (1) {
         if (strcmp(current_file->name, filename)) {
@@ -67,7 +67,7 @@ file_t* vfs_find_file(dir_t* dir, char* filename) {
         }
         current_file = container_of(current_file->list.next, file_t, list);
     }
-    return g_vfs_entries->fs->create_file(g_vfs_entries->fs, g_vfs_entries->dev, dir, filename);
+    return g_fs_list->func->create_file(g_fs_list, dir, filename);
 }
 
 void vfs_seek(file_t* file, size_t offset) {
@@ -75,23 +75,19 @@ void vfs_seek(file_t* file, size_t offset) {
 }
 
 void vfs_read_file(file_t* file, byte* buffer, size_t count) {
-    g_vfs_entries->fs->read_file(g_vfs_entries->fs, g_vfs_entries->dev, file, buffer, count);
+    g_fs_list->func->read_file(g_fs_list, file, buffer, count);
 }
-
 void vfs_write_file(file_t* file, byte* buffer, size_t count) {
-    g_vfs_entries->fs->write_file(g_vfs_entries->fs, g_vfs_entries->dev, file, buffer, count);
+    g_fs_list->func->write_file(g_fs_list, file, buffer, count);
 }
 
 void vfs_delete_file(dir_t* dir, char* name) {
-    g_vfs_entries->fs->delete_file(g_vfs_entries->fs, g_vfs_entries->dev, dir, name);
 }
 
 void vfs_create_dir(dir_t* parent, char* name) {
-    g_vfs_entries->fs->create_dir(g_vfs_entries->fs, g_vfs_entries->dev, parent, name);
 }
 
 void vfs_delete_dir(dir_t* parent, char* name) {
-    g_vfs_entries->fs->delete_dir(g_vfs_entries->fs, g_vfs_entries->dev, parent, name);
 }
 
 void vfs_add_subdir(dir_t* root, dir_t* subdir) {
@@ -160,16 +156,15 @@ file_t* vfs_new_file(char* name, void* fs_data) {
 
 void init_vfs() {
 
-    byte buffer[] = "AAAAAAAAAAA";
+    byte buffer[] = "CCCCCCCCC";
     byte buffer2[] = "BBBBBBBBBB";
 
     g_vfs_root.name = "/";
     g_vfs_root.parent = &g_vfs_root;
 
-    g_vfs_fat.dev = &g_hdd;
-    g_vfs_fat.fs = &g_fs_fat;
+    fs_t* fat = create_fs_fat(&g_hdd);
     
-    vfs_mount(&g_vfs_root, &g_vfs_fat);    
+    vfs_mount(&g_vfs_root, fat);    
 
     dir_t* file_dir = vfs_find_dir("/");
     file_t* file = vfs_find_file(file_dir, "FILE       ");
@@ -177,11 +172,13 @@ void init_vfs() {
     printk("file: %s\n", file->name);
 
     vfs_seek(file, 0);
-    vfs_write_file(file, buffer, 9);
+    vfs_write_file(file, buffer2, 9);
     vfs_seek(file, 2048);
-    vfs_write_file(file, buffer, 9);
-    vfs_seek(file, 4096);
-    vfs_write_file(file, buffer, 9);
+    vfs_write_file(file, buffer2, 9);
+    // vfs_seek(file, 4096);
+    // vfs_write_file(file, buffer2, 9);
+    // vfs_seek(file, 6144);
+    // vfs_write_file(file, buffer2, 9);
 
     //dir_t* file_dir = vfs_find_dir("/");
 

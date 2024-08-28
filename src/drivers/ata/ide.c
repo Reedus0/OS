@@ -12,12 +12,12 @@ static void read_bytes(byte* buffer, size_t count) {
         while(in8(IDE_STATUS_REGISTER(ide_port)) == 0xD0);
         for (size_t j = 0; j < 256; j++) {
             uint16_t current_word = in16(IDE_DATA_REGISTER(ide_port));
-            uint16_t result = (uint8_t)(current_word >> 8) | (uint8_t)current_word << 8;
             *(buffer + i) = (uint8_t)current_word;
             *(buffer + i + 1) = (uint8_t)(current_word >> 8);
             i += 2;
         }
     }
+    io_wait();
 }
 
 static void ide_read_sectors(byte* buffer, size_t offset, size_t count) {
@@ -52,6 +52,8 @@ static void ide_write_sectors(byte* buffer, size_t offset, size_t count) {
     out8(IDE_COMMAND_REGISTER(ide_port), 0x30);
     
     write_bytes(buffer, count);
+
+    out8(IDE_COMMAND_REGISTER(ide_port), 0xE7);
 }
 
 static size_t ide_get_block_size() {

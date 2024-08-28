@@ -62,4 +62,5 @@ interrupt irq_page_fault(irq_data_t* irq_data) {
 
     map_page(physical_address, virtual_address, 0x82);
     flush_page();
+    panic("fuck");
 }

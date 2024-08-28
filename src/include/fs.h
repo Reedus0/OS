@@ -34,19 +34,26 @@ typedef struct dir dir_t;
 struct fs;
 typedef struct fs fs_t;
 
+struct fs_func {
+    void (*init)(fs_t* fs, dir_t* root);
+    void (*deinit)(fs_t* fs, dir_t* root);
+
+    void (*read_file)(fs_t* fs, file_t* file, byte* buffer, size_t count);
+    void (*write_file)(fs_t* fs, file_t* file, byte* buffer, size_t count);
+    file_t* (*create_file)(fs_t* fs, dir_t* dir, char* name);
+    void (*delete_file)(fs_t* fs, dir_t* dir, char* name);
+
+    dir_t* (*create_dir)(fs_t* fs, dir_t* parent, char* name);
+    void (*delete_dir)(fs_t* fs, dir_t* parent, char* name);
+};
+typedef struct fs_func fs_func_t;
+
 struct fs {
-    char* name;
     void* fs_data;
+    dev_t* dev;
+    dir_t* mount_point;
+    list_t list;
 
-    void (*init)(fs_t* fs, dev_t* dev, dir_t* root);
-    void (*deinit)(fs_t* fs, dev_t* dev, dir_t* root);
-
-    void (*read_file)(fs_t* fs, dev_t* dev, file_t* file, byte* buffer, size_t count);
-    void (*write_file)(fs_t* fs, dev_t* dev, file_t* file, byte* buffer, size_t count);
-    file_t* (*create_file)(fs_t* fs, dev_t* dev, dir_t* dir, char* name);
-    void (*delete_file)(fs_t* fs, dev_t* dev, dir_t* dir, char* name);
-
-    dir_t* (*create_dir)(fs_t* fs, dev_t* dev, dir_t* parent, char* name);
-    void (*delete_dir)(fs_t* fs, dev_t* dev, dir_t* parent, char* name);
+    fs_func_t* func;
 };
 typedef struct fs fs_t;

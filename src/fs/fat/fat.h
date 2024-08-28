@@ -10,12 +10,6 @@
 
 #define FIRST_DATA_CLUSTER 5
 
-enum FAT_TYPE {
-    FAT12 = 0,
-    FAT16 = 1,
-    FAT32 = 2
-};
-
 enum FAT_ATTRIBUTES {
     READ_ONLY = 0x1,
     HIDDEN = 0x2,
@@ -41,8 +35,6 @@ struct fat_entry {
     uint32_t size;
 } __attribute__((packed));
 typedef struct fat_entry fat_entry_t;
-typedef struct fat_entry fat_file_t;
-typedef struct fat_entry fat_dir_t;
 
 struct fat_long_name {
     uint8_t order;
@@ -55,48 +47,26 @@ struct fat_long_name {
     uint8_t name_3[2];
 } __attribute__((packed));
 
-struct fat_info {
-    enum FAT_TYPE fat_type;
-    size_t fat_size;
-    size_t total_sectors;
-    size_t total_root_dir_sectors;
-    size_t total_fats;
-    size_t fat_region;
-    size_t root_dir_region;
-    size_t data_region;
-    size_t sectors_per_claster;
-    size_t sector_size;
-    size_t cluster_size;
-    size_t eof;
-    byte* fats;
-};
-
 struct fat_file_data {
     size_t cluster;
 };
 typedef struct fat_file_data fat_file_data_t;
 
-struct fat_data {
-    void* entry;
-    list_t list;
-};
-typedef struct fat_data fat_data_t;
+fs_t* create_fs_fat(dev_t* dev);
+void delete_fs_fat(fs_t* fs_fat);
 
-void init(fs_t* fs, dev_t* dev, dir_t* root);
-void deinit(fs_t* fs, dev_t* dev, dir_t* root);
+void init(fs_t* fs, dir_t* root);
+void deinit(fs_t* fs, dir_t* root);
 
-void read_file(fs_t* fs, dev_t* dev, file_t* file, byte* buffer, size_t count);
-void write_file(fs_t* fs, dev_t* dev, file_t* file, byte* buffer, size_t count);
-file_t* create_file(fs_t* fs, dev_t* dev, dir_t* dir, char* name);
-void delete_file(fs_t* fs, dev_t* dev, dir_t* dir, char* name);
+void read_file(fs_t* fs, file_t* file, byte* buffer, size_t count);
+void write_file(fs_t* fs, file_t* file, byte* buffer, size_t count);
+file_t* create_file(fs_t* fs, dir_t* dir, char* name);
+void delete_file(fs_t* fs, dir_t* dir, char* name);
 
-dir_t* create_dir(fs_t* fs, dev_t* dev, dir_t* parent, char* name);
-void delete_dir(fs_t* fs, dev_t* dev, dir_t* parent, char *name);
+dir_t* create_dir(fs_t* fs, dir_t* parent, char* name);
+void delete_dir(fs_t* fs, dir_t* parent, char *name);
 
-fs_t g_fs_fat = {
-    .name = "FAT",
-    .fs_data = NULL,
-
+fs_func_t g_fs_func_fat = {
     .init = init,
     .deinit = deinit,
 
