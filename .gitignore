@@ -1,5 +1,5 @@
-build/
-dist/
+/build/
+/dist/
+/fs
 target/x86_64/iso/boot/kernel.bin
 bx_enh_dbg.ini
-fs
