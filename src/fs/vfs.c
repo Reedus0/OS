@@ -17,8 +17,6 @@ void vfs_mount(dir_t* root, fs_t* fs) {
 }
 
 void vfs_umount(dir_t* root) {
-    root->mount_point = 0;
-
     fs_t* current_fs = g_fs_list;
 
     while (1) {
@@ -32,6 +30,7 @@ void vfs_umount(dir_t* root) {
         }
         current_fs = container_of(current_fs->list.prev, fs_t, list);
     }
+    root->mount_point = 0;
 }
 
 dir_t* vfs_find_dir(char* path) {

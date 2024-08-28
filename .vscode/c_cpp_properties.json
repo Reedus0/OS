@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "name": "OS",
+            "includePath": [
+                "${workspaceFolder}/src/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "/usr/bin/gcc",
+            "compilerArgs": [
+                "-I",
+                "src",
+                "-ffreestanding",
+                "-I",
+                "arch/x86_64",
+                "-MMD",
+                "-fno-asynchronous-unwind-tables"
+            ],
+            "intelliSenseMode": "${default}",
+            "cStandard": "gnu11"
+        }
+    ],
+    "version": 4
+}
