@@ -22,21 +22,12 @@ fat_cluster_t* fat_read_cluster(fs_t* fs, size_t cluster) {
     return file_cluster;
 }
 
-void fat_read_file(fs_t* fs, fat_cluster_t* file, byte* buffer, size_t count, size_t offset) {
-
-}
-
 void fat_write_cluster(fs_t* fs, size_t cluster, fat_cluster_t* data) {
     struct fat_info* fat_info = fs->fs_data;
 
     size_t entry_sector = ((cluster - 2) * fat_info->sectors_per_claster) + fat_info->data_region;
 
-
     bdev_write_block(fs->dev, data, entry_sector, fat_info->sectors_per_claster);
 
-    // kfree(data);
+    kfree(data);
 } 
-
-void fat_write_file(fs_t* fs, fat_cluster_t* file, byte* buffer, size_t count, size_t offset) {
-
-}

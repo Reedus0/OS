@@ -13,6 +13,7 @@ long_mode_start:
 
     mov rdi, rbx
 
+    xor ebp, ebp
     call kmain
     
     hlt

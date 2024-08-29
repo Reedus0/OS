@@ -4,7 +4,7 @@
 #include "lib/string.h"
 #include "fs/fat/fat.h"
 
-void vfs_mount(dir_t* root, fs_t* fs) {
+void vfs_mount(vfs_dir_t* root, fs_t* fs) {
     fs->mount_point = root;
     fs->func->init(fs, root);
 
@@ -16,12 +16,49 @@ void vfs_mount(dir_t* root, fs_t* fs) {
     root->mount_point = 1;
 }
 
-void vfs_umount(dir_t* root) {
+void vfs_clean_subdir(vfs_dir_t* root) {
+    if (root->files.next == NULL) {
+        vfs_remove_subdir(root);
+        return;
+    }
+    vfs_file_t* current_file = container_of(root->files.next, vfs_file_t, list);
+    while (1) {
+        if (current_file->list.next == NULL) {
+            break;
+        }
+        current_file = container_of(current_file->list.next, vfs_file_t, list);
+        vfs_remove_file(current_file);
+    }
+    vfs_remove_subdir(root);
+    return;
+}
+
+void vfs_clean_mount(vfs_dir_t* root) {
+    //printk("root %s\n", root->name);
+
+    if (root->subdirs.next == NULL) {
+        vfs_clean_subdir(root);
+        return;
+    }
+    vfs_dir_t* current_dir = container_of(root->subdirs.next, vfs_dir_t, list);
+    while (1) {
+        vfs_clean_mount(current_dir);
+        if (current_dir->list.next == NULL) {
+            break;
+        }
+        current_dir = container_of(current_dir->list.next, vfs_dir_t, list);
+    }    
+    //vfs_clean_subdir(root);
+}
+
+void vfs_umount(vfs_dir_t* root) {
     fs_t* current_fs = g_fs_list;
 
     while (1) {
         if (current_fs->mount_point == root) {
             current_fs->func->deinit(current_fs, root);
+
+            vfs_clean_mount(root);
             list_remove(current_fs);
             return;
         }
@@ -33,8 +70,8 @@ void vfs_umount(dir_t* root) {
     root->mount_point = 0;
 }
 
-dir_t* vfs_find_dir(char* path) {
-    dir_t* current_dir = &g_vfs_root;
+vfs_dir_t* vfs_find_dir(char* path) {
+    vfs_dir_t* current_dir = &g_vfs_root;
     while (*path != '\0') {
         path = strchr(path, '/');
         while (1) {
@@ -46,14 +83,14 @@ dir_t* vfs_find_dir(char* path) {
             if (current_dir->subdirs.next == NULL) {
                 return current_dir->parent;
             }
-            current_dir = container_of(current_dir->subdirs.next, dir_t, list);
+            current_dir = container_of(current_dir->subdirs.next, vfs_dir_t, list);
         }
     }
     return current_dir;
 }
 
-file_t* vfs_find_file(dir_t* dir, char* filename) {
-    file_t* current_file = container_of(dir->files.next, file_t, list);
+vfs_file_t* vfs_find_file(vfs_dir_t* dir, char* filename) {
+    vfs_file_t* current_file = container_of(dir->files.next, vfs_file_t, list);
     if (current_file == NULL) {
         return g_fs_list->func->create_file(g_fs_list, dir, filename);
     }
@@ -64,70 +101,37 @@ file_t* vfs_find_file(dir_t* dir, char* filename) {
         if (current_file->list.next == NULL) {
             break;
         }
-        current_file = container_of(current_file->list.next, file_t, list);
+        current_file = container_of(current_file->list.next, vfs_file_t, list);
     }
     return g_fs_list->func->create_file(g_fs_list, dir, filename);
 }
 
-void vfs_seek(file_t* file, size_t offset) {
+void vfs_seek(vfs_file_t* file, size_t offset) {
     file->position = offset;
 }
 
-void vfs_read_file(file_t* file, byte* buffer, size_t count) {
+void vfs_read_file(vfs_file_t* file, byte* buffer, size_t count) {
     g_fs_list->func->read_file(g_fs_list, file, buffer, count);
 }
-void vfs_write_file(file_t* file, byte* buffer, size_t count) {
+
+void vfs_write_file(vfs_file_t* file, byte* buffer, size_t count) {
     g_fs_list->func->write_file(g_fs_list, file, buffer, count);
 }
 
-void vfs_delete_file(dir_t* dir, char* name) {
+void vfs_delete_file(vfs_dir_t* dir, char* name) {
 }
 
-void vfs_create_dir(dir_t* parent, char* name) {
+void vfs_create_dir(vfs_dir_t* parent, char* name) {
 }
 
-void vfs_delete_dir(dir_t* parent, char* name) {
+void vfs_delete_dir(vfs_dir_t* parent, char* name) {
 }
 
-void vfs_add_subdir(dir_t* root, dir_t* subdir) {
-    list_t* last_list = &root->subdirs;
-
-    while (last_list->next != NULL) {
-        last_list = last_list->next;
-    }
-    list_insert_after(last_list, &subdir->list);
-    
-    subdir->parent = root;
-}
-
-void vfs_remove_subdir(dir_t* root, dir_t* subdir) {
-    list_remove(&subdir->list);
-
-    kfree(subdir->name);
-    kfree(subdir);
-}
-
-void vfs_add_file(dir_t* root, file_t* file) {
-    list_t* last_list = &root->files;
-    while (last_list->next != NULL) {
-        last_list = last_list->next;
-    }
-    list_insert_after(last_list, &file->list);
-}
-
-void vfs_remove_file(file_t* file) {
-    list_remove(&file->list);
-
-    kfree(file->name);
-    kfree(file);
-}
-
-dir_t* vfs_new_dir(char* name, void* fs_data) {
-    dir_t* new_dir = kalloc(sizeof(dir_t));
+vfs_dir_t* vfs_new_dir(char* name, void* fs_data) {
+    vfs_dir_t* new_dir = kalloc(sizeof(vfs_dir_t));
 
     new_dir->name = kalloc(64);
     strncpy(new_dir->name, name, strlen(name));
-    new_dir->name[strlen(new_dir->name) - 1] = 0;
 
     new_dir->files.next = NULL;
     new_dir->files.prev = NULL;
@@ -140,17 +144,51 @@ dir_t* vfs_new_dir(char* name, void* fs_data) {
     return new_dir;
 }
 
-file_t* vfs_new_file(char* name, void* fs_data) {
-    file_t* new_file = kalloc(sizeof(file_t));
+vfs_file_t* vfs_new_file(char* name, void* fs_data) {
+    vfs_file_t* new_file = kalloc(sizeof(vfs_file_t));
 
     new_file->name = kalloc(64);
     strncpy(new_file->name, name, strlen(name));
-    new_file->name[strlen(new_file->name) - 1] = 0;
 
     new_file->fs_data = fs_data;
     new_file->position = 0;
 
     return new_file;
+}
+
+void vfs_add_subdir(vfs_dir_t* root, vfs_dir_t* subdir) {
+    list_t* last_list = &root->subdirs;
+
+    while (last_list->next != NULL) {
+        last_list = last_list->next;
+    }
+    list_insert_after(last_list, &subdir->list);
+
+    subdir->parent = root;
+}
+
+void vfs_remove_subdir(vfs_dir_t* subdir) {
+    list_remove(&subdir->list);
+
+    kfree(subdir->name);
+    kfree(subdir->fs_data);
+    kfree(subdir);
+}
+
+void vfs_add_file(vfs_dir_t* root, vfs_file_t* file) {
+    list_t* last_list = &root->files;
+    while (last_list->next != NULL) {
+        last_list = last_list->next;
+    }
+    list_insert_after(last_list, &file->list);
+}
+
+void vfs_remove_file(vfs_file_t* file) {
+    list_remove(&file->list);
+
+    kfree(file->name);
+    kfree(file->fs_data);
+    kfree(file);
 }
 
 void init_vfs() {
@@ -164,22 +202,21 @@ void init_vfs() {
     fs_t* fat = create_fs_fat(&g_hdd);
     
     vfs_mount(&g_vfs_root, fat);    
+    vfs_umount(&g_vfs_root);
 
-    dir_t* file_dir = vfs_find_dir("/");
-    file_t* file = vfs_find_file(file_dir, "FILE       ");
+    // vfs_dir_t* file_dir = vfs_find_dir("/");
+    // vfs_file_t* file = vfs_find_file(file_dir, "FILE       ");
 
-    printk("file: %s\n", file->name);
-
-    vfs_seek(file, 0);
-    vfs_write_file(file, buffer2, 9);
-    vfs_seek(file, 2048);
-    vfs_write_file(file, buffer2, 9);
+    // vfs_seek(file, 0);
+    // vfs_write_file(file, buffer2, 9);
+    // vfs_seek(file, 2048);
+    // vfs_write_file(file, buffer2, 9);
     // vfs_seek(file, 4096);
     // vfs_write_file(file, buffer2, 9);
     // vfs_seek(file, 6144);
     // vfs_write_file(file, buffer2, 9);
 
-    //dir_t* file_dir = vfs_find_dir("/");
+    //vfs_dir_t* file_dir = vfs_find_dir("/");
 
     //vfs_delete_file(file_dir, "FILE       ");
 }

@@ -8,6 +8,11 @@
 #include "include/types.h"
 
 struct file {
+
+};
+typedef struct file file_t;
+
+struct vfs_file {
     char* name;
     void* fs_data;
     char* path;
@@ -17,41 +22,41 @@ struct file {
 
     list_t list;
 };
-typedef struct file file_t;
+typedef struct vfs_file vfs_file_t;
 
-struct dir {
+struct vfs_dir {
     char* name;
     void* fs_data;
 
     list_t list;
     list_t subdirs;
     list_t files;
-    struct dir* parent;
+    struct vfs_dir* parent;
     bool mount_point;
 };
-typedef struct dir dir_t;
+typedef struct vfs_dir vfs_dir_t;
 
 struct fs;
 typedef struct fs fs_t;
 
 struct fs_func {
-    void (*init)(fs_t* fs, dir_t* root);
-    void (*deinit)(fs_t* fs, dir_t* root);
+    void (*init)(fs_t* fs, vfs_dir_t* root);
+    void (*deinit)(fs_t* fs, vfs_dir_t* root);
 
-    void (*read_file)(fs_t* fs, file_t* file, byte* buffer, size_t count);
-    void (*write_file)(fs_t* fs, file_t* file, byte* buffer, size_t count);
-    file_t* (*create_file)(fs_t* fs, dir_t* dir, char* name);
-    void (*delete_file)(fs_t* fs, dir_t* dir, char* name);
+    void (*read_file)(fs_t* fs, vfs_file_t* file, byte* buffer, size_t count);
+    void (*write_file)(fs_t* fs, vfs_file_t* file, byte* buffer, size_t count);
+    vfs_file_t* (*create_file)(fs_t* fs, vfs_dir_t* dir, char* name);
+    void (*delete_file)(fs_t* fs, vfs_dir_t* dir, char* name);
 
-    dir_t* (*create_dir)(fs_t* fs, dir_t* parent, char* name);
-    void (*delete_dir)(fs_t* fs, dir_t* parent, char* name);
+    vfs_dir_t* (*create_dir)(fs_t* fs, vfs_dir_t* parent, char* name);
+    void (*delete_dir)(fs_t* fs, vfs_dir_t* parent, char* name);
 };
 typedef struct fs_func fs_func_t;
 
 struct fs {
     void* fs_data;
     dev_t* dev;
-    dir_t* mount_point;
+    vfs_dir_t* mount_point;
     list_t list;
 
     fs_func_t* func;

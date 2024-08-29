@@ -30,4 +30,5 @@ struct fat_info {
 };
 
 struct fat_info* get_fat_info(fs_t* fs);
-void fat_parse_root(fs_t* fs, dir_t* root);
+fat_entry_t* fat_read_root(fs_t* fs, vfs_dir_t* root);
+void fat_parse_dir(fs_t* fs, fat_entry_t* dir, vfs_dir_t* root);

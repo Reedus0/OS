@@ -44,7 +44,7 @@ shell_command sh_cd(char* command) {
     list_t* last_list = &g_shell_dir->subdirs;
     while (last_list->next != NULL) {
         last_list = last_list->next;
-        dir_t* current_dir = container_of(last_list, dir_t, subdirs);
+        vfs_dir_t* current_dir = container_of(last_list, vfs_dir_t, list);
         if (strcmp(arg, current_dir->name)) {
             g_shell_dir = current_dir;
             return 0;
@@ -58,14 +58,14 @@ shell_command sh_ls(char* command) {
     list_t* last_list = &g_shell_dir->subdirs;
     while (last_list->next != NULL) {
         last_list = last_list->next;
-        dir_t* current_dir = container_of(last_list, dir_t, list);
+        vfs_dir_t* current_dir = container_of(last_list, vfs_dir_t, list);
         printk("%s\n", current_dir->name);
     }
 
     last_list = &g_shell_dir->files;
     while (last_list->next != NULL) {
         last_list = last_list->next;
-        file_t* current_file = container_of(last_list, file_t, list);
+        vfs_file_t* current_file = container_of(last_list, vfs_file_t, list);
         printk("%s\n", current_file->name);
     }
     return 0;

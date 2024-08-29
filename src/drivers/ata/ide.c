@@ -17,7 +17,6 @@ static void read_bytes(byte* buffer, size_t count) {
             i += 2;
         }
     }
-    io_wait();
 }
 
 static void ide_read_sectors(byte* buffer, size_t offset, size_t count) {
@@ -52,8 +51,6 @@ static void ide_write_sectors(byte* buffer, size_t offset, size_t count) {
     out8(IDE_COMMAND_REGISTER(ide_port), 0x30);
     
     write_bytes(buffer, count);
-
-    out8(IDE_COMMAND_REGISTER(ide_port), 0xE7);
 }
 
 static size_t ide_get_block_size() {
@@ -73,7 +70,6 @@ static void init_ide() {
     ide_port = IDE_DEFAULT_PORT;
     ide_drive = IDE_DEFAULT_DRIVE;
 }
-
 
 static void deinit_ide() {
     

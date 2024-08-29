@@ -41,10 +41,6 @@ static char* exceptions[] = {
 static void print_exception_info(irq_data_t* irq_data) {
     printk("error code: 0x%x\noriginal rip: 0x%x\nrflags: 0x%x\noriginal rsp: 0x%x\n", 
      irq_data->error_code, irq_data->original_rip, irq_data->rflags, irq_data->original_rsp);
-    printk("rsp: 0x%x\nrbp: 0x%x\nrsi: 0x%x\nrdi: 0x%x\n",
-     irq_data->regs.rsp, irq_data->regs.rbp,irq_data->regs.rsi, irq_data->regs.rdi);
-    printk("rdx: 0x%x\nrcx: 0x%x\nrbx: 0x%x\nrax: 0x%x\n",
-     irq_data->regs.rdx, irq_data->regs.rcx, irq_data->regs.rbx, irq_data->regs.rax);
 }
 
 interrupt irq_handle_exception(irq_data_t* irq_data) {
@@ -62,5 +58,4 @@ interrupt irq_page_fault(irq_data_t* irq_data) {
 
     map_page(physical_address, virtual_address, 0x82);
     flush_page();
-    panic("fuck");
 }

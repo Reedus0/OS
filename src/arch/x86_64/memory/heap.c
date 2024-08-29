@@ -57,7 +57,7 @@ static void shift_heap_descriptors_left(size_t index) {
 static void insert_heap_descriptor(heap_descriptor_t new_descriptor) {
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
-        if (current_descriptor->address > new_descriptor.address) {
+        if ((current_descriptor->address & 0xFFFFFFFFFF) > (new_descriptor.address & 0xFFFFFFFFFF)) {
             shift_heap_descriptors_right(i);
             g_heap_descriptors[i] = new_descriptor;
             g_heap_descriptor_count += 1;

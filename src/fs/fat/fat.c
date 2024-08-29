@@ -19,22 +19,24 @@ fs_t* create_fs_fat(dev_t* dev) {
 }
 
 void delete_fs_fat(fs_t* fs_fat) {
-    //kfree(fs_fat);
+    kfree(fs_fat);
 }
 
-void init(fs_t* fs, dir_t* root) {
+void init(fs_t* fs, vfs_dir_t* root) {
     fs->fs_data = get_fat_info(fs);
 
-    fat_parse_root(fs, root);
+    fat_entry_t* root_dir = fat_read_root(fs, root);
+
+    fat_parse_dir(fs, root_dir, root);
 }
 
-void deinit(fs_t* fs, dir_t* root) {
+void deinit(fs_t* fs, vfs_dir_t* root) {
     struct fat_info* fat_info = fs->fs_data;
-    //kfree(fat_info->fats);
-    //kfree(fat_info);
+    kfree(fat_info->fats);
+    kfree(fat_info);
 }
 
-void read_file(fs_t* fs, file_t* file, byte* buffer, size_t count) {
+void read_file(fs_t* fs, vfs_file_t* file, byte* buffer, size_t count) {
     struct fat_info* fat_info = fs->fs_data;
     fat_file_data_t* file_data = file->fs_data;
 
@@ -49,12 +51,12 @@ void read_file(fs_t* fs, file_t* file, byte* buffer, size_t count) {
     while (1) {
         if (current_block >= position / fat_info->cluster_size) {
             for (size_t i = position % fat_info->cluster_size; i < fat_info->cluster_size; i++) {
-                *(buffer + read_bytes) = *(byte*)(file_content->cluster + position % fat_info->cluster_size);
-                read_bytes++;
-                position++;
                 if (read_bytes >= count) {
                     break;
                 }
+                *(buffer + read_bytes) = *(byte*)(file_content->cluster + position % fat_info->cluster_size);
+                read_bytes++;
+                position++;
             }
         }
 
@@ -66,7 +68,7 @@ void read_file(fs_t* fs, file_t* file, byte* buffer, size_t count) {
     }
 }
 
-void write_file(fs_t* fs, file_t* file, byte* buffer, size_t count) {
+void write_file(fs_t* fs, vfs_file_t* file, byte* buffer, size_t count) {
     struct fat_info* fat_info = fs->fs_data;
     fat_file_data_t* file_data = file->fs_data;
 
@@ -106,18 +108,18 @@ void write_file(fs_t* fs, file_t* file, byte* buffer, size_t count) {
     }
 }
 
-file_t* create_file(fs_t* fs, dir_t* dir, char* name) {
+vfs_file_t* create_file(fs_t* fs, vfs_dir_t* dir, char* name) {
     
 }
 
-void delete_file(fs_t* fs, dir_t* dir, char* name) {
+void delete_file(fs_t* fs, vfs_dir_t* dir, char* name) {
 
 }
 
-dir_t* create_dir(fs_t* fs, dir_t* parent, char* name) {
+vfs_dir_t* create_dir(fs_t* fs, vfs_dir_t* parent, char* name) {
     
 }
 
-void delete_dir(fs_t* fs, dir_t* parent, char *name) {
+void delete_dir(fs_t* fs, vfs_dir_t* parent, char *name) {
     
 }

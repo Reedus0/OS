@@ -3,10 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "include/regs.h"
-
 struct irq_data {
-    regs_t regs;
     uint64_t interrupt_number;
     uint64_t error_code;
     uint64_t original_rip;
@@ -16,7 +13,6 @@ struct irq_data {
     uint64_t ss;
 } __attribute__((packed));
 typedef struct irq_data irq_data_t;
-
 
 typedef void (*interrupt)(irq_data_t* irq_data);
 
