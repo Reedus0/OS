@@ -31,7 +31,7 @@ struct fat_info* get_fat_info(vfs_fs_t* fs) {
     }
 
     fat_info->fats = kalloc(fat_info->total_fats * fat_info->fat_size * fat_info->sector_size);
-    bdev_read_block(fs->dev, fat_info->fats, fat_info->fat_region, fat_info->total_fats * fat_info->fat_size);
+    bdev_read(fs->dev, fat_info->fats, fat_info->fat_region, fat_info->total_fats * fat_info->fat_size);
 
     switch (fat_info->fat_type) {
         case FAT12:
@@ -59,31 +59,9 @@ fat_entry_t* fat_parse_lfn(vfs_fs_t* fs, fat_entry_t* fat_entry, vfs_dir_t* root
     if (fat_entry->name[0] == 0xE5) {
         return fat_entry + 1;
     }
+    char* name = fat_entry_get_lfn(fat_entry);
 
-    char* name = kalloc(64);
-
-    while (fat_entry->attributes == LFN) {
-        fat_long_name_t* fat_long_name = fat_entry;
-        if (fat_long_name->order & 0x40 == 0x40) {
-            fat_long_name->order ^= 0x40;
-        }
-        size_t position = (fat_long_name->order - 1) * 13; 
-        char* ptr = fat_long_name->name_1;
-        for (size_t i = 0; i < 13; i++) {
-            if (i >= 5) {
-                ptr = fat_long_name->name_2;
-                name[position + i] = *(ptr + (i * 2) - 10);
-                continue;
-            }
-            if (i >= 11) {
-                ptr = fat_long_name->name_2;
-                name[position + i] = *(ptr + (i * 2) - 22);
-                continue;
-            }
-            name[position + i] = *(ptr + i * 2);
-        }
-        fat_entry++;
-    }
+    while (fat_entry->attributes == LFN) fat_entry++;
 
     if (fat_entry->attributes == DIRECTORY) {
         vfs_dir_t* new_dir = fat_add_dir(fat_entry, root, dir_cluster, name);
@@ -100,7 +78,7 @@ fat_entry_t* fat_parse_lfn(vfs_fs_t* fs, fat_entry_t* fat_entry, vfs_dir_t* root
 vfs_file_t* fat_add_file(fat_entry_t* file_entry, vfs_dir_t* root, size_t dir_cluster, char* name) {
     fat_file_data_t* file_data = kalloc(sizeof(fat_file_data_t));
 
-    file_data->cluster = file_entry->cluster_low | file_entry->cluster_high << 16;
+    file_data->cluster = file_entry->cluster_low | (uint32_t)file_entry->cluster_high << 16;
     file_data->dir_cluster = dir_cluster;
 
     vfs_file_t* new_file = vfs_new_file(name, file_data);
@@ -112,7 +90,7 @@ vfs_file_t* fat_add_file(fat_entry_t* file_entry, vfs_dir_t* root, size_t dir_cl
 vfs_dir_t* fat_add_dir(fat_entry_t* dir_entry, vfs_dir_t* root, size_t dir_cluster, char* name) {
     fat_file_data_t* dir_data = kalloc(sizeof(fat_file_data_t));
 
-    dir_data->cluster = dir_entry->cluster_low | dir_entry->cluster_high << 16;
+    dir_data->cluster = dir_entry->cluster_low | (uint32_t)dir_entry->cluster_high << 16;
     dir_data->dir_cluster = dir_cluster;
 
     vfs_dir_t* new_dir = vfs_new_dir(name, dir_data);
@@ -124,7 +102,7 @@ vfs_dir_t* fat_add_dir(fat_entry_t* dir_entry, vfs_dir_t* root, size_t dir_clust
 void fat_parse_subdirs(vfs_fs_t* fs, fat_entry_t* dir_entry, vfs_dir_t* root) {
     struct fat_info* fat_info = fs->fs_data;
 
-    size_t cluster = dir_entry->cluster_low | dir_entry->cluster_high << 16;
+    size_t cluster = dir_entry->cluster_low | (uint32_t)dir_entry->cluster_high << 16;
     size_t fat_cluster = cluster;
     fat_cluster_t* dir = fat_read_cluster(fs, fat_cluster);
 
@@ -162,11 +140,11 @@ void fat_parse_dir(vfs_fs_t* fs, fat_entry_t* dir, vfs_dir_t* root, size_t dir_c
     kfree(dir);
 }
 
-fat_entry_t* fat_read_root(vfs_fs_t* fs, vfs_dir_t* root) {
+fat_entry_t* fat_read_root(vfs_fs_t* fs) {
     struct fat_info* fat_info = fs->fs_data;
 
     fat_entry_t* root_dir = kalloc(fat_info->total_root_dir_sectors * fat_info->sector_size);
-    bdev_read_block(fs->dev, root_dir, fat_info->root_dir_region, fat_info->total_root_dir_sectors);
+    bdev_read(fs->dev, root_dir, fat_info->root_dir_region, fat_info->total_root_dir_sectors);
 
     return root_dir;
 }

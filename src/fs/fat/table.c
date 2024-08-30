@@ -76,6 +76,6 @@ void fat_table_free_cluster(vfs_fs_t* fs, size_t cluster) {
 
 void fat_commit_table(vfs_fs_t* fs) {
     struct fat_info* fat_info = fs->fs_data;
-    bdev_write_block(fs->dev, fat_info->fats, fat_info->fat_region, fat_info->total_fats * fat_info->fat_size);
+    bdev_write(fs->dev, fat_info->fats, fat_info->fat_region, fat_info->total_fats * fat_info->fat_size);
 }
 

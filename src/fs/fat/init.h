@@ -5,6 +5,7 @@
 
 #include "fat.h"
 #include "file.h"
+#include "entry.h"
 #include "include/dev.h"
 
 enum FAT_TYPE {
@@ -30,5 +31,5 @@ struct fat_info {
 };
 
 struct fat_info* get_fat_info(vfs_fs_t* fs);
-fat_entry_t* fat_read_root(vfs_fs_t* fs, vfs_dir_t* root);
+fat_entry_t* fat_read_root(vfs_fs_t* fs);
 void fat_parse_dir(vfs_fs_t* fs, fat_entry_t* dir, vfs_dir_t* root, size_t dir_cluster);

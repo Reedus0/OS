@@ -17,7 +17,7 @@ fat_cluster_t* fat_read_cluster(vfs_fs_t* fs, size_t index) {
     
     size_t entry_sector = ((index - 2) * fat_info->sectors_per_claster) + fat_info->data_region;
 
-    bdev_read_block(fs->dev, file_cluster->cluster, entry_sector, fat_info->sectors_per_claster);
+    bdev_read(fs->dev, file_cluster->cluster, entry_sector, fat_info->sectors_per_claster);
     
     return file_cluster;
 }
@@ -43,7 +43,7 @@ void fat_write_cluster(vfs_fs_t* fs, size_t index, fat_cluster_t* data) {
 
     size_t entry_sector = ((index - 2) * fat_info->sectors_per_claster) + fat_info->data_region;
 
-    bdev_write_block(fs->dev, data->cluster, entry_sector, fat_info->sectors_per_claster);
+    bdev_write(fs->dev, data->cluster, entry_sector, fat_info->sectors_per_claster);
 
     kfree(data->cluster);
     kfree(data);

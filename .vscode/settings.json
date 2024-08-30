@@ -6,6 +6,9 @@
         "memory.h": "c",
         "typeinfo": "c",
         "fs.h": "c",
-        "functional": "c"
+        "functional": "c",
+        "string.h": "c",
+        "vfs.h": "c",
+        "utils.h": "c"
     }
 }

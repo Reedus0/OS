@@ -18,19 +18,19 @@ struct dev {
 };
 typedef struct dev dev_t;
 
-byte sdev_read_byte(dev_t* sdev) {
+byte sdev_read(dev_t* sdev) {
     return MODULE_FUNCTION(sdev->driver, SDEV_DRIVER_READ_BYTE)();
 }
 
-void sdev_write_byte(dev_t* sdev, byte new_byte) {
+void sdev_write(dev_t* sdev, byte new_byte) {
     MODULE_FUNCTION(sdev->driver, SDEV_DRIVER_WRITE_BYTE)(new_byte);
 }
 
-void bdev_read_block(dev_t* bdev, byte* buffer, size_t offset, size_t count) {
+void bdev_read(dev_t* bdev, byte* buffer, size_t offset, size_t count) {
     MODULE_FUNCTION(bdev->driver, BDEV_DRIVER_READ_BLOCK)(buffer, offset, count);
 }
 
-void bdev_write_block(dev_t* bdev, byte* buffer, size_t offset, size_t count) {
+void bdev_write(dev_t* bdev, byte* buffer, size_t offset, size_t count) {
     MODULE_FUNCTION(bdev->driver, BDEV_DRIVER_WRITE_BLOCK)(buffer, offset, count);
 }
 

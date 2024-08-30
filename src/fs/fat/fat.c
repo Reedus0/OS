@@ -25,7 +25,7 @@ void delete_fs_fat(vfs_fs_t* fs_fat) {
 void init(vfs_fs_t* fs, vfs_dir_t* root) {
     fs->fs_data = get_fat_info(fs);
 
-    fat_entry_t* root_dir = fat_read_root(fs, root);
+    fat_entry_t* root_dir = fat_read_root(fs);
 
     fat_parse_dir(fs, root_dir, root, 0);
 }
@@ -43,13 +43,15 @@ void read_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t count) {
     fat_cluster_t* file_content = fat_read_cluster(fs, file_data->cluster);
 
     size_t position = file->position;
-    size_t current_block = 0;
+    size_t current_cluster = 0;
     size_t read_bytes = 0;
 
     size_t index = file_data->cluster;
 
+    bool correct_cluster = current_cluster >= position / fat_info->cluster_size;
+
     while (1) {
-        if (current_block >= position / fat_info->cluster_size) {
+        if (correct_cluster) {
             read_bytes = fat_read(fs, file_content, buffer, position, count - read_bytes);
         }
 
@@ -60,7 +62,7 @@ void read_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t count) {
         if ((index & fat_info->eof) == fat_info->eof) break;
 
         file_content = fat_read_cluster(fs, index);
-        current_block++;
+        current_cluster++;
     }
 }
 
@@ -71,13 +73,15 @@ void write_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t count) {
     fat_cluster_t* file_content = fat_read_cluster(fs, file_data->cluster);
 
     size_t position = file->position;
-    size_t current_block = 0;
+    size_t current_cluster = 0;
     size_t wrote_bytes = 0;
 
     size_t index = file_data->cluster;
 
+    bool correct_cluster = current_cluster >= position / fat_info->cluster_size;
+
     while (1) {
-        if (current_block >= position / fat_info->cluster_size) {
+        if (correct_cluster) {
             wrote_bytes = fat_write(fs, file_content, buffer, position, count - wrote_bytes);
         }
 
@@ -93,7 +97,7 @@ void write_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t count) {
 
         index = fat_read_table(fs, index);
         file_content = fat_read_cluster(fs, index);
-        current_block++;
+        current_cluster++;
     }
 }
 
@@ -101,14 +105,38 @@ vfs_file_t* create_file(vfs_fs_t* fs, vfs_dir_t* dir, char* name) {
     
 }
 
-void delete_file(vfs_fs_t* fs, vfs_dir_t* dir, char* name) {
+void delete_file(vfs_fs_t* fs, vfs_file_t* file) {
+    struct fat_info* fat_info = fs->fs_data;
+    fat_file_data_t* file_data = file->fs_data;
 
+    fat_entry_t* buffer = kalloc(fat_info->sector_size * fat_info->cluster_size);
+    fat_entry_t* ptr = buffer;
+    fat_cluster_t* dir_content = fat_read_cluster(fs, file_data->dir_cluster);
+        
+    size_t index = file_data->dir_cluster;
+
+    while (1) {
+        fat_read(fs, dir_content, buffer, 0, fat_info->cluster_size);
+        while (ptr->name[0] != 0) {
+            if ((ptr->cluster_low | (uint32_t)ptr->cluster_high << 16) == file_data->cluster) {
+                printk("%s\n", ptr->name);
+                break;
+            }   
+            ptr++;
+        }
+
+        index = fat_read_table(fs, index);
+        if ((index & fat_info->eof) == fat_info->eof) break;
+
+        dir_content = fat_read_cluster(fs, index);
+    }
+    kfree(buffer);
 }
 
 vfs_dir_t* create_dir(vfs_fs_t* fs, vfs_dir_t* parent, char* name) {
     
 }
 
-void delete_dir(vfs_fs_t* fs, vfs_dir_t* parent, char *name) {
+void delete_dir(vfs_fs_t* fs, vfs_dir_t* dir) {
     
 }

@@ -55,3 +55,53 @@ int strncpy(char* dest, const char* src, int n) {
     }
     return result;
 }
+
+char tolower(char character) {
+    if (character > 0x40 && character < 0x5b) {
+        return character + 0x20;
+    }
+    return character;
+}
+
+char toupper(char character) {
+    if (character > 0x60 && character < 0x7b) {
+        return character - 0x20;
+    }
+    return character;
+}
+
+char* ltrim(char* string) {
+	char* char_pointer = string;
+	while (*char_pointer == 0x20) char_pointer++;
+	memcpy(string, char_pointer, strlen(char_pointer) + 1);
+	return string;
+}
+
+char* rtrim(char* string) {
+	char* back = string + strlen(string);
+	while (*--back == 0x20);
+	*(back + 1) = '\0';
+	return string;
+}
+
+char* trim_string(char* string) {
+	char* left_trim = ltrim(string);
+	if (strlen(left_trim) == 0) {
+		return left_trim;
+	}
+	return rtrim(left_trim);
+}
+
+void* memset(byte* dest, byte c, int count) {
+    for (int i = 0; i < count; i++) {
+        dest[i] = c;
+    }
+    return dest;
+}
+
+void* memcpy(byte* dest, byte* src, int count) {
+    for (int i = 0; i < count; i++) {
+        dest[i] = src[i];
+    }
+    return dest;
+}
