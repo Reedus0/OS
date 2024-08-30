@@ -50,24 +50,25 @@ typedef struct fat_long_name fat_long_name_t;
 
 struct fat_file_data {
     size_t cluster;
+    size_t dir_cluster;
 };
 typedef struct fat_file_data fat_file_data_t;
 
-fs_t* create_fs_fat(dev_t* dev);
-void delete_fs_fat(fs_t* fs_fat);
+vfs_fs_t* create_fs_fat(dev_t* dev);
+void delete_fs_fat(vfs_fs_t* fs_fat);
 
-void init(fs_t* fs, vfs_dir_t* root);
-void deinit(fs_t* fs, vfs_dir_t* root);
+void init(vfs_fs_t* fs, vfs_dir_t* root);
+void deinit(vfs_fs_t* fs, vfs_dir_t* root);
 
-void read_file(fs_t* fs, vfs_file_t* file, byte* buffer, size_t count);
-void write_file(fs_t* fs, vfs_file_t* file, byte* buffer, size_t count);
-vfs_file_t* create_file(fs_t* fs, vfs_dir_t* dir, char* name);
-void delete_file(fs_t* fs, vfs_dir_t* dir, char* name);
+void read_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t count);
+void write_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t count);
+vfs_file_t* create_file(vfs_fs_t* fs, vfs_dir_t* dir, char* name);
+void delete_file(vfs_fs_t* fs, vfs_dir_t* dir, char* name);
 
-vfs_dir_t* create_dir(fs_t* fs, vfs_dir_t* parent, char* name);
-void delete_dir(fs_t* fs, vfs_dir_t* parent, char *name);
+vfs_dir_t* create_dir(vfs_fs_t* fs, vfs_dir_t* parent, char* name);
+void delete_dir(vfs_fs_t* fs, vfs_dir_t* parent, char *name);
 
-fs_func_t g_fs_func_fat = {
+vfs_func_t g_vfs_func_fat = {
     .init = init,
     .deinit = deinit,
 

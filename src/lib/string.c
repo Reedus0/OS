@@ -27,12 +27,10 @@ bool strcmp(const char* first, const char* second) {
 }
 
 char* strchr(const char* string, char character) {
-    int result = 0;
     while (*string != '\0') {
         if (*string == character) {
-            return string + result - 1;
+            return string;
         }
-        result++;
         string++;
     }
     return 0;

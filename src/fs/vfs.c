@@ -4,7 +4,7 @@
 #include "lib/string.h"
 #include "fs/fat/fat.h"
 
-void vfs_mount(vfs_dir_t* root, fs_t* fs) {
+void vfs_mount(vfs_dir_t* root, vfs_fs_t* fs) {
     fs->mount_point = root;
     fs->func->init(fs, root);
 
@@ -23,36 +23,38 @@ void vfs_clean_subdir(vfs_dir_t* root) {
     }
     vfs_file_t* current_file = container_of(root->files.next, vfs_file_t, list);
     while (1) {
-        if (current_file->list.next == NULL) {
+        list_t* next = current_file->list.next;
+        vfs_remove_file(current_file);
+        if (next == NULL) {
             break;
         }
-        current_file = container_of(current_file->list.next, vfs_file_t, list);
-        vfs_remove_file(current_file);
+        current_file = container_of(next, vfs_file_t, list);
     }
-    vfs_remove_subdir(root);
+    if (root != &g_vfs_root) {
+        vfs_remove_subdir(root);
+    }
     return;
 }
 
 void vfs_clean_mount(vfs_dir_t* root) {
-    //printk("root %s\n", root->name);
-
     if (root->subdirs.next == NULL) {
         vfs_clean_subdir(root);
         return;
     }
     vfs_dir_t* current_dir = container_of(root->subdirs.next, vfs_dir_t, list);
     while (1) {
+        list_t* next = current_dir->list.next;
         vfs_clean_mount(current_dir);
-        if (current_dir->list.next == NULL) {
+        if (next == NULL) {
             break;
         }
-        current_dir = container_of(current_dir->list.next, vfs_dir_t, list);
+        current_dir = container_of(next, vfs_dir_t, list);
     }    
-    //vfs_clean_subdir(root);
+    vfs_clean_subdir(root);
 }
 
 void vfs_umount(vfs_dir_t* root) {
-    fs_t* current_fs = g_fs_list;
+    vfs_fs_t* current_fs = g_fs_list;
 
     while (1) {
         if (current_fs->mount_point == root) {
@@ -65,7 +67,7 @@ void vfs_umount(vfs_dir_t* root) {
         if (current_fs->list.prev == NULL) {
             break;
         }
-        current_fs = container_of(current_fs->list.prev, fs_t, list);
+        current_fs = container_of(current_fs->list.prev, vfs_fs_t, list);
     }
     root->mount_point = 0;
 }
@@ -73,17 +75,18 @@ void vfs_umount(vfs_dir_t* root) {
 vfs_dir_t* vfs_find_dir(char* path) {
     vfs_dir_t* current_dir = &g_vfs_root;
     while (*path != '\0') {
-        path = strchr(path, '/');
+        current_dir = container_of(current_dir->subdirs.next, vfs_dir_t, list);
+        path = strchr(path, '/') + 1;
         while (1) {
             size_t current_dir_name_length = strlen(current_dir->name);
             if (strncmp(current_dir->name, path, current_dir_name_length)) {
                 path += current_dir_name_length;
                 break;
             }
-            if (current_dir->subdirs.next == NULL) {
+            if (current_dir->list.next == NULL) {
                 return current_dir->parent;
             }
-            current_dir = container_of(current_dir->subdirs.next, vfs_dir_t, list);
+            current_dir = container_of(current_dir->list.next, vfs_dir_t, list);
         }
     }
     return current_dir;
@@ -131,7 +134,7 @@ vfs_dir_t* vfs_new_dir(char* name, void* fs_data) {
     vfs_dir_t* new_dir = kalloc(sizeof(vfs_dir_t));
 
     new_dir->name = kalloc(64);
-    strncpy(new_dir->name, name, strlen(name));
+    strncpy(new_dir->name, name, 64);
 
     new_dir->files.next = NULL;
     new_dir->files.prev = NULL;
@@ -148,7 +151,7 @@ vfs_file_t* vfs_new_file(char* name, void* fs_data) {
     vfs_file_t* new_file = kalloc(sizeof(vfs_file_t));
 
     new_file->name = kalloc(64);
-    strncpy(new_file->name, name, strlen(name));
+    strncpy(new_file->name, name, 64);
 
     new_file->fs_data = fs_data;
     new_file->position = 0;
@@ -192,18 +195,25 @@ void vfs_remove_file(vfs_file_t* file) {
 }
 
 void init_vfs() {
+    g_vfs_root.name = "/";
+    g_vfs_root.parent = &g_vfs_root;
+
+    vfs_fs_t* fat = create_fs_fat(&g_hdd);
+
+    vfs_mount(&g_vfs_root, fat);    
 
     byte buffer[] = "CCCCCCCCC";
     byte buffer2[] = "BBBBBBBBBB";
 
-    g_vfs_root.name = "/";
-    g_vfs_root.parent = &g_vfs_root;
+    vfs_dir_t* file_dir = vfs_find_dir("/");
+    vfs_file_t* file = vfs_find_file(file_dir, "file");
+    vfs_write_file(file, buffer2, 4);
+    vfs_read_file(file, buffer, 4);
+    printk("%s", buffer);
 
-    fs_t* fat = create_fs_fat(&g_hdd);
-    
-    vfs_mount(&g_vfs_root, fat);    
     vfs_umount(&g_vfs_root);
-
+    delete_fs_fat(fat);
+    kalloc(1);
     // vfs_dir_t* file_dir = vfs_find_dir("/");
     // vfs_file_t* file = vfs_find_file(file_dir, "FILE       ");
 

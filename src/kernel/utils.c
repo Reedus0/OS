@@ -28,7 +28,7 @@ shell_command sh_module(char* command) {
 }
 
 shell_command sh_cd(char* command) {
-    char* arg = strchr(command, ' ');
+    char* arg = strchr(command, ' ') + 1;
     if (strlen(arg) == 0) {
         printk("Specify directory!\n");
         return 1;

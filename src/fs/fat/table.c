@@ -2,7 +2,7 @@
 #include "init.h"
 #include "include/fs.h"
 
-size_t fat_read_table(fs_t* fs, size_t index) {
+size_t fat_read_table(vfs_fs_t* fs, size_t index) {
     struct fat_info* fat_info = fs->fs_data;
     switch (fat_info->fat_type) {
         case FAT12:
@@ -20,7 +20,7 @@ size_t fat_read_table(fs_t* fs, size_t index) {
     }
 }
 
-void fat_write_table(fs_t* fs, size_t index, size_t data) {
+void fat_write_table(vfs_fs_t* fs, size_t index, size_t data) {
     struct fat_info* fat_info = fs->fs_data;
     switch (fat_info->fat_type) {
         case FAT12:
@@ -41,7 +41,7 @@ void fat_write_table(fs_t* fs, size_t index, size_t data) {
     }
 }
 
-size_t fat_table_allocate_cluster(fs_t* fs, size_t cluster) {
+size_t fat_table_allocate_cluster(vfs_fs_t* fs, size_t cluster) {
     struct fat_info* fat_info = fs->fs_data;
 
     size_t result = 0;
@@ -69,12 +69,12 @@ size_t fat_table_allocate_cluster(fs_t* fs, size_t cluster) {
     }
 }
 
-void fat_table_free_cluster(fs_t* fs, size_t cluster) {
+void fat_table_free_cluster(vfs_fs_t* fs, size_t cluster) {
     fat_write_table(fs, cluster, 0);
     fat_commit_table(fs);
 }
 
-void fat_commit_table(fs_t* fs) {
+void fat_commit_table(vfs_fs_t* fs) {
     struct fat_info* fat_info = fs->fs_data;
     bdev_write_block(fs->dev, fat_info->fats, fat_info->fat_region, fat_info->total_fats * fat_info->fat_size);
 }

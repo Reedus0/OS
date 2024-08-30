@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "*.py": "python",
+        "heap.h": "c",
+        "dev.h": "c",
+        "memory.h": "c",
+        "typeinfo": "c",
+        "fs.h": "c",
+        "functional": "c"
+    }
+}

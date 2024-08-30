@@ -29,6 +29,6 @@ struct fat_info {
     byte* fats;
 };
 
-struct fat_info* get_fat_info(fs_t* fs);
-fat_entry_t* fat_read_root(fs_t* fs, vfs_dir_t* root);
-void fat_parse_dir(fs_t* fs, fat_entry_t* dir, vfs_dir_t* root);
+struct fat_info* get_fat_info(vfs_fs_t* fs);
+fat_entry_t* fat_read_root(vfs_fs_t* fs, vfs_dir_t* root);
+void fat_parse_dir(vfs_fs_t* fs, fat_entry_t* dir, vfs_dir_t* root, size_t dir_cluster);
