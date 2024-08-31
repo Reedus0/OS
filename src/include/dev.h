@@ -14,6 +14,7 @@
 #define BDEV_DRIVER_GET_BLOCK_SIZE 4
 
 struct dev {
+    void* dev_data;
     module_t* driver;
 };
 typedef struct dev dev_t;

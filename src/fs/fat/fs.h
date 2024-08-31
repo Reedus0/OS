@@ -10,16 +10,6 @@
 
 #define FIRST_DATA_CLUSTER 5
 
-enum FAT_ATTRIBUTES {
-    READ_ONLY = 0x1,
-    HIDDEN = 0x2,
-    SYSTEM = 0x4,
-    VALUME_ID = 0x8,
-    DIRECTORY = 0x10,
-    ARCHIVE = 0x20,
-    LFN = 0xF,
-};
-
 struct fat_file_data {
     size_t cluster;
     size_t dir_cluster;
@@ -29,11 +19,11 @@ typedef struct fat_file_data fat_file_data_t;
 vfs_fs_t* create_fs_fat(dev_t* dev);
 void delete_fs_fat(vfs_fs_t* fs_fat);
 
-void init(vfs_fs_t* fs, vfs_dir_t* root);
-void deinit(vfs_fs_t* fs, vfs_dir_t* root);
+void init(vfs_fs_t* fs);
+void deinit(vfs_fs_t* fs);
 
-void read_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t count);
-void write_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t count);
+size_t read_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t offset, size_t count);
+size_t write_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t offset, size_t count);
 vfs_file_t* create_file(vfs_fs_t* fs, vfs_dir_t* dir, char* name);
 void delete_file(vfs_fs_t* fs, vfs_file_t* file);
 

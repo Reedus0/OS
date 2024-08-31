@@ -10,3 +10,5 @@ shell_command sh_clear(char* command);
 shell_command sh_module(char* command);
 shell_command sh_cd(char* command);
 shell_command sh_ls(char* command);
+shell_command sh_read(char* command);
+shell_command sh_write(char* command);

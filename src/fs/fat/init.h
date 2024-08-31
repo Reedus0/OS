@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "fat.h"
-#include "file.h"
+#include "fs.h"
+#include "cluster.h"
 #include "entry.h"
 #include "include/dev.h"
 
@@ -17,7 +17,6 @@ enum FAT_TYPE {
 struct fat_info {
     enum FAT_TYPE fat_type;
     size_t fat_size;
-    size_t total_sectors;
     size_t total_root_dir_sectors;
     size_t total_fats;
     size_t fat_region;
@@ -27,9 +26,7 @@ struct fat_info {
     size_t sector_size;
     size_t cluster_size;
     size_t eof;
-    byte* fats;
 };
 
-struct fat_info* get_fat_info(vfs_fs_t* fs);
-fat_entry_t* fat_read_root(vfs_fs_t* fs);
+struct fat_info* fat_get_info(vfs_fs_t* fs);
 void fat_parse_dir(vfs_fs_t* fs, fat_entry_t* dir, vfs_dir_t* root, size_t dir_cluster);

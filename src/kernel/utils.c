@@ -71,6 +71,10 @@ shell_command sh_ls(char* command) {
     return 0;
 }
 
-shell_command sh_fc(char* command) {
+shell_command sh_read(char* command) {
+    return 0;
+}
+
+shell_command sh_write(char* command) {
     return 0;
 }

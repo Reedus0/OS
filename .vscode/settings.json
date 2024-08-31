@@ -9,6 +9,11 @@
         "functional": "c",
         "string.h": "c",
         "vfs.h": "c",
-        "utils.h": "c"
+        "utils.h": "c",
+        "kalloc.h": "c",
+        "entry.h": "c",
+        "cluster.h": "c",
+        "macro.h": "c",
+        "multiboot2.h": "c"
     }
 }

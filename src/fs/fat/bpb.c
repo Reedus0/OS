@@ -1,5 +1,5 @@
 #include "bpb.h"
-#include "fat.h"
+#include "fs.h"
 #include "include/types.h"
 
 struct fat_bpb* get_bpb(dev_t* dev) {

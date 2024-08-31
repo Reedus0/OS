@@ -16,12 +16,6 @@ static size_t search_command(char* command, shell_function_t functions[]) {
     return 0;
 }
 
-static void clear_shell_buffer() {
-    for (size_t i = 0; i < SHELL_BUFFER_SIZE; i++) {
-        g_shell_buffer[i] = 0;
-    }
-}
-
 static size_t shell_execute(char* command, shell_function_t functions[]) {
     size_t index = search_command(command, functions);
     if (index == 0) {
@@ -29,6 +23,12 @@ static size_t shell_execute(char* command, shell_function_t functions[]) {
         return 1;
     }
     return functions[index].shell_commnad(command);
+}
+
+static void clear_shell_buffer() {
+    for (size_t i = 0; i < SHELL_BUFFER_SIZE; i++) {
+        g_shell_buffer[i] = 0;
+    }
 }
 
 void init_shell(shell_function_t functions[]) {

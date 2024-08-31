@@ -21,7 +21,7 @@ void kget(byte* buffer) {
                 last_size--;
             }
         }
-        *((char*)buffer + last_size) = last_byte;
+        buffer[last_size] = last_byte;
         last_size = stdin_size;
     };
 }

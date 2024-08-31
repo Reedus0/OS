@@ -69,6 +69,7 @@ static void insert_heap_descriptor(heap_descriptor_t new_descriptor) {
 }
 
 void* heap_alloc(size_t bytes) {
+    // print_heap();
     bytes = bytes % 8 == 0 ? bytes : (((bytes / 8) + 1) * 8);
 
     if (bytes == 0) {
