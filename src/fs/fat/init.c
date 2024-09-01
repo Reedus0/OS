@@ -78,7 +78,7 @@ vfs_file_t* fat_add_file(vfs_dir_t* root, size_t index, size_t dir_cluster, char
     file_data->cluster = index;
     file_data->dir_cluster = dir_cluster;
 
-    vfs_file_t* new_file = vfs_create_file(name, file_data);
+    vfs_file_t* new_file = vfs_new_file(name, file_data);
     vfs_add_file(root, new_file);
 
     return new_file;
@@ -90,7 +90,7 @@ vfs_dir_t* fat_add_dir(vfs_dir_t* root, size_t index, size_t dir_cluster, char* 
     dir_data->cluster = index;
     dir_data->dir_cluster = dir_cluster;
 
-    vfs_dir_t* new_dir = vfs_create_dir(name, dir_data);
+    vfs_dir_t* new_dir = vfs_new_dir(name, dir_data);
     vfs_add_subdir(root, new_dir);
 
     return new_dir;

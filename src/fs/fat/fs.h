@@ -9,10 +9,11 @@
 #include "include/fs.h"
 
 #define FIRST_DATA_CLUSTER 5
+#define ROOT_CLUSTER 0
 
 struct fat_file_data {
-    size_t cluster;
-    size_t dir_cluster;
+    uint32_t cluster;
+    uint32_t dir_cluster;
 };
 typedef struct fat_file_data fat_file_data_t;
 

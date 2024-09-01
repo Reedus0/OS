@@ -57,7 +57,7 @@ static void shift_heap_descriptors_left(size_t index) {
 static void insert_heap_descriptor(heap_descriptor_t new_descriptor) {
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
-        if ((current_descriptor->address & 0xFFFFFFFFFF) > (new_descriptor.address & 0xFFFFFFFFFF)) {
+        if ((current_descriptor->address & MAX_ADDRESS_MASK) > (new_descriptor.address & MAX_ADDRESS_MASK)) {
             shift_heap_descriptors_right(i);
             g_heap_descriptors[i] = new_descriptor;
             g_heap_descriptor_count += 1;
@@ -105,6 +105,10 @@ void* heap_alloc(size_t bytes) {
     panic("Couldn't allocate memory!");
 }
 
+static void heap_descriptor_clear_memory(heap_descriptor_t* available_descriptor) {
+    memset(available_descriptor->address & MAX_ADDRESS_MASK, 0, available_descriptor->size);
+}
+
 static void merge_descriptors(heap_descriptor_t* available_descriptor) {
     for (size_t i = 0; i < g_heap_descriptor_count; i++) { 
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
@@ -137,6 +141,7 @@ void heap_free(void* ptr) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
         if (current_descriptor->address == (uint64_t)ptr) {
             heap_descriptor_set_available(current_descriptor);
+            heap_descriptor_clear_memory(current_descriptor);
             merge_descriptors(current_descriptor);
             return; 
         }

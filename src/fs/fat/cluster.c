@@ -10,10 +10,7 @@ static fat_cluster_t* read_cluster(vfs_fs_t* fs, size_t index) {
     fat_cluster_t* fat_cluster = kalloc(sizeof(fat_cluster_t));
     void* fat_entry = kalloc(fat_info->cluster_size);
 
-    fat_cluster->cluster = fat_entry;
-
-    fat_cluster->list.next = NULL;
-    fat_cluster->list.prev = NULL;    
+    fat_cluster->cluster = fat_entry;  
     
     size_t entry_sector = ((index - 2) * fat_info->sectors_per_claster) + fat_info->data_region;
 
@@ -145,7 +142,7 @@ size_t fat_read_root(vfs_fs_t* fs, byte buffer[], size_t offset, size_t count) {
 static void write_root(vfs_fs_t* fs, byte* buffer) {
     struct fat_info* fat_info = fs->fs_data;
 
-    bdev_read(fs->dev, buffer, fat_info->root_dir_region, fat_info->total_root_dir_sectors);
+    bdev_write(fs->dev, buffer, fat_info->root_dir_region, fat_info->total_root_dir_sectors);
 
     kfree(buffer);
     return;

@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define GET_CLUSTER(entry) (entry->cluster_low | (uint32_t)entry->cluster_high << 16)
+#define GET_CLUSTER(entry) entry->cluster_low | (uint32_t)entry->cluster_high << 16
 #define VALID_ENTRY(entry) (entry->name[0] != 0)
 
 enum FAT_ATTRIBUTES {
@@ -45,6 +45,6 @@ struct fat_long_name {
 typedef struct fat_long_name fat_long_name_t;
 
 char* fat_entry_read_lfn(fat_entry_t* fat_entry);
-fat_entry_t* fat_entry_create(char* name, enum FAT_ATTRIBUTES attributes);
+fat_entry_t* fat_entry_create(char* name, size_t cluster, enum FAT_ATTRIBUTES attributes);
 void fat_entry_add(fat_entry_t* dir, fat_entry_t* fat_entry);
 void fat_entry_remove(fat_entry_t* dir, size_t index);

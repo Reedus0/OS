@@ -110,16 +110,28 @@ vfs_file_t* vfs_find_file(vfs_dir_t* dir, char* filename) {
     return g_fs_list->func->create_file(g_fs_list, dir, filename);
 }
 
-void vfs_read_file(vfs_file_t* file, byte* buffer, size_t offset, size_t count) {
+size_t vfs_read_file(vfs_file_t* file, byte* buffer, size_t offset, size_t count) {
     g_fs_list->func->read_file(g_fs_list, file, buffer, offset, count);
 }
 
-void vfs_write_file(vfs_file_t* file, byte* buffer, size_t offset, size_t count) {
+size_t vfs_write_file(vfs_file_t* file, byte* buffer, size_t offset, size_t count) {
     g_fs_list->func->write_file(g_fs_list, file, buffer, offset, count);
+}
+
+vfs_file_t* vfs_create_file(vfs_dir_t* dir, char* name) {
+    g_fs_list->func->create_file(g_fs_list, dir, name);
 }
 
 void vfs_delete_file(vfs_file_t* file) {
     g_fs_list->func->delete_file(g_fs_list, file);
+}
+
+vfs_dir_t* vfs_create_dir(vfs_dir_t* dir, char* name) {
+    
+}
+
+void vfs_delete_dir(vfs_dir_t* dir) {
+
 }
 
 void vfs_add_subdir(vfs_dir_t* root, vfs_dir_t* subdir) {
@@ -145,14 +157,21 @@ void init_vfs() {
     g_vfs_root.name = "/";
     g_vfs_root.parent = &g_vfs_root;
 
-    vfs_fs_t* fat = vfs_create_fs(&g_hdd, &g_vfs_func_fat);
+    vfs_fs_t* fat = vfs_new_fs(&g_hdd, &g_vfs_func_fat);
 
     vfs_mount(&g_vfs_root, fat);    
 
-    vfs_dir_t* file_dir = vfs_find_dir(&g_vfs_root, "/dir");
-    // vfs_create_file("root", );
-    // vfs_file_t* file = vfs_find_file(file_dir, "dir_file");
+    byte hello[256] = "Hello, Root!";
+    byte buffer[256];
+
+    vfs_dir_t* file_dir = vfs_find_dir(&g_vfs_root, "/");
+    // vfs_file_t* new_file = vfs_create_file(file_dir, "root");
+    // vfs_add_file(file_dir, new_file);
+    // vfs_file_t* file = vfs_find_file(file_dir, "root");
+    // vfs_delete_file(file);
+    // vfs_remove_file(file);
     // vfs_write_file(file, hello, 0, 12);
+    // vfs_read_file(file, buffer, 0, 12);
     // vfs_read_file(file, buffer, 0, 12);
     // printk("%s", buffer);
     // vfs_delete_file(file);

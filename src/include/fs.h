@@ -64,18 +64,12 @@ struct file {
 };
 typedef struct file file_t;
 
-vfs_dir_t* vfs_create_dir(char* name, void* fs_data) {
+vfs_dir_t* vfs_new_dir(char* name, void* fs_data) {
     vfs_dir_t* new_dir = kalloc(sizeof(vfs_dir_t));
 
     new_dir->name = kalloc(64);
     strncpy(new_dir->name, name, 64);
     new_dir->name = trim_string(new_dir->name);
-
-    new_dir->files.next = NULL;
-    new_dir->files.prev = NULL;
-
-    new_dir->subdirs.next = NULL;
-    new_dir->subdirs.prev = NULL;
 
     new_dir->fs_data = fs_data;
 
@@ -90,7 +84,7 @@ void vfs_remove_dir(vfs_dir_t* dir) {
     kfree(dir);
 }
 
-vfs_file_t* vfs_create_file(char* name, void* fs_data) {
+vfs_file_t* vfs_new_file(char* name, void* fs_data) {
     vfs_file_t* new_file = kalloc(sizeof(vfs_file_t));
 
     new_file->name = kalloc(64);
@@ -110,7 +104,7 @@ void vfs_remove_file(vfs_file_t* file) {
     kfree(file);
 }
 
-vfs_fs_t* vfs_create_fs(dev_t* dev, vfs_func_t* vfs_func) {
+vfs_fs_t* vfs_new_fs(dev_t* dev, vfs_func_t* vfs_func) {
     vfs_fs_t* new_fs = kalloc(sizeof(vfs_fs_t));
 
     new_fs->dev = dev;
