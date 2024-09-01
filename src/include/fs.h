@@ -43,7 +43,7 @@ struct vfs_func {
     vfs_file_t* (*create_file)(vfs_fs_t* fs, vfs_dir_t* dir, char* name);
     void (*delete_file)(vfs_fs_t* fs, vfs_file_t* file);
 
-    vfs_dir_t* (*create_dir)(vfs_fs_t* fs, vfs_dir_t* parent, char* name);
+    vfs_dir_t* (*create_dir)(vfs_fs_t* fs, vfs_dir_t* dir, char* name);
     void (*delete_dir)(vfs_fs_t* fs, vfs_dir_t* dir);
 };
 typedef struct vfs_func vfs_func_t;

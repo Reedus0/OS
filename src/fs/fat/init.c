@@ -91,7 +91,7 @@ vfs_dir_t* fat_add_dir(vfs_dir_t* root, size_t index, size_t dir_cluster, char* 
     dir_data->dir_cluster = dir_cluster;
 
     vfs_dir_t* new_dir = vfs_new_dir(name, dir_data);
-    vfs_add_subdir(root, new_dir);
+    vfs_add_dir(root, new_dir);
 
     return new_dir;
 }
@@ -99,7 +99,7 @@ vfs_dir_t* fat_add_dir(vfs_dir_t* root, size_t index, size_t dir_cluster, char* 
 void fat_parse_subdirs(vfs_fs_t* fs, vfs_dir_t* root, size_t index) {
     struct fat_info* fat_info = fs->fs_data;
 
-    size_t dir_size = fat_cluster_count(fs, index);
+    size_t dir_size = fat_get_cluster_count(fs, index);
     size_t content_size = dir_size * fat_info->cluster_size;
 
     fat_entry_t* buffer = kalloc(content_size);

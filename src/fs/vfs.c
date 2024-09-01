@@ -127,14 +127,14 @@ void vfs_delete_file(vfs_file_t* file) {
 }
 
 vfs_dir_t* vfs_create_dir(vfs_dir_t* dir, char* name) {
-    
+    g_fs_list->func->create_dir(g_fs_list, dir, name);
 }
 
 void vfs_delete_dir(vfs_dir_t* dir) {
-
+    g_fs_list->func->delete_dir(g_fs_list, dir);
 }
 
-void vfs_add_subdir(vfs_dir_t* root, vfs_dir_t* subdir) {
+void vfs_add_dir(vfs_dir_t* root, vfs_dir_t* subdir) {
     list_t* last_list = &root->subdirs;
 
     while (last_list->next != NULL) {
@@ -164,13 +164,13 @@ void init_vfs() {
     byte hello[256] = "Hello, Root!";
     byte buffer[256];
 
-    vfs_dir_t* file_dir = vfs_find_dir(&g_vfs_root, "/");
+    // vfs_dir_t* file_dir = vfs_find_dir(&g_vfs_root, "/");
     // vfs_file_t* new_file = vfs_create_file(file_dir, "root");
     // vfs_add_file(file_dir, new_file);
     // vfs_file_t* file = vfs_find_file(file_dir, "root");
+    // vfs_write_file(file, hello, 2046, 12);
     // vfs_delete_file(file);
     // vfs_remove_file(file);
-    // vfs_write_file(file, hello, 0, 12);
     // vfs_read_file(file, buffer, 0, 12);
     // vfs_read_file(file, buffer, 0, 12);
     // printk("%s", buffer);

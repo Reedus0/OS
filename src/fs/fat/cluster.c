@@ -19,7 +19,7 @@ static fat_cluster_t* read_cluster(vfs_fs_t* fs, size_t index) {
     return fat_cluster;
 }
 
-size_t fat_read_content(vfs_fs_t* fs, size_t index, byte buffer[], size_t offset, size_t count) {
+static size_t fat_read_cluster(vfs_fs_t* fs, size_t index, byte buffer[], size_t offset, size_t count) {
     struct fat_info* fat_info = fs->fs_data;
 
     size_t current_cluster = 0;
@@ -60,7 +60,7 @@ static void write_cluster(vfs_fs_t* fs, size_t index, fat_cluster_t* data) {
     kfree(data);
 } 
 
-size_t fat_write_content(vfs_fs_t* fs, size_t index, byte buffer[], size_t offset, size_t count) {
+static size_t fat_write_cluster(vfs_fs_t* fs, size_t index, byte buffer[], size_t offset, size_t count) {
     struct fat_info* fat_info = fs->fs_data;
 
     size_t current_cluster = 0;
@@ -95,19 +95,6 @@ size_t fat_write_content(vfs_fs_t* fs, size_t index, byte buffer[], size_t offse
     return wrote_bytes;
 }
 
-size_t fat_cluster_count(vfs_fs_t* fs, size_t index) {
-    struct fat_info* fat_info = fs->fs_data;
-
-    size_t result = 1;
-    while (1) {
-        index = fat_read_table(fs, index);
-        if ((index & fat_info->eof) == fat_info->eof) break;
-        result++;
-    }
-
-    return result;
-}
-
 static byte* read_root(vfs_fs_t* fs) {
     struct fat_info* fat_info = fs->fs_data;
 
@@ -119,7 +106,7 @@ static byte* read_root(vfs_fs_t* fs) {
     return buffer;
 }
 
-size_t fat_read_root(vfs_fs_t* fs, byte buffer[], size_t offset, size_t count) {
+static size_t fat_read_root(vfs_fs_t* fs, byte buffer[], size_t offset, size_t count) {
     struct fat_info* fat_info = fs->fs_data;
 
     size_t root_size = fat_info->total_root_dir_sectors * fat_info->sector_size;
@@ -148,7 +135,7 @@ static void write_root(vfs_fs_t* fs, byte* buffer) {
     return;
 }
 
-size_t fat_write_root(vfs_fs_t* fs, byte buffer[], size_t offset, size_t count) {
+static size_t fat_write_root(vfs_fs_t* fs, byte buffer[], size_t offset, size_t count) {
     struct fat_info* fat_info = fs->fs_data;
 
     size_t root_size = fat_info->total_root_dir_sectors * fat_info->sector_size;
@@ -166,4 +153,33 @@ size_t fat_write_root(vfs_fs_t* fs, byte buffer[], size_t offset, size_t count) 
     write_root(fs, root_dir);
 
     return wrote_bytes;
+}
+
+size_t fat_read_content(vfs_fs_t* fs, size_t index, byte buffer[], size_t offset, size_t count) {
+    if (index == ROOT_CLUSTER) {
+        fat_read_root(fs, buffer, offset, count);
+    } else {
+        fat_read_cluster(fs, index, buffer, offset, count);
+    }
+}
+
+size_t fat_write_content(vfs_fs_t* fs, size_t index, byte buffer[], size_t offset, size_t count) {
+    if (index == ROOT_CLUSTER) {
+        fat_write_root(fs, buffer, offset, count);
+    } else {
+        fat_write_cluster(fs, index, buffer, offset, count);
+    }
+}
+
+size_t fat_get_cluster_count(vfs_fs_t* fs, size_t index) {
+    struct fat_info* fat_info = fs->fs_data;
+
+    size_t result = 1;
+    while (1) {
+        index = fat_read_table(fs, index);
+        if ((index & fat_info->eof) == fat_info->eof) break;
+        result++;
+    }
+
+    return result;
 }
