@@ -2,6 +2,7 @@
     "files.associations": {
         "*.py": "python",
         "*.h": "c",
-        "*.c": "c"
+        "*.c": "c",
+        "typeinfo": "c"
     }
 }

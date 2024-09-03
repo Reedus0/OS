@@ -8,6 +8,9 @@
 #include "include/types.h"
 #include "lib/string.h"
 
+#define MAX_NAME_LENGTH 64
+#define MAX_PATH_LENGTH 256
+
 struct vfs_file {
     char* name;
     void* fs_data;
@@ -59,7 +62,7 @@ struct vfs_fs {
 typedef struct vfs_fs vfs_fs_t;
 
 struct file {
-    vfs_file_t* file;
+    vfs_file_t* vfs_file;
     size_t position;
 };
 typedef struct file file_t;
@@ -67,8 +70,8 @@ typedef struct file file_t;
 vfs_dir_t* vfs_new_dir(char* name, void* fs_data) {
     vfs_dir_t* new_dir = kalloc(sizeof(vfs_dir_t));
 
-    new_dir->name = kalloc(64);
-    strncpy(new_dir->name, name, 64);
+    new_dir->name = kalloc(MAX_NAME_LENGTH);
+    strncpy(new_dir->name, name, MAX_NAME_LENGTH);
     new_dir->name = trim_string(new_dir->name);
 
     new_dir->fs_data = fs_data;
@@ -87,8 +90,8 @@ void vfs_remove_dir(vfs_dir_t* dir) {
 vfs_file_t* vfs_new_file(char* name, void* fs_data) {
     vfs_file_t* new_file = kalloc(sizeof(vfs_file_t));
 
-    new_file->name = kalloc(64);
-    strncpy(new_file->name, name, 64);
+    new_file->name = kalloc(MAX_NAME_LENGTH);
+    strncpy(new_file->name, name, MAX_NAME_LENGTH);
     new_file->name = trim_string(new_file->name);
 
     new_file->fs_data = fs_data;
@@ -117,4 +120,23 @@ void vfs_remove_fs(vfs_fs_t* fs) {
     list_remove(&fs->list);
 
     kfree(fs);
+}
+
+void vfs_add_dir(vfs_dir_t* root, vfs_dir_t* subdir) {
+    list_t* last_list = &root->subdirs;
+
+    while (last_list->next != NULL) {
+        last_list = last_list->next;
+    }
+    list_insert_after(last_list, &subdir->list);
+
+    subdir->parent = root;
+}
+
+void vfs_add_file(vfs_dir_t* root, vfs_file_t* file) {
+    list_t* last_list = &root->files;
+    while (last_list->next != NULL) {
+        last_list = last_list->next;
+    }
+    list_insert_after(last_list, &file->list);
 }

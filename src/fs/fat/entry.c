@@ -52,7 +52,6 @@ static fat_long_name_t* create_lfn(char* name) {
     for (size_t i = 0; i < entry_count; i++) {
         result[i].order = i + 1;
         result[i].attribute = LFN;
-        result[i].entry_type = 1;
         result[i].checksum = checksum;
         result[i].reserved_1 = 0;
 
