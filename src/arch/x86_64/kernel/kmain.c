@@ -18,6 +18,12 @@ void kmain(multiboot2_info_t* mbd) {
         {"memory", sh_memory},
         {"cd ", sh_cd},
         {"ls", sh_ls},
+        {"mkfile ", sh_mkfile},
+        {"mkdir ", sh_mkdir},
+        {"rm ", sh_rm},
+        {"rmdir", sh_rmdir},
+        {"read ", sh_read},
+        {"write ", sh_write},
         {NULL, NULL},
     };
 
