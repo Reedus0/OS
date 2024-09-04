@@ -102,23 +102,24 @@ shell_command sh_rmdir(char* command) {
 }
 
 shell_command sh_read(char* command) {
-    byte buffer[256];
+    byte buffer[256] = {0};
     char* arg = strchr(command, ' ') + 1;
     
     file_t* file = vfs_open_file(arg);
     size_t bytes_read = vfs_read_file(file, buffer, 256);
 
-    for (size_t i = 0; i< bytes_read; i++) {
+    for (size_t i = 0; i < bytes_read; i++) {
         printk("%x", buffer[i]);
     }
 
     vfs_close_file(file);
-    
+    printk("\n");
+
     return 0;
 }
 
 shell_command sh_write(char* command) {
-    byte buffer[256];
+    byte buffer[256] = {0};
     char* arg = strchr(command, ' ') + 1;
     
     file_t* file = vfs_open_file(arg);
@@ -127,6 +128,7 @@ shell_command sh_write(char* command) {
 
     vfs_write_file(file, buffer, 256);
     vfs_close_file(file);
+    printk("\n");
 
     return 0;
 }
