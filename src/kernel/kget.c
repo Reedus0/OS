@@ -1,4 +1,5 @@
 #include "kernel/stdin.h"
+#include "kernel/stdout.h"
 #include "kget.h"
 
 void kget(byte* buffer) {
@@ -10,14 +11,14 @@ void kget(byte* buffer) {
         byte last_byte = stdin_get_last_byte();
         size_t stdin_size = stdin_get_size();
         if (stdin_size > last_size) {
-            print_char(last_byte);
+            stdout_add_byte(last_byte);
         }
         if (last_byte == '\n') {
             break;
         }
         if (stdin_size <= last_size) {
             if (last_size > 0) {
-                delete_char();
+                stdout_add_byte('\b');
                 last_size--;
             }
         }

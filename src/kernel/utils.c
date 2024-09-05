@@ -1,8 +1,8 @@
 #include "utils.h"
-#include "include/print.h"
 #include "include/module.h"
 #include "include/list.h"
 #include "include/macro.h"
+#include "drivers/tty/tty.h"
 #include "kernel/kget.h"
 #include "lib/string.h"
 
@@ -12,7 +12,7 @@ shell_command sh_hello(char* command) {
 } 
 
 shell_command sh_clear(char* command) {
-    print_clear();
+    MODULE_FUNCTION(g_terminal.driver, TTY_CLEAR)();
     return 0;
 }
 

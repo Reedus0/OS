@@ -1,5 +1,5 @@
 #include "shell.h"
-#include "include/print.h"
+#include "drivers/tty/tty.h"
 #include "kernel/kget.h"
 #include "lib/string.h"
 
@@ -32,7 +32,7 @@ static void clear_shell_buffer() {
 }
 
 void init_shell(shell_function_t functions[]) {
-    print_clear();
+    MODULE_FUNCTION(g_terminal.driver, TTY_CLEAR)();
     g_shell_dir = &g_vfs_root;
     while (1) {
         printk(g_prompt, g_shell_dir->name);

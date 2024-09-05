@@ -7,6 +7,7 @@
 #include "drivers/pic/pic.h"
 #include "drivers/keyboard/keyboard.h"
 #include "drivers/ata/ide.h"
+#include "drivers/tty/tty.h"
 #include "include/module.h"
 #include "include/dev.h"
 
@@ -37,6 +38,11 @@ void init_hal(multiboot2_info_t* mbd) {
     MODULE_FUNCTION(ide_module, IDE_SET_PORT)(0x1F0, 1);
 
     g_hdd.driver = ide_module;
+
+    module_t* tty_module = init_tty_module();
+    register_module(tty_module);
+
+    g_terminal.driver = tty_module;
 
     enable_irq();
 
