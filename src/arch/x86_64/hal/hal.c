@@ -41,6 +41,9 @@ void init_hal(multiboot2_info_t* mbd) {
 
     g_keyboard.driver = keyboard_module;
 
+    module_t* cmos_module = init_cmos_module();
+    register_module(cmos_module);
+
     module_t* ide_module = init_ide_module();
     register_module(ide_module);
     MODULE_FUNCTION(ide_module, IDE_SET_PORT)(0x1F0, 1);
