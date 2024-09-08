@@ -114,6 +114,8 @@ static void init_tty() {
     current_column = 0;
     current_row = 0;
     tty_buffer = (terminal_char_t*)0xb8000;
+
+    tty_print_clear();
 }
 
 static void deinit_tty() {

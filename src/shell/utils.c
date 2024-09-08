@@ -104,9 +104,14 @@ shell_command sh_rmdir(char* command) {
 
 shell_command sh_read(char* command) {
     byte buffer[256] = {0};
+    byte offset[64] = {0};
     char* arg = strchr(command, ' ') + 1;
+
+    printk(NONE, "Offset: ");
+    kget(offset);
     
     file_t* file = vfs_open_file(arg);
+    vfs_seek(file, atoi(offset));
     size_t bytes_read = vfs_read_file(file, buffer, 256);
 
     for (size_t i = 0; i < bytes_read; i++) {
@@ -121,10 +126,16 @@ shell_command sh_read(char* command) {
 
 shell_command sh_write(char* command) {
     byte buffer[256] = {0};
+    byte offset[64] = {0};
     char* arg = strchr(command, ' ') + 1;
+
+    printk(NONE, "Offset: ");
+    kget(offset);
     
     file_t* file = vfs_open_file(arg);
-
+    vfs_seek(file, atoi(offset));
+    vfs_read_file(file, buffer, 256);
+    
     kget(buffer);
 
     vfs_write_file(file, buffer, 256);

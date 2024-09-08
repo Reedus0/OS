@@ -124,6 +124,7 @@ file_t* vfs_open_file(char* path) {
     file_t* file = kalloc(sizeof(file_t));
 
     char* filename = strrchr(path, '/') + 1;
+    if (filename == 1) filename = path;
 
     vfs_dir_t* file_dir = find_dir(&g_vfs_root, path);
     file->vfs_file = find_file(file_dir, filename);
@@ -150,6 +151,7 @@ size_t vfs_write_file(file_t* file, byte* buffer, size_t count) {
 vfs_file_t* vfs_create_file(char* path) {
     vfs_dir_t* file_dir = find_dir(&g_vfs_root, path);
     char* filename = strrchr(path, '/') + 1;
+    if (filename == 1) filename = path;
 
     vfs_file_t* new_file = g_fs_list->func->create_file(g_fs_list, file_dir, filename);
     vfs_add_file(file_dir, new_file);
@@ -160,6 +162,8 @@ vfs_file_t* vfs_create_file(char* path) {
 void vfs_delete_file(char* path) {
     vfs_dir_t* file_dir = find_dir(&g_vfs_root, path);
     char* filename = strrchr(path, '/') + 1;
+    if (filename == 1) filename = path;
+
     vfs_file_t* file = find_file(file_dir, filename);
     
     g_fs_list->func->delete_file(g_fs_list, file);
@@ -169,6 +173,7 @@ void vfs_delete_file(char* path) {
 vfs_dir_t* vfs_create_dir(char* path) {
     vfs_dir_t* parent_dir = find_dir(&g_vfs_root, path);
     char* dirname = strrchr(path, '/') + 1;
+    if (dirname == 1) dirname = path;
 
     vfs_file_t* new_dir = g_fs_list->func->create_dir(g_fs_list, parent_dir, dirname);
     vfs_add_dir(parent_dir, new_dir);
@@ -193,23 +198,4 @@ void init_vfs() {
     vfs_mount(&g_vfs_root, fat);   
 
     printk(SUCCESS, "Initiated VFS!\n"); 
-
-    byte hello[256] = "Hello, File!";
-    byte buffer[256];
-
-    // vfs_create_dir("/hol/ind");
-    // vfs_create_file("/hol/ind/file");
-    // vfs_delete_file("/root");
-    // vfs_create_dir("/hola/new");
-    // vfs_file_t* new_file = vfs_create_dir(file_dir, "new_root");
-    // vfs_add_dir(file_dir, new_file);
-    // vfs_write_file(file, hello, 2046, 12);
-    // vfs_read_file(file, buffer, 0, 12);
-    // vfs_read_file(file, buffer, 0, 12);
-    // printk("%s", buffer);
-    // vfs_delete_file(file);
-
-    // vfs_umount(&g_vfs_root);
-    // vfs_remove_fs(fat);
-    // kalloc(1);
 }

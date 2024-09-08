@@ -14,7 +14,6 @@
 
 void init_hal(multiboot2_info_t* mbd) {
 
-
     init_gdt();
 
     init_idt();
