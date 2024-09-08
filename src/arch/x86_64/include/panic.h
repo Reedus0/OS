@@ -1,6 +1,7 @@
 #pragma once
 
 #include "kernel/panic.h"
+#include "kernel/printk.h"
 #include "include/kalloc.h"
 #include "include/types.h"
 #include "asm/asm.h"
@@ -10,10 +11,10 @@
 void print_regs() {
     struct regs* regs = get_regs();
 
-    printk("Registers:\n");
-    printk("rsp: 0x%x\nrbp: 0x%x\nrsi: 0x%x\nrdi: 0x%x\n",
+    printk(NONE, "Registers:\n");
+    printk(NONE, "rsp: 0x%16x rbp: 0x%16x\nrsi: 0x%16x rdi: 0x%16x\n",
      regs->rsp, regs->rbp, regs->rsi, regs->rdi);
-    printk("rdx: 0x%x\nrcx: 0x%x\nrbx: 0x%x\nrax: 0x%x\n",
+    printk(NONE, "rdx: 0x%16x rcx: 0x%16x\nrbx: 0x%16x rax: 0x%16x\n",
      regs->rdx, regs->rcx, regs->rbx, regs->rax);
 }
 
@@ -21,9 +22,9 @@ void print_stack() {
     struct stack_frame* stack = kalloc(sizeof(struct stack_frame) * STACK_FRAMES_COUNT);
 
     byte count = get_stack(stack, STACK_FRAMES_COUNT);
-    printk("Stack trace:\n");
+    printk(NONE, "Stack trace:\n");
     for (size_t i = 0; i < count; i++) {
-        printk("func: %x\n", stack[i].rip - 5);
+        printk(NONE, "0x%16x\n", stack[i].rip - 5);
     }
     kfree(stack);
 }

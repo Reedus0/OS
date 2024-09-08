@@ -2,8 +2,8 @@
 #include "hal/hal.h"
 #include "memory/memory.h"
 #include "drivers/bus/pci/pci.h"
-#include "kernel/shell.h"
-#include "kernel/utils.h"
+#include "shell/utils.h"
+#include "shell/shell.h"
 #include "fs/vfs.h"
 
 void kmain(multiboot2_info_t* mbd) {

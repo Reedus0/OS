@@ -3,6 +3,7 @@
 #include "irq/handlers.h"
 #include "memory/discover.h"
 #include "boot/multiboot2.h"
+#include "kernel/printk.h"
 #include "drivers/bus/pci/pci.h"
 #include "drivers/pic/pic.h"
 #include "drivers/keyboard/keyboard.h"
@@ -13,12 +14,20 @@
 
 void init_hal(multiboot2_info_t* mbd) {
 
+
     init_gdt();
 
     init_idt();
     init_irq_handlers();
 
     init_heap();
+
+    module_t* tty_module = init_tty_module();
+    register_module(tty_module);
+
+    g_terminal.driver = tty_module;
+
+    printk(INFO, "Initiating modules...\n");
 
     g_pic_module = init_pic_module();
     register_module(g_pic_module);
@@ -39,12 +48,11 @@ void init_hal(multiboot2_info_t* mbd) {
 
     g_hdd.driver = ide_module;
 
-    module_t* tty_module = init_tty_module();
-    register_module(tty_module);
-
-    g_terminal.driver = tty_module;
+    printk(SUCCESS, "Initiated modules!\n");
 
     enable_irq();
 
     discover_memory(mbd);
+
+    printk(SUCCESS, "Initiated HAL!\n");
 }

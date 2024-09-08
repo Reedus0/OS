@@ -105,3 +105,54 @@ void* memcpy(byte* dest, byte* src, int count) {
     }
     return dest;
 }
+
+int isdigit(char character) {
+    return character > 0x2F && character < 0x3A ? 1 : 0;
+}
+
+char* itoa(size_t num, char* str, int radix) {
+    size_t i = 0;
+
+    if (num == 0) {
+        *str = '0';
+        *(str + 1) = '\0';
+        return str;
+    }
+
+    while (num > 0) {
+        size_t current_number = num % radix;
+        if(current_number > 9) {
+            *(str + i) = (current_number % 10) + 0x60 + 1;
+        } else {
+            *(str + i) = current_number + 0x30;
+        }
+        num /= radix;
+        i++;
+    }
+
+    *(str + i) = '\0';
+
+    for (int j = 0; j < i / 2; j++) {
+        char tmp = *(str + j);
+        *(str + j) = *(str + i - j - 1);
+        *(str + i - j - 1) = tmp;
+    }
+
+    return str;
+}
+
+int atoi(const char* str) {
+    char buffer[64];
+    if (!isdigit(*str)) {
+        return 0;
+    }
+
+    int result = 0;
+
+    while (isdigit(*str)) {
+        result = result * 10 + *str - 0x30;
+        str++;
+    }
+
+    return result;
+}

@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "kernel/shell.h"
+#include "shell.h"
 
 shell_command sh_hello(char* command);
 shell_command sh_clear(char* command);

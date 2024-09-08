@@ -184,12 +184,15 @@ void vfs_delete_dir(char* path) {
 }
 
 void init_vfs() {
+    printk(INFO, "Initiating VFS...\n");
     g_vfs_root.name = "/";
     g_vfs_root.parent = &g_vfs_root;
 
     vfs_fs_t* fat = vfs_new_fs(&g_hdd, &g_vfs_func_fat);
 
-    vfs_mount(&g_vfs_root, fat);    
+    vfs_mount(&g_vfs_root, fat);   
+
+    printk(SUCCESS, "Initiated VFS!\n"); 
 
     byte hello[256] = "Hello, File!";
     byte buffer[256];

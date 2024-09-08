@@ -2,6 +2,7 @@
 #include "exceptions.h"
 #include "include/panic.h"
 #include "include/dev.h"
+#include "kernel/printk.h"
 #include "kernel/stdin.h"
 #include "drivers/pic/pic.h"
 
@@ -10,7 +11,7 @@ void __attribute__((__cdecl__)) irq_handler(irq_data_t irq_data) {
         g_interrupt_handlers[irq_data.interrupt_number](&irq_data);
     }
     else {
-        printk("Unhandeled interrupt: 0x%x!\n", irq_data.interrupt_number);
+        printk(NONE, "Unhandeled interrupt: 0x%x!\n", irq_data.interrupt_number);
         panic("Unhandeled interrupt");
     }
 }

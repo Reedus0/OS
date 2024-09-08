@@ -3,6 +3,7 @@
 #include "drivers/tty/tty.h"
 
 static void stdout_print(byte character) {
+    if (g_terminal.driver == NULL) return;
     if (character == '\b') {
         MODULE_FUNCTION(g_terminal.driver, TTY_DELETE_CHAR)();
         return;

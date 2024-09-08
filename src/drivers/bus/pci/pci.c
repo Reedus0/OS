@@ -162,7 +162,7 @@ shell_command sh_pci(char* command) {
     for (size_t i = 0; i < g_pci_devices_count; i++) {
         if (i > 16) break;
         pci_device_t current_device = g_pci_devices[i];
-        printk("DEVICE: %x:%x \n",
+        printk(NONE, "DEVICE: %x:%x \n",
         current_device.vendor, current_device.device_id);
     }
     return 0;

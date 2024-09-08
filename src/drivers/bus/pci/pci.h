@@ -6,7 +6,7 @@
 // Reference: https://wiki.osdev.org/PCI
 
 #include "include/module.h"
-#include "kernel/shell.h"
+#include "shell/shell.h"
 
 #define PCI_DEFAULT_CONFIG_ADDRESS 0xCF8
 #define PCI_DEFAULT_CONFIG_DATA 0xCFC

@@ -1,41 +1,15 @@
 #include "kernel/stdout.h"
 #include "printk.h"
+#include "lib/string.h"
 
-static char* itoa(size_t num, char* str, int radix) {
-    size_t i = 0;
-
-    if (num == 0) {
-        *str = '0';
-        *(str + 1) = '\0';
-        return str;
-    }
-
-    while (num > 0) {
-        size_t current_number = num % radix;
-        if(current_number > 9) {
-            *(str + i) = (current_number % 10) + 0x60 + 1;
-        } else {
-            *(str + i) = current_number + 0x30;
-        }
-        num /= radix;
-        i++;
-    }
-
-    *(str + i) = '\0';
-
-    for (int j = 0; j < i / 2; j++) {
-        char tmp = *(str + j);
-        *(str + j) = *(str + i - j - 1);
-        *(str + i - j - 1) = tmp;
-    }
-
-    return str;
-}
-
-int printk(const char* format, ...) {
-    char buffer[256];
+int printk(char* level, const char* format, ...) {
+    char buffer[64] = { 0 };
+    char number[64] = { 0 };
+    int padding = 0;
     int result = 0;
     size_t current_arg = 0;
+
+    stdout_add_string(level);
 
     va_list arg;
     va_start(arg, format);
@@ -43,30 +17,57 @@ int printk(const char* format, ...) {
     while(*format != '\0') {
         char current_char = *format;
         if(current_char == '%') {
-            char type = *(format + 1);
-            switch(type) {
+            char* type = format + 1;
+            if (isdigit(*type)) {
+                padding = atoi(type);
+
+                while (isdigit(*type)) {
+                    format++;
+                    result++;
+                    type++;
+                }
+            }
+            int offset = 0;
+            switch(*type) {
                 case 's':
                     current_arg = va_arg(arg, char*);
-                    stdout_add_string(current_arg);
+                    offset = padding != 0 ? padding - strlen(current_arg) : 0;
+                    for (size_t i = 0; i < offset; i++) {
+                        buffer[i] = ' ';
+                    }
+                    strncpy(buffer + offset, current_arg, strlen(current_arg));
                     break;
                 case 'd':
                     current_arg = va_arg(arg, size_t);
-                    itoa(current_arg, buffer, 10);
-                    stdout_add_string(buffer);
+                    itoa(current_arg, number, 10);
+                    offset = padding != 0 ? padding - strlen(number) : 0;
+                    for (size_t i = 0; i < offset; i++) {
+                        buffer[i] = '0';
+                    }
+                    strncpy(buffer + offset, number, strlen(number));
                     break;
                 case 'x':
                 case 'p':
                     current_arg = va_arg(arg, size_t);
-                    itoa(current_arg, buffer, 16);
-                    stdout_add_string(buffer);
+                    itoa(current_arg, number, 16);
+                    offset = padding != 0 ? padding - strlen(number) : 0;
+                    for (size_t i = 0; i < offset; i++) {
+                        buffer[i] = '0';
+                    }
+                    strncpy(buffer + offset, number, strlen(number));
                     break;
                 case 'c':
                 default:
                     current_arg = va_arg(arg, size_t);
-                    itoa(current_arg, buffer, 10);
-                    stdout_add_string(buffer);
+                    itoa(current_arg, number, 10);
+                    offset = padding != 0 ? padding - strlen(number) : 0;
+                    for (size_t i = 0; i < offset; i++) {
+                        buffer[i] = '0';
+                    }
+                    strncpy(buffer + offset, number, strlen(number));
                     break;
             }
+            stdout_add_string(buffer);
             format += 2;
             result += 2;
             continue;

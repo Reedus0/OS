@@ -1,4 +1,5 @@
 #include "memory/memory.h"
+#include "kernel/printk.h"
 #include "heap.h"
 
 static void heap_descriptor_set_address(heap_descriptor_t* heap_descriptor, uint64_t address) {
@@ -33,10 +34,10 @@ void init_heap() {
 } 
 
 static void print_heap() {
-    printk("Heap:\n");
+    printk(NONE, "Heap:\n");
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
-        printk("desc: %x size: %x\n", current_descriptor->address, current_descriptor->size);
+        printk(NONE, "desc: %x size: %x\n", current_descriptor->address, current_descriptor->size);
     }
 }
 

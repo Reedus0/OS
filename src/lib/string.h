@@ -22,3 +22,7 @@ char* trim_string(char* string);
 
 void* memset(byte* dest, byte c, int count);
 void* memcpy(byte* dest, byte* src, int count);
+
+int isdigit(char character);
+char* itoa(size_t num, char* str, int radix);
+int atoi(const char* str);

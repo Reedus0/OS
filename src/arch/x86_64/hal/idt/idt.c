@@ -1,7 +1,7 @@
 #include "idt.h"
-#include "asm/lidt.h"
 #include "isr.h"
 #include "idt_init.h"
+#include "asm/lidt.h"
 
 static void idt_descriptor_set_isr(idt_descriptor_t* idt_descriptor, void (*isr)()) {
     idt_descriptor->offset_1 = (size_t)isr & 0xFFFF;

@@ -3,11 +3,12 @@
 #include "include/list.h"
 #include "include/macro.h"
 #include "drivers/tty/tty.h"
+#include "kernel/printk.h"
 #include "kernel/kget.h"
 #include "lib/string.h"
 
 shell_command sh_hello(char* command) {
-    printk("Hello, Kernel!\n");
+    printk(NONE, "Hello, Kernel!\n");
     return 0;
 } 
 
@@ -19,7 +20,7 @@ shell_command sh_clear(char* command) {
 shell_command sh_module(char* command) {
     module_t* current_module = g_modules;
     while (1) {
-        printk("%s\n", current_module->name);
+        printk(NONE, "%s\n", current_module->name);
         if (current_module->list.prev == NULL) {
             break;
         }
@@ -32,7 +33,7 @@ shell_command sh_cd(char* command) {
     char* arg = strchr(command, ' ') + 1;
 
     if (strlen(arg) == 0) {
-        printk("Specify directory!\n");
+        printk(NONE, "Specify directory!\n");
         return 1;
     }
     if (strcmp(arg, ".")) {
@@ -52,7 +53,7 @@ shell_command sh_cd(char* command) {
             return 0;
         }
     }
-    printk("Unknown directory!\n");
+    printk(NONE, "Unknown directory!\n");
     return 1;
 }
 
@@ -61,14 +62,14 @@ shell_command sh_ls(char* command) {
     while (last_list->next != NULL) {
         last_list = last_list->next;
         vfs_dir_t* current_dir = container_of(last_list, vfs_dir_t, list);
-        printk("%s\n", current_dir->name);
+        printk(NONE, "%s\n", current_dir->name);
     }
 
     last_list = &g_shell_dir->files;
     while (last_list->next != NULL) {
         last_list = last_list->next;
         vfs_file_t* current_file = container_of(last_list, vfs_file_t, list);
-        printk("%s\n", current_file->name);
+        printk(NONE, "%s\n", current_file->name);
     }
     return 0;
 }
@@ -109,11 +110,11 @@ shell_command sh_read(char* command) {
     size_t bytes_read = vfs_read_file(file, buffer, 256);
 
     for (size_t i = 0; i < bytes_read; i++) {
-        printk("%x", buffer[i]);
+        printk(NONE, "%x", buffer[i]);
     }
 
     vfs_close_file(file);
-    printk("\n");
+    printk(NONE, "\n");
 
     return 0;
 }
@@ -128,7 +129,7 @@ shell_command sh_write(char* command) {
 
     vfs_write_file(file, buffer, 256);
     vfs_close_file(file);
-    printk("\n");
+    printk(NONE, "\n");
 
     return 0;
 }
