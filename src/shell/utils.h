@@ -18,3 +18,4 @@ shell_command sh_rm(char* command);
 shell_command sh_rmdir(char* command);
 shell_command sh_read(char* command);
 shell_command sh_write(char* command);
+shell_command sh_time(char* command);

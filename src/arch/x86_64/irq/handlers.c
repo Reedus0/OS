@@ -1,6 +1,8 @@
 #include "handlers.h"
 #include "exceptions.h"
 #include "include/panic.h"
+#include "include/timer.h"
+#include "include/time.h"
 #include "include/dev.h"
 #include "kernel/printk.h"
 #include "kernel/stdin.h"
@@ -25,6 +27,10 @@ interrupt irq_ide(irq_data_t* irq_data) {
 }
 
 interrupt irq_timer(irq_data_t* irq_data) {
+    g_ticks += 1;
+    if (g_ticks % 10 == 0) {
+        update_time();
+    }
     MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(32);
 }
 

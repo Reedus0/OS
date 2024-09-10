@@ -2,6 +2,7 @@
 #include "include/module.h"
 #include "include/list.h"
 #include "include/macro.h"
+#include "include/time.h"
 #include "drivers/tty/tty.h"
 #include "kernel/printk.h"
 #include "kernel/kget.h"
@@ -143,4 +144,13 @@ shell_command sh_write(char* command) {
     printk(NONE, "\n");
 
     return 0;
+}
+
+shell_command sh_time(char* command) {
+    struct time ktime = time();
+    
+    printk(NONE, "%2d:%2d:%2d %2d/%2d/%4d\n", 
+        ktime.hour, ktime.minute, ktime.second,
+        ktime.day, ktime.month, ktime.year
+    );
 }

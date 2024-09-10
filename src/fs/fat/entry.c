@@ -2,6 +2,7 @@
 #include "table.h"
 #include "fs.h"
 #include "lib/string.h"
+#include "include/time.h"
 
 char* fat_entry_read_lfn(fat_entry_t* fat_entry) {
     char* name = kalloc(64);
@@ -100,6 +101,11 @@ fat_entry_t* fat_entry_create(char* name, size_t cluster, enum FAT_ATTRIBUTES at
         }
         last_entry->name[i] = toupper(name[i]);
     }
+
+    struct time ktime = time();
+
+    last_entry->creation_time = ktime.hour | (uint16_t)(ktime.minute) >> 5 | (uint16_t)(ktime.second * 2) >> 11;
+    last_entry->creation_date = ktime.year | (uint16_t)(ktime.month) >> 7 | (uint16_t)(ktime.day) >> 11;
 
     last_entry->attributes = attributes;
     last_entry->cluster_low = cluster & 0xFFFF;

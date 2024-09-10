@@ -24,6 +24,7 @@ void kmain(multiboot2_info_t* mbd) {
         {"rmdir", sh_rmdir},
         {"read ", sh_read},
         {"write ", sh_write},
+        {"time", sh_time},
         {NULL, NULL},
     };
 
