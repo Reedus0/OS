@@ -11,7 +11,6 @@ QEMU := qemu-system-x86_64
 BOCHS := bochs
 
 QEMU_FLAGS := -m 1024 -drive format=raw,file=dist/x86_64/kernel.iso -drive format=raw,if=ide,file=fs
-BOCHS_FLAGS := -f bochs_config.bxrc
 
 # x86_64 target
 
@@ -55,8 +54,13 @@ run: $(ISO)
 	make build-x86_64
 	$(QEMU) $(QEMU_FLAGS)
 
-dbg: $(ISO)
+dbg_win: $(ISO)
 	make build-x86_64
+	$(BOCHS) -f bochs_config_win.bxrc
+
+dbg_linux: $(ISO)
+	make build-x86_64
+	$(BOCHS) -f bochs_config_linux.bxrc
 
 clean:
 	rm -rf $(BUILD_DIR) $(DIST_DIR)

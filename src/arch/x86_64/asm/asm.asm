@@ -8,6 +8,8 @@ global get_rbp
 global get_rsp
 global get_regs
 global get_stack
+global __rdmsr
+global __wrmsr
 
 extern g_regs
 
@@ -57,6 +59,26 @@ get_stack:
 
     xor cl, cl
     mov rbx, rbp
+
+    ret
+
+__rdmsr:
+    mov rcx, rdi
+    xor rax, rax
+    rdmsr
+
+    shl rdx, 32
+    or rax, rdx
+    ret
+
+__wrmsr:
+    mov rcx, rdi
+    mov eax, esi
+    shr rsi, 32
+    mov edx, esi
+    wrmsr
+
+    ret
 
 .loop:
 

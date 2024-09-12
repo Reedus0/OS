@@ -1,5 +1,6 @@
 #include "hal/gdt/gdt.h"
 #include "hal/idt/idt.h"
+#include "asm/asm.h"
 #include "irq/handlers.h"
 #include "memory/discover.h"
 #include "boot/multiboot2.h"
