@@ -4,7 +4,15 @@
 #include "drivers/bus/pci/pci.h"
 #include "shell/utils.h"
 #include "shell/shell.h"
+#include "include/task.h"
+#include "include/scheduler.h"
 #include "fs/vfs.h"
+
+void test_task() {
+    printk(NONE, "OK");
+    while (1);
+    exit_task();
+}
 
 void kmain(multiboot2_info_t* mbd) {
     init_hal(mbd);
@@ -28,7 +36,9 @@ void kmain(multiboot2_info_t* mbd) {
         {NULL, NULL},
     };
 
-    init_vfs();
-    init_shell(functions);
+    task_t* hello_task = create_task(test_task);
+    run_task(hello_task);
+    //init_vfs();
+    //init_shell(functions);
     while(1);
 }

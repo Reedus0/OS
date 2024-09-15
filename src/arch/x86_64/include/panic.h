@@ -9,13 +9,16 @@
 #define STACK_FRAMES_COUNT 7
 
 void print_regs() {
-    struct regs* regs = get_regs();
+    struct regs regs;
+
+    get_regs(&regs);
 
     printk(NONE, "Registers:\n");
     printk(NONE, "rsp: 0x%16x rbp: 0x%16x\nrsi: 0x%16x rdi: 0x%16x\n",
-     regs->rsp, regs->rbp, regs->rsi, regs->rdi);
+     regs.rsp, regs.rbp, regs.rsi, regs.rdi);
     printk(NONE, "rdx: 0x%16x rcx: 0x%16x\nrbx: 0x%16x rax: 0x%16x\n",
-     regs->rdx, regs->rcx, regs->rbx, regs->rax);
+     regs.rdx, regs.rcx, regs.rbx, regs.rax);
+    printk(NONE, "rflags: 0x%16x\n", regs.rflags);
 }
 
 void print_stack() {

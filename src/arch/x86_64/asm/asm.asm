@@ -6,12 +6,15 @@ global get_rdi
 global get_rsi
 global get_rbp
 global get_rsp
+global get_rflags
 global get_regs
+global init_context
+global switch_context
 global get_stack
 global __rdmsr
 global __wrmsr
 
-extern g_regs
+extern print_regs
 
 section .text
 bits 64
@@ -39,19 +42,61 @@ get_rbp:
 get_rsp:
     mov rax, rsp
     ret
-get_regs:
-    mov [g_regs], rsp
-    mov [g_regs + 8], rbp
-    mov [g_regs + 16], rsi
-    mov [g_regs + 24], rdi
-    mov [g_regs + 32], rdx
-    mov [g_regs + 40], rcx
-    mov [g_regs + 48], rbx
-    mov [g_regs + 56], rax
+get_rflags:
+    push rbx
 
-    mov rax, g_regs
+    pushfq
+    pop rbx
+    mov rax, rbx
+    push rbx
+    popfq
+
+    pop rbx
+
+    ret
+
+get_regs:
+    mov [rdi], rsp
+    mov [rdi + 8], rbp
+    mov [rdi + 16], rsi
+    mov [rdi + 24], rdi
+    mov [rdi + 32], rdx
+    mov [rdi + 40], rcx
+    mov [rdi + 48], rbx
+    mov [rdi + 56], rax
+
+    pushfq
+    pop rax
+    mov [rdi + 64], rax
+    push rax
+    popfq
+
+    xor rax, rax
 
     ret 
+
+init_context:
+    mov [rdi], rsi
+    ret
+
+switch_context:
+    mov r15, rsi
+    
+    mov rsp, [rdi]
+    mov rbp, [rdi + 8]
+    mov rsi, [rdi + 16]
+    mov rdx, [rdi + 32]
+    mov rcx, [rdi + 40]
+    mov rbx, [rdi + 48]
+    mov rax, [rdi + 56]
+
+    mov rax, [rdi + 64]
+    push rax
+    popfq
+
+    mov rdi, [rdi + 24]
+
+    jmp r15
 
 get_stack:
     push rbp
