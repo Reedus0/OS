@@ -30,11 +30,23 @@ uint64_t get_rdi();
 uint64_t get_rsi();
 uint64_t get_rbp();
 uint64_t get_rsp();
+
 uint64_t get_rflags();
+uint16_t get_gs();
+uint16_t get_fs();
+
+uint64_t get_task_register();
+void set_task_register(uint64_t value);
+uint64_t get_old_task_register();
+void set_old_task_register();
+
+void set_gs(uint16_t value);
+void set_fs(uint16_t value);
 
 void get_regs(struct regs* regs);
+void set_regs(struct regs* regs);
+
 void init_context(struct regs* regs, uint64_t sp);
-void swith_context(struct regs* regs, uint64_t ip);
 
 uint64_t __rdmsr(uint64_t register);
 void __wrmsr(uint64_t register, uint64_t value);

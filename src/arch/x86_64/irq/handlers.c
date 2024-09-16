@@ -4,17 +4,29 @@
 #include "include/timer.h"
 #include "include/time.h"
 #include "include/dev.h"
+#include "include/task.h"
+#include "include/scheduler.h"
 #include "kernel/printk.h"
 #include "kernel/stdin.h"
 #include "drivers/pic/pic.h"
 
 void __attribute__((__cdecl__)) irq_handler(irq_data_t irq_data) {
+    uint64_t current_task = get_task_register();
+    set_old_task_register(current_task);
+    if (current_task != KERNEL_TASK) {
+        switch_context(g_kernel_task.context);
+    }
     if(g_interrupt_handlers[irq_data.interrupt_number] != NULL) {
         g_interrupt_handlers[irq_data.interrupt_number](&irq_data);
     }
     else {
         printk(NONE, "Unhandeled interrupt: 0x%x!\n", irq_data.interrupt_number);
         panic("Unhandeled interrupt");
+    }
+    uint64_t old_task_id = get_old_task_register();
+    if (old_task_id != KERNEL_TASK) {
+        task_t* old_task = get_task(old_task_id);
+        run_task(old_task);
     }
 }
 
@@ -30,6 +42,9 @@ interrupt irq_timer(irq_data_t* irq_data) {
     g_ticks += 1;
     if (g_ticks % 10 == 0) {
         update_time();
+    }
+    if (g_ticks % 100 == 0) {
+        schedule();
     }
     MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(32);
 }

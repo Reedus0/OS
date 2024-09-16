@@ -5,6 +5,11 @@
 
 #include "include/task.h"
 #include "include/macro.h"
+#include "include/asm.h"
+
+void init_scheduler() {
+    set_task_register(0xFFFFFFFFFFFFFFFF);
+}
 
 void schedule() {
     task_t* current_task = g_task_list;

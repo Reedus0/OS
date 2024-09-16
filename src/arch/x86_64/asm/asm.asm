@@ -7,9 +7,21 @@ global get_rsi
 global get_rbp
 global get_rsp
 global get_rflags
+global get_gs
+global get_fs
+
+global set_fs
+global set_gs
+
+global set_task_register
+global get_task_register
+global set_old_task_register
+global get_old_task_register
+
 global get_regs
+global set_regs
 global init_context
-global switch_context
+global jump
 global get_stack
 global __rdmsr
 global __wrmsr
@@ -55,6 +67,26 @@ get_rflags:
 
     ret
 
+get_gs:
+get_task_register:
+    mov rax, r11
+    ret
+
+get_fs:
+get_old_task_register:
+    mov rax, r12
+    ret
+
+set_gs:
+set_task_register:
+    mov r11, rdi
+    ret
+
+set_fs:
+set_old_task_register:
+    mov r12, rdi
+    ret
+
 get_regs:
     mov [rdi], rsp
     mov [rdi + 8], rbp
@@ -75,13 +107,7 @@ get_regs:
 
     ret 
 
-init_context:
-    mov [rdi], rsi
-    ret
-
-switch_context:
-    mov r15, rsi
-    
+set_regs:
     mov rsp, [rdi]
     mov rbp, [rdi + 8]
     mov rsi, [rdi + 16]
@@ -96,7 +122,14 @@ switch_context:
 
     mov rdi, [rdi + 24]
 
-    jmp r15
+    ret
+
+init_context:
+    mov [rdi], rsi
+    ret
+
+jump:
+    jmp rdi
 
 get_stack:
     push rbp

@@ -8,9 +8,11 @@
 #include "include/asm.h"
 #include "include/list.h"
 #include "include/types.h"
+#include "include/macro.h"
 #include "asm/asm.h"
 
 #define TASK_STACK_SIZE 8192
+#define KERNEL_TASK 0xFFFFFFFFFFFFFFFF
 
 struct task_context {
     struct regs regs;
@@ -28,13 +30,14 @@ struct task {
 typedef struct task task_t;
 
 task_t* g_task_list;
-short g_max_task_id = 0;
+task_t g_kernel_task;
+uint8_t g_max_task_id = 0;
 
 task_t* create_task(int (*func)()) {
     task_t* new_task = kalloc(sizeof(task_t));
 
     new_task->entry = func;
-    new_task->id = (g_max_task_id % 65536) + 16;
+    new_task->id = g_max_task_id;
 
     g_max_task_id += 1;
 
@@ -62,6 +65,34 @@ void delete_task(task_t* task) {
     kfree(task);
 }
 
+task_t* get_task(uint64_t task_id) {
+    if (task_id == 0xFFFFFFFFFFFFFFFF) {
+        return &g_kernel_task;
+    }
+
+    task_t* current_task = g_task_list;
+    while (1) {
+        if (current_task->id == task_id) {
+            return current_task;
+        }
+        if (current_task->list.next == NULL) {
+            break;
+        }
+        current_task = container_of(current_task->list.next, task_t, list);
+    }
+}
+
+void switch_context(struct task_context* new_context) {
+    uint64_t task_id = get_task_register();
+    task_t* current_task = get_task(task_id);
+    struct regs regs;
+
+    get_regs(&regs);
+    current_task->context->regs = regs;
+
+    set_regs(&new_context->regs);
+}
+
 void exit_task() {
     
 }
@@ -71,5 +102,6 @@ void schedule_task(task_t* task) {
 }
 
 void run_task(task_t* task) {
-    switch_context(&task->context->regs, task->context->ip);
+    switch_context(task->context);
+    jump(task->context->ip);
 }

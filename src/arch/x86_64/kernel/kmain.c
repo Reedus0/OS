@@ -36,8 +36,9 @@ void kmain(multiboot2_info_t* mbd) {
         {NULL, NULL},
     };
 
+
     task_t* hello_task = create_task(test_task);
-    run_task(hello_task);
+    schedule_task(hello_task);
     //init_vfs();
     //init_shell(functions);
     while(1);
