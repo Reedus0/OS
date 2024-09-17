@@ -9,8 +9,8 @@
 #include "fs/vfs.h"
 
 void test_task() {
-    printk(NONE, "OK");
-    while (1);
+    printk(NONE, "TASK OK");
+    while(1);
     exit_task();
 }
 

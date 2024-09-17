@@ -1,6 +1,7 @@
 #include "hal/gdt/gdt.h"
 #include "hal/idt/idt.h"
 #include "asm/asm.h"
+#include "asm/io.h"
 #include "irq/handlers.h"
 #include "memory/discover.h"
 #include "boot/multiboot2.h"
@@ -11,9 +12,12 @@
 #include "drivers/ata/ide.h"
 #include "drivers/tty/tty.h"
 #include "include/module.h"
+#include "include/scheduler.h"
 #include "include/dev.h"
 
 void init_hal(multiboot2_info_t* mbd) {
+
+    disable_irq();
 
     init_gdt();
 

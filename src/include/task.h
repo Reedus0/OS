@@ -12,7 +12,7 @@
 #include "asm/asm.h"
 
 #define TASK_STACK_SIZE 8192
-#define KERNEL_TASK 0xFFFFFFFFFFFFFFFF
+#define KERNEL_TASK 0xFFFF
 
 struct task_context {
     struct regs regs;
@@ -66,7 +66,7 @@ void delete_task(task_t* task) {
 }
 
 task_t* get_task(uint64_t task_id) {
-    if (task_id == 0xFFFFFFFFFFFFFFFF) {
+    if (task_id == KERNEL_TASK) {
         return &g_kernel_task;
     }
 
@@ -83,18 +83,22 @@ task_t* get_task(uint64_t task_id) {
 }
 
 void switch_context(struct task_context* new_context) {
-    uint64_t task_id = get_task_register();
+    uint16_t task_id = get_task_register();
     task_t* current_task = get_task(task_id);
     struct regs regs;
 
     get_regs(&regs);
     current_task->context->regs = regs;
 
-    set_regs(&new_context->regs);
+    run_context(&new_context->regs);
 }
 
 void exit_task() {
-    
+    uint16_t task_id = get_task_register();
+    task_t* current_task = get_task(task_id);
+
+    current_task->ready = 0;
+    schedule();
 }
 
 void schedule_task(task_t* task) {
@@ -102,6 +106,8 @@ void schedule_task(task_t* task) {
 }
 
 void run_task(task_t* task) {
+    printk(NONE, "Running task %x...\n", task->id);
+    save_ip(task->context->ip);
     switch_context(task->context);
-    jump(task->context->ip);
+    while(1);
 }

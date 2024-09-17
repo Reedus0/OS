@@ -11,8 +11,9 @@
 #include "drivers/pic/pic.h"
 
 void __attribute__((__cdecl__)) irq_handler(irq_data_t irq_data) {
-    uint64_t current_task = get_task_register();
+    uint16_t current_task = get_task_register();
     set_old_task_register(current_task);
+
     if (current_task != KERNEL_TASK) {
         switch_context(g_kernel_task.context);
     }
@@ -23,10 +24,10 @@ void __attribute__((__cdecl__)) irq_handler(irq_data_t irq_data) {
         printk(NONE, "Unhandeled interrupt: 0x%x!\n", irq_data.interrupt_number);
         panic("Unhandeled interrupt");
     }
-    uint64_t old_task_id = get_old_task_register();
+    uint16_t old_task_id = get_old_task_register();
     if (old_task_id != KERNEL_TASK) {
         task_t* old_task = get_task(old_task_id);
-        run_task(old_task);
+        switch_context(old_task->context);
     }
 }
 
@@ -43,9 +44,9 @@ interrupt irq_timer(irq_data_t* irq_data) {
     if (g_ticks % 10 == 0) {
         update_time();
     }
-    if (g_ticks % 100 == 0) {
-        schedule();
-    }
+    // if (g_ticks % 100 == 0) {
+    //     schedule();
+    // }
     MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(32);
 }
 

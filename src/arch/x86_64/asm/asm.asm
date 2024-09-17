@@ -20,8 +20,13 @@ global get_old_task_register
 
 global get_regs
 global set_regs
+
 global init_context
+global run_context
+global save_ip
+global restore_ip
 global jump
+
 global get_stack
 global __rdmsr
 global __wrmsr
@@ -58,7 +63,7 @@ get_rflags:
     push rbx
 
     pushfq
-    pop rbx
+    pop rbx 
     mov rax, rbx
     push rbx
     popfq
@@ -69,22 +74,24 @@ get_rflags:
 
 get_gs:
 get_task_register:
-    mov rax, r11
+    mov rax, r15
     ret
 
 get_fs:
 get_old_task_register:
-    mov rax, r12
+    mov rax, r14
     ret
 
 set_gs:
 set_task_register:
-    mov r11, rdi
+    mov r15, rdi
+    xor rax, rax
     ret
 
 set_fs:
 set_old_task_register:
-    mov r12, rdi
+    mov r14, rdi
+    xor rax, rax
     ret
 
 get_regs:
@@ -128,8 +135,29 @@ init_context:
     mov [rdi], rsi
     ret
 
-jump:
-    jmp rdi
+run_context:
+    mov rsp, [rdi]
+    mov rbp, [rdi + 8]
+    mov rsi, [rdi + 16]
+    mov rdx, [rdi + 32]
+    mov rcx, [rdi + 40]
+    mov rbx, [rdi + 48]
+    mov rax, [rdi + 56]
+
+    mov rax, [rdi + 64]
+    push rax
+    popfq
+
+    mov rdi, [rdi + 24]
+
+    jmp r13
+
+save_ip:
+    mov r13, rdi
+    ret
+
+jump_to_context:
+    jmp r13
 
 get_stack:
     push rbp
