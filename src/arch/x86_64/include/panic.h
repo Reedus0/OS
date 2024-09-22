@@ -8,11 +8,7 @@
 
 #define STACK_FRAMES_COUNT 7
 
-void print_regs() {
-    struct regs regs;
-
-    get_regs(&regs);
-
+void print_regs(struct regs regs) {
     printk(NONE, "Registers:\n");
     printk(NONE, "rsp: 0x%16x rbp: 0x%16x\nrsi: 0x%16x rdi: 0x%16x\n",
      regs.rsp, regs.rbp, regs.rsi, regs.rdi);

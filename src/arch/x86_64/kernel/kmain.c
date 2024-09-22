@@ -7,15 +7,23 @@
 #include "include/task.h"
 #include "include/scheduler.h"
 #include "fs/vfs.h"
+#include "asm/io.h"
 
 void test_task() {
     printk(NONE, "TASK OK");
-    while(1);
     exit_task();
 }
 
 void kmain(multiboot2_info_t* mbd) {
     init_hal(mbd);
+
+    printk(INFO, "Initiating scheduler...\n");
+
+    init_scheduler();
+
+    printk(SUCCESS, "Initiated scheduler!\n");
+
+    enable_irq();
 
     static shell_function_t functions[] = {
         {NULL, NULL},
@@ -33,13 +41,12 @@ void kmain(multiboot2_info_t* mbd) {
         {"read ", sh_read},
         {"write ", sh_write},
         {"time", sh_time},
+        {"task", sh_task},
         {NULL, NULL},
     };
 
-
-    task_t* hello_task = create_task(test_task);
-    schedule_task(hello_task);
-    //init_vfs();
-    //init_shell(functions);
+    init_vfs();
+    task_t* shell_task = create_task(init_shell);
+    schedule_task(shell_task);
     while(1);
 }

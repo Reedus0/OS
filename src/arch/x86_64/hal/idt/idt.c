@@ -1,5 +1,5 @@
 #include "idt.h"
-#include "isr.h"
+#include "irq/isr.h"
 #include "idt_init.h"
 #include "asm/lidt.h"
 

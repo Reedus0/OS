@@ -1,7 +1,6 @@
 #include "handlers.h"
 #include "exceptions.h"
 #include "include/panic.h"
-#include "include/timer.h"
 #include "include/time.h"
 #include "include/dev.h"
 #include "include/task.h"
@@ -10,13 +9,27 @@
 #include "kernel/stdin.h"
 #include "drivers/pic/pic.h"
 
-void __attribute__((__cdecl__)) irq_handler(irq_data_t irq_data) {
-    uint16_t current_task = get_task_register();
-    set_old_task_register(current_task);
+void save_task(struct regs* regs, irq_data_t* irq_data) {
+    task_t* current_task = get_task(g_current_task_id);
+    regs->rsp = irq_data->rsp;
+    regs->rflags = irq_data->rflags;
 
-    if (current_task != KERNEL_TASK) {
-        switch_context(g_kernel_task.context);
-    }
+    current_task->context->regs = *regs;
+    current_task->context->ip = irq_data->rip;
+}
+
+void load_task(struct regs* regs, irq_data_t* irq_data) {
+    task_t* new_task = get_task(g_current_task_id);
+
+    irq_data->rip = new_task->context->ip;
+    irq_data->rsp = new_task->context->regs.rsp;
+
+    *regs = new_task->context->regs;
+}
+
+void __attribute__((cdecl)) irq_handler(struct regs regs, irq_data_t irq_data) {
+    save_task(&regs, &irq_data);
+
     if(g_interrupt_handlers[irq_data.interrupt_number] != NULL) {
         g_interrupt_handlers[irq_data.interrupt_number](&irq_data);
     }
@@ -24,11 +37,8 @@ void __attribute__((__cdecl__)) irq_handler(irq_data_t irq_data) {
         printk(NONE, "Unhandeled interrupt: 0x%x!\n", irq_data.interrupt_number);
         panic("Unhandeled interrupt");
     }
-    uint16_t old_task_id = get_old_task_register();
-    if (old_task_id != KERNEL_TASK) {
-        task_t* old_task = get_task(old_task_id);
-        switch_context(old_task->context);
-    }
+
+    load_task(&regs, &irq_data);
 }
 
 static void set_irq_handler(size_t number, size_t handler) {
@@ -41,12 +51,8 @@ interrupt irq_ide(irq_data_t* irq_data) {
 
 interrupt irq_timer(irq_data_t* irq_data) {
     g_ticks += 1;
-    if (g_ticks % 10 == 0) {
-        update_time();
-    }
-    // if (g_ticks % 100 == 0) {
-    //     schedule();
-    // }
+    TIMER_FUNCTION(10, update_time());
+    TIMER_FUNCTION(10, g_current_task_id = schedule());
     MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(32);
 }
 

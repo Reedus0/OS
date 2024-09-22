@@ -14,24 +14,31 @@
 #define TASK_STACK_SIZE 8192
 #define KERNEL_TASK 0xFFFF
 
+enum TASK_STATUS {
+    NOT_READY = 0,
+    READY = 1,
+    EXITED = -1
+};
+
 struct task_context {
     struct regs regs;
     uint64_t ip;
 };
 
 struct task {
-    size_t id;
+    uint16_t id;
     int (*entry)();
     struct task_context* context;
     void* stack;
-    bool ready;
+    enum TASK_STATUS status;
     list_t list;
 };
 typedef struct task task_t;
 
 task_t* g_task_list;
 task_t g_kernel_task;
-uint8_t g_max_task_id = 0;
+uint16_t g_current_task_id = KERNEL_TASK;
+uint16_t g_max_task_id = 0;
 
 task_t* create_task(int (*func)()) {
     task_t* new_task = kalloc(sizeof(task_t));
@@ -63,9 +70,10 @@ void delete_task(task_t* task) {
     kfree(task->stack - TASK_STACK_SIZE);
     kfree(task->context);
     kfree(task);
+
 }
 
-task_t* get_task(uint64_t task_id) {
+task_t* get_task(uint16_t task_id) {
     if (task_id == KERNEL_TASK) {
         return &g_kernel_task;
     }
@@ -82,32 +90,13 @@ task_t* get_task(uint64_t task_id) {
     }
 }
 
-void switch_context(struct task_context* new_context) {
-    uint16_t task_id = get_task_register();
-    task_t* current_task = get_task(task_id);
-    struct regs regs;
-
-    get_regs(&regs);
-    current_task->context->regs = regs;
-
-    run_context(&new_context->regs);
-}
-
 void exit_task() {
-    uint16_t task_id = get_task_register();
-    task_t* current_task = get_task(task_id);
+    task_t* current_task = get_task(g_current_task_id);
 
-    current_task->ready = 0;
-    schedule();
+    current_task->status = EXITED;
+    while(1);
 }
 
 void schedule_task(task_t* task) {
-    task->ready = 1;
-}
-
-void run_task(task_t* task) {
-    printk(NONE, "Running task %x...\n", task->id);
-    save_ip(task->context->ip);
-    switch_context(task->context);
-    while(1);
+    task->status = READY;
 }

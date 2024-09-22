@@ -41,7 +41,7 @@ static char* exceptions[] = {
 
 static void print_exception_info(irq_data_t* irq_data) {
     printk(NONE, "error code:   0x%x\noriginal rip: 0x%16x\noriginal rsp: 0x%16x\nrflags: 0x%16x\n", 
-     irq_data->error_code, irq_data->original_rip, irq_data->original_rsp, irq_data->rflags);
+     irq_data->error_code, irq_data->rip, irq_data->rsp, irq_data->rflags);
 }
 
 interrupt irq_handle_exception(irq_data_t* irq_data) {

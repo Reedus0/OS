@@ -57,14 +57,6 @@ void init_hal(multiboot2_info_t* mbd) {
 
     printk(SUCCESS, "Initiated modules!\n");
 
-    printk(INFO, "Initiating scheduler...\n");
-
-    init_scheduler();
-
-    printk(SUCCESS, "Initiated scheduler!\n");
-
-    enable_irq();
-
     discover_memory(mbd);
 
     printk(SUCCESS, "Initiated HAL!\n");

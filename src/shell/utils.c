@@ -154,3 +154,7 @@ shell_command sh_time(char* command) {
         ktime.day, ktime.month, ktime.year
     );
 }
+
+shell_command sh_task(char* command) {
+    
+}
