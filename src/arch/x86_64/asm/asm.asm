@@ -79,6 +79,15 @@ get_regs:
     push rax
     popfq
 
+    mov [rdi + 72], r8
+    mov [rdi + 80], r9
+    mov [rdi + 88], r10
+    mov [rdi + 96], r11
+    mov [rdi + 104], r12
+    mov [rdi + 112], r13
+    mov [rdi + 120], r14
+    mov [rdi + 128], r15
+
     xor rax, rax
 
     ret 
@@ -96,38 +105,23 @@ set_regs:
     push rax
     popfq
 
+    mov r8, [rdi + 72]
+    mov r9, [rdi + 80]
+    mov r10, [rdi + 88]
+    mov r11, [rdi + 96]
+    mov r12, [rdi + 104]
+    mov r13, [rdi + 112]
+    mov r14, [rdi + 120]
+    mov r15, [rdi + 128]
+
     mov rdi, [rdi + 24]
 
     ret
 
 init_context:
-    mov [rdi], rsi
-    ret
-
-run_context:
-    mov rsp, [rdi]
-    mov rbp, [rdi + 8]
-    mov rsi, [rdi + 16]
-    mov rdx, [rdi + 32]
-    mov rcx, [rdi + 40]
-    mov rbx, [rdi + 48]
-    mov rax, [rdi + 56]
-
-    mov rax, [rdi + 64]
-    push rax
-    popfq
-
-    mov rdi, [rdi + 24]
-
-    jmp r13
-
-get_stack:
-    push rbp
-    mov rbp, rsp
-
-    xor cl, cl
-    mov rbx, rbp
-
+    mov [rdi + 24], rsi
+    mov [rdi], rdx
+    mov [rdi + 16], rcx
     ret
 
 __rdmsr:
@@ -147,6 +141,14 @@ __wrmsr:
     wrmsr
 
     ret
+
+
+get_stack:
+    push rbp
+    mov rbp, rsp
+
+    xor cl, cl
+    mov rbx, rbp
 
 .loop:
 

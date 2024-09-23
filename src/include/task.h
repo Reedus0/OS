@@ -40,27 +40,36 @@ task_t g_kernel_task;
 uint16_t g_current_task_id = KERNEL_TASK;
 uint16_t g_max_task_id = 0;
 
-task_t* create_task(int (*func)()) {
+static void task_entry(int (*func)(), void* param) {
+    func(param);
+    exit_task();
+}
+
+task_t* create_task(int (*func)(), void* param) {
     task_t* new_task = kalloc(sizeof(task_t));
 
-    new_task->entry = func;
+    new_task->entry = task_entry;
     new_task->id = g_max_task_id;
 
     g_max_task_id += 1;
 
     new_task->context = kalloc(sizeof(struct task_context));
     new_task->context->ip = new_task->entry;
+    new_task->status = NOT_READY;
 
     void* stack = kalloc(TASK_STACK_SIZE);
 
     new_task->stack = stack + TASK_STACK_SIZE;
-    init_context(new_task->context, new_task->stack);
+    init_context(&new_task->context->regs, func, new_task->stack, param);
 
     if (g_task_list == NULL) {
         g_task_list = new_task;
+        list_insert_after(&g_task_list->list, &g_task_list->list);
     } else {
         list_insert_after(&g_task_list->list, &new_task->list);
+        g_task_list = new_task;
     }
+
     return new_task;
 }
 
@@ -74,6 +83,7 @@ void delete_task(task_t* task) {
 }
 
 task_t* get_task(uint16_t task_id) {
+
     if (task_id == KERNEL_TASK) {
         return &g_kernel_task;
     }

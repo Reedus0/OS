@@ -37,6 +37,7 @@ static void process_map(multiboot2_memory_map_t* map) {
 }
 
 void discover_memory(multiboot2_info_t* mbd) {
+    printk(INFO, "Discovering memory...\n");
     multiboot2_tag_mmap_t* mmap_tag = get_tag(mbd, TAG_MMAP);
     size_t map_count = (mmap_tag->size - sizeof(multiboot2_tag_mmap_t)) / sizeof(multiboot2_memory_map_t);
 
@@ -45,4 +46,5 @@ void discover_memory(multiboot2_info_t* mbd) {
 
         process_map(map);
     }
+    printk(SUCCESS, "Discovered memory!\n");
 }

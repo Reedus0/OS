@@ -2,7 +2,10 @@
 #include "drivers/tty/tty.h"
 #include "kernel/kget.h"
 #include "kernel/printk.h"
+#include "include/task.h"
 #include "lib/string.h"
+#include "asm/asm.h"
+#include "include/asm.h"
 
 static size_t search_command(char* command, shell_function_t functions[]) {
     size_t i = 1;
@@ -23,7 +26,8 @@ static size_t shell_execute(char* command, shell_function_t functions[]) {
         printk(NONE, "Unknown command!\n");
         return 1;
     }
-    return functions[index].shell_commnad(command);
+    return functions[index].shell_command(command);
+    //schedule_task(create_task(functions[index].shell_command, command));
 }
 
 static void clear_shell_buffer() {

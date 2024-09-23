@@ -15,7 +15,7 @@ vfs_dir_t* g_shell_dir;
 
 struct shell_function {
     char* name;
-    size_t (*shell_commnad)();
+    size_t (*shell_command)();
 };
 typedef struct shell_function shell_function_t;
 

@@ -3,6 +3,7 @@
 #include "include/list.h"
 #include "include/macro.h"
 #include "include/time.h"
+#include "include/task.h"
 #include "drivers/tty/tty.h"
 #include "kernel/printk.h"
 #include "kernel/kget.h"
@@ -156,5 +157,15 @@ shell_command sh_time(char* command) {
 }
 
 shell_command sh_task(char* command) {
-    
+    task_t* current_task = g_task_list;
+    printk(NONE, "ID  | Status\n");
+    while (1) {
+        list_t* next = current_task->list.next;
+        printk(NONE, "%3d | %3d\n", current_task->id, current_task->status);
+        if (next == NULL) {
+            break;
+        }
+        current_task = container_of(next, task_t, list);
+        if (current_task->id == 0) break;
+    }
 }

@@ -9,19 +9,11 @@
 #include "fs/vfs.h"
 #include "asm/io.h"
 
-void test_task() {
-    printk(NONE, "TASK OK");
-    exit_task();
-}
-
 void kmain(multiboot2_info_t* mbd) {
+    
     init_hal(mbd);
-
-    printk(INFO, "Initiating scheduler...\n");
-
+    init_vfs();
     init_scheduler();
-
-    printk(SUCCESS, "Initiated scheduler!\n");
 
     enable_irq();
 
@@ -45,8 +37,6 @@ void kmain(multiboot2_info_t* mbd) {
         {NULL, NULL},
     };
 
-    init_vfs();
-    task_t* shell_task = create_task(init_shell);
-    schedule_task(shell_task);
+    schedule_task(create_task(init_shell, functions));
     while(1);
 }
