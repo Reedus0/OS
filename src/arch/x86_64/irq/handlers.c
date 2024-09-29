@@ -7,9 +7,10 @@
 #include "include/scheduler.h"
 #include "kernel/printk.h"
 #include "kernel/stdin.h"
+#include "kernel/syscall.h"
 #include "drivers/pic/pic.h"
 
-void save_task(struct regs* regs, irq_data_t* irq_data) {
+static void save_task(struct regs* regs, irq_data_t* irq_data) {
     task_t* current_task = get_task(g_current_task_id);
     regs->rsp = irq_data->rsp;
     regs->rflags = irq_data->rflags;
@@ -18,7 +19,7 @@ void save_task(struct regs* regs, irq_data_t* irq_data) {
     current_task->context->ip = irq_data->rip;
 }
 
-void load_task(struct regs* regs, irq_data_t* irq_data) {
+static void load_task(struct regs* regs, irq_data_t* irq_data) {
     task_t* new_task = get_task(g_current_task_id);
 
     irq_data->rip = new_task->context->ip;
@@ -28,6 +29,7 @@ void load_task(struct regs* regs, irq_data_t* irq_data) {
 }
 
 void __attribute__((cdecl)) irq_handler(struct regs regs, irq_data_t irq_data) {
+    if (irq_data.interrupt_number == 0x80) printk(INFO, "%x", regs.rax);
     save_task(&regs, &irq_data);
 
     if(g_interrupt_handlers[irq_data.interrupt_number] != NULL) {
@@ -51,6 +53,7 @@ interrupt irq_ide(irq_data_t* irq_data) {
 
 interrupt irq_timer(irq_data_t* irq_data) {
     g_ticks += 1;
+
     TIMER_FUNCTION(10, update_time());
     TIMER_FUNCTION(10, g_current_task_id = schedule());
     MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(32);
@@ -67,6 +70,13 @@ interrupt irq_keyboard(irq_data_t* irq_data) {
         stdin_update();
     }
     MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(33);
+}
+
+interrupt irq_syscall(irq_data_t* irq_data) {
+    task_t* current_task = get_task(g_current_task_id);
+    struct regs* regs = &current_task->context->regs;
+    size_t result = g_syscalls[regs->rax](regs->rdi, regs->rsi, regs->rdx, regs->rcx);
+    regs->rax = result;
 }
 
 void init_irq_handlers() {
@@ -105,4 +115,5 @@ void init_irq_handlers() {
     set_irq_handler(32, irq_timer);
     set_irq_handler(33, irq_keyboard);
     set_irq_handler(46, irq_ide);
+    set_irq_handler(128, irq_syscall);
 }

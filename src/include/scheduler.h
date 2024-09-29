@@ -8,6 +8,8 @@
 #include "include/asm.h"
 #include "asm/asm.h"
 
+#define MAX_SCHEDULE_COUNT 16
+
 static void idle() {
     while(1);
 }
@@ -23,6 +25,7 @@ void init_scheduler() {
 
 uint16_t schedule() {
     task_t* current_task = g_task_list;
+    size_t count = 0;
     while (1) {
         list_t* next = current_task->list.next;
         if (current_task->status == READY && current_task->id != 0) {
@@ -35,7 +38,11 @@ uint16_t schedule() {
         if (next == NULL) {
             break;
         }
+        if (count > MAX_SCHEDULE_COUNT) {
+            break;
+        }
         current_task = container_of(next, task_t, list);
+        count++;
     }
     return 0;
 }

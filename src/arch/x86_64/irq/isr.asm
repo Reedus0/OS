@@ -16,14 +16,14 @@ isr:
     push r9
     push r8
     pushfq
-    push rsp
-    push rbp
-    push rsi
-    push rdi
-    push rdx
-    push rcx
-    push rbx
     push rax
+    push rbx
+    push rcx
+    push rdx
+    push rdi
+    push rsi
+    push rbp
+    push rsp
 
     call irq_handler
 

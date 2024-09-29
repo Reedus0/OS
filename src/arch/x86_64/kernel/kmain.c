@@ -6,14 +6,17 @@
 #include "shell/shell.h"
 #include "include/task.h"
 #include "include/scheduler.h"
+#include "kernel/syscall.h"
 #include "fs/vfs.h"
 #include "asm/io.h"
+#include "include/asm.h"
 
 void kmain(multiboot2_info_t* mbd) {
     
     init_hal(mbd);
     init_vfs();
     init_scheduler();
+    init_syscalls();
 
     enable_irq();
 
