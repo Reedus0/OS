@@ -46,7 +46,7 @@ isr:
     pop r15
 
     add rsp, 16
-
+    
     iretq
 
 %include "src/arch/x86_64/irq/isr_inc.asm"

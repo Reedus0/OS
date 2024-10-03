@@ -29,7 +29,6 @@ static void load_task(struct regs* regs, irq_data_t* irq_data) {
 }
 
 void __attribute__((cdecl)) irq_handler(struct regs regs, irq_data_t irq_data) {
-    if (irq_data.interrupt_number == 0x80) printk(INFO, "%x", regs.rax);
     save_task(&regs, &irq_data);
 
     if(g_interrupt_handlers[irq_data.interrupt_number] != NULL) {
@@ -75,8 +74,9 @@ interrupt irq_keyboard(irq_data_t* irq_data) {
 interrupt irq_syscall(irq_data_t* irq_data) {
     task_t* current_task = get_task(g_current_task_id);
     struct regs* regs = &current_task->context->regs;
-    size_t result = g_syscalls[regs->rax](regs->rdi, regs->rsi, regs->rdx, regs->rcx);
-    regs->rax = result;
+    enable_irq();
+    regs->rax = g_syscalls[regs->rax](regs->rdi, regs->rsi, regs->rdx, regs->rcx);
+    disable_irq();
 }
 
 void init_irq_handlers() {
