@@ -50,7 +50,7 @@ void set_isr(idt_descriptor_t* idt_descriptor, void (*isr)()) {
 void init_idt() {
     for (size_t i = 0; i < IDT_DESCRIPTORS_COUNT; i++) {
         idt_descriptor_t* current_idt_descriptor = &g_idt_descriptors[i];
-        if (i != 14) {
+        if (i > 32) {
             init_interrupt(current_idt_descriptor);
         } else {
             init_trap(current_idt_descriptor);

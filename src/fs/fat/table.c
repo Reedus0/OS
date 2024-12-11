@@ -41,11 +41,9 @@ size_t fat_read_table(vfs_fs_t* fs, size_t index) {
     switch (fat_info->fat_type) {
         case FAT12:
             size_t fat_index = index + (index / 2);
-            if (index % 2 == 0) {
-                result = (table[fat_index] & 0xFF) << 4 | (table[fat_index + 1] & 0xF);
-            } else {
-                result = (table[fat_index] & 0xF0) << 4 | (table[fat_index + 1] & 0xFF);
-            }
+            unsigned short short_value = *(unsigned short*)&table[fat_index];
+            short_value = (index & 1) ? short_value >> 4 : short_value & 0xFFF;
+            result = short_value;
             break;
         case FAT16:
             break;
@@ -81,12 +79,11 @@ void fat_write_table(vfs_fs_t* fs, size_t index, size_t data) {
     switch (fat_info->fat_type) {
         case FAT12:
             size_t fat_index = index + (index / 2);
+            unsigned short* short_value = (unsigned short*)&table[fat_index];
             if (index % 2 == 0) {
-                table[fat_index] = (data & 0xFF0) >> 4;
-                table[fat_index + 1] = (data & 0xF) | (table[fat_index + 1] & 0xF0);
+                *short_value = (*short_value & 0xF000) | data & 0x0FFF;
             } else {
-                table[fat_index] = ((data & 0xF00) >> 4) | (table[fat_index] & 0xF);
-                table[fat_index + 1] = (data & 0xFF);
+                *short_value = (*short_value & 0x0FFF) | ((data & 0x0FFF) << 4);
             }
             break;
         case FAT16:

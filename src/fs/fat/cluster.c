@@ -24,7 +24,6 @@ static size_t fat_read_cluster(vfs_fs_t* fs, size_t index, byte buffer[], size_t
 
     size_t current_cluster = 0;
     size_t read_bytes = 0;
-
     while (1) {
         bool correct_cluster = current_cluster >= offset / fat_info->cluster_size;
         if (correct_cluster) {
