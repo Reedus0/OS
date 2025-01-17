@@ -10,7 +10,8 @@
 #include "lib/string.h"
 
 shell_command sh_hello(char* command) {
-    printk(NONE, "Hello, Kernel!\n");
+    //printk(NONE, "Hello, Kernel!\n");
+    __syscall(1, "Hello, Kernel!\n", 5);
     return 0;
 } 
 
@@ -64,14 +65,14 @@ shell_command sh_ls(char* command) {
     while (last_list->next != NULL) {
         last_list = last_list->next;
         vfs_dir_t* current_dir = container_of(last_list, vfs_dir_t, list);
-        printk(NONE, "%s\n", current_dir->name);
+        printk(NONE, "D | 0000 | %s\n", current_dir->name);
     }
 
     last_list = &g_shell_dir->files;
     while (last_list->next != NULL) {
         last_list = last_list->next;
         vfs_file_t* current_file = container_of(last_list, vfs_file_t, list);
-        printk(NONE, "%s\n", current_file->name);
+        printk(NONE, "F | %4x | %s\n", current_file->size, current_file->name);
     }
     return 0;
 }

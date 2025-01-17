@@ -4,7 +4,7 @@
 #include "kernel/stdout.h"
 #include "asm/io.h"
 
-syscall in(byte* buffer, size_t count) {
+syscall_t in(byte* buffer, size_t count) {
     clear_stdin();
     size_t last_size = 0;
     
@@ -31,10 +31,15 @@ syscall in(byte* buffer, size_t count) {
     return 0;
 }
 
-syscall out(byte* buffer, size_t count) {
+syscall_t out(byte* buffer, size_t count) {
     for (int i = 0; i < count; i++) {
         stdout_add_byte(buffer[i]);
     }
+    return 0;
+}
+
+size_t syscall(size_t number, size_t arg_1, size_t arg_2, size_t arg_3, size_t arg_4) {
+    g_syscalls[number](arg_1, arg_2, arg_3, arg_4);
     return 0;
 }
 

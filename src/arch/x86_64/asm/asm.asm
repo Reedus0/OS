@@ -9,6 +9,7 @@ global get_rsp
 global get_rflags
 global get_gs
 global get_fs
+global get_context_register
 
 global set_task_register
 global get_task_register
@@ -49,6 +50,9 @@ get_rbp:
     ret
 get_rsp:
     mov rax, rsp
+    ret
+get_context_register:
+    mov rax, r15
     ret
 get_rflags:
     push rbx
@@ -118,12 +122,6 @@ set_regs:
 
     ret
 
-init_context:
-    mov [rdi + 24], rsi
-    mov [rdi], rdx
-    mov [rdi + 16], rcx
-    ret
-
 __rdmsr:
     mov rcx, rdi
     xor rax, rax
@@ -142,6 +140,11 @@ __wrmsr:
 
     ret
 
+init_context:
+    mov [rdi + 128], rsi
+    mov [rdi], rdx
+    mov [rdi + 24], rcx
+    ret
 
 get_stack:
     push rbp

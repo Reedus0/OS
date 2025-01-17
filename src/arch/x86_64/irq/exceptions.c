@@ -44,13 +44,13 @@ static void print_exception_info(irq_data_t* irq_data) {
      irq_data->error_code, irq_data->rip, irq_data->rsp, irq_data->rflags);
 }
 
-interrupt irq_handle_exception(irq_data_t* irq_data) {
+interrupt_t irq_handle_exception(irq_data_t* irq_data) {
     printk(NONE, "Exception: %s!\n", exceptions[irq_data->interrupt_number]);
     print_exception_info(irq_data);
     panic("Got an exception!");
 }
 
-interrupt irq_page_fault(irq_data_t* irq_data) {
+interrupt_t irq_page_fault(irq_data_t* irq_data) {
     uint64_t page_fault_address = get_page_fault_address();
     printk(NONE, "Page fault address: 0x%x\n", page_fault_address);
 

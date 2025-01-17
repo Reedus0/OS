@@ -70,6 +70,7 @@ int printk(char* level, const char* format, ...) {
             stdout_add_string(buffer);
             format += 2;
             result += 2;
+            padding = 0;
             continue;
         }
         stdout_add_byte(current_char);

@@ -42,6 +42,7 @@ void init_shell(shell_function_t functions[]) {
     while (1) {
         printk(NONE, g_prompt, g_shell_dir->name);
         kget(g_shell_buffer);
+        //__syscall(0, g_shell_buffer, SHELL_BUFFER_SIZE);
         shell_execute(g_shell_buffer, functions);
         clear_shell_buffer();
     }

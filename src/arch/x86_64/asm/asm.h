@@ -38,6 +38,7 @@ uint64_t get_rdi();
 uint64_t get_rsi();
 uint64_t get_rbp();
 uint64_t get_rsp();
+uint64_t get_context_register();
 
 uint64_t get_rflags();
 uint16_t get_gs();

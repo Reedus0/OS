@@ -46,11 +46,11 @@ static void set_irq_handler(size_t number, size_t handler) {
     g_interrupt_handlers[number] = handler;
 }
 
-interrupt irq_ide(irq_data_t* irq_data) {
+interrupt_t irq_ide(irq_data_t* irq_data) {
     MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(46);
 }
 
-interrupt irq_timer(irq_data_t* irq_data) {
+interrupt_t irq_timer(irq_data_t* irq_data) {
     g_ticks += 1;
 
     TIMER_FUNCTION(10, update_time());
@@ -58,7 +58,7 @@ interrupt irq_timer(irq_data_t* irq_data) {
     MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(32);
 }
 
-interrupt irq_keyboard(irq_data_t* irq_data) {
+interrupt_t irq_keyboard(irq_data_t* irq_data) {
     char character = sdev_read(&g_keyboard);
     if (character != NULL) {
         if (character != '\b') {
@@ -71,12 +71,29 @@ interrupt irq_keyboard(irq_data_t* irq_data) {
     MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(33);
 }
 
-interrupt irq_syscall(irq_data_t* irq_data) {
+interrupt_t irq_syscall(irq_data_t* irq_data) {
     task_t* current_task = get_task(g_current_task_id);
+    // current_task->status = NOT_READY;
     struct regs* regs = &current_task->context->regs;
-    enable_irq();
-    regs->rax = g_syscalls[regs->rax](regs->rdi, regs->rsi, regs->rdx, regs->rcx);
-    disable_irq();
+
+    // task_t* syscall_task = create_task(syscall, NULL);
+
+    // syscall_task->context->regs.rdi = regs->rdi;
+    // syscall_task->context->regs.rsi = regs->rsi;
+    // syscall_task->context->regs.rdx = regs->rdx;
+    // syscall_task->context->regs.rcx = regs->rcx;
+
+    task_t* syscall_task = create_task(g_syscalls[regs->rax], NULL);
+
+    syscall_task->context->regs.rdi = regs->rsi;
+    syscall_task->context->regs.rsi = regs->rdx;
+    syscall_task->context->regs.rdx = regs->rcx;
+    syscall_task->context->regs.rcx = regs->r8;
+    
+    schedule_task(syscall_task);
+    g_current_task_id = schedule();
+
+    // print_regs(&syscall_task->context->regs);
 }
 
 void init_irq_handlers() {

@@ -18,11 +18,11 @@ struct irq_data {
 } __attribute__((packed));
 typedef struct irq_data irq_data_t;
 
-typedef void (*interrupt)(irq_data_t* irq_data);
+typedef void (*interrupt_t)(irq_data_t* irq_data);
 
 #define TIMER_FUNCTION(tick, func) if (g_ticks % tick == 0) func
 
-interrupt g_interrupt_handlers[256];
+interrupt_t g_interrupt_handlers[256];
 
 void __attribute__((cdecl)) irq_handler(struct regs regs, irq_data_t irq_data);
 void init_irq_handlers();

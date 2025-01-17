@@ -40,7 +40,8 @@ task_t g_kernel_task;
 uint16_t g_current_task_id = KERNEL_TASK;
 uint16_t g_max_task_id = 0;
 
-static void task_entry(int (*func)(), void* param) {
+void task_entry(void* param) {
+    int (*func)() = get_context_register();
     func(param);
     exit_task();
 }
@@ -60,6 +61,7 @@ task_t* create_task(int (*func)(), void* param) {
     void* stack = kalloc(TASK_STACK_SIZE);
 
     new_task->stack = stack + TASK_STACK_SIZE;
+
     init_context(&new_task->context->regs, func, new_task->stack, param);
 
     if (g_task_list == NULL) {
@@ -79,7 +81,6 @@ void delete_task(task_t* task) {
     kfree(task->stack - TASK_STACK_SIZE);
     kfree(task->context);
     kfree(task);
-
 }
 
 task_t* get_task(uint16_t task_id) {

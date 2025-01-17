@@ -80,7 +80,7 @@ static vfs_dir_t* find_dir(vfs_dir_t* root, char* path) {
             return current_dir;
         }
         current_dir = container_of(current_dir->subdirs.next, vfs_dir_t, list);
-        path = strchr(path, '/') + 1;
+        if (strchr(path, '/')) path = strchr(path, '/') + 1;
         while (1) {
             size_t current_dir_name_length = strlen(current_dir->name);
             if (strncmp(current_dir->name, path, current_dir_name_length)) {
