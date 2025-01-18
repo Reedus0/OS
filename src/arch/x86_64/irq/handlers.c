@@ -73,27 +73,34 @@ interrupt_t irq_keyboard(irq_data_t* irq_data) {
 
 interrupt_t irq_syscall(irq_data_t* irq_data) {
     task_t* current_task = get_task(g_current_task_id);
-    // current_task->status = NOT_READY;
     struct regs* regs = &current_task->context->regs;
 
-    // task_t* syscall_task = create_task(syscall, NULL);
+    syscall_data_t* syscall_data = kalloc(sizeof(syscall_data_t));
+
+    syscall_data->number = regs->rax;
+    syscall_data->current_task = current_task;
+
+    syscall_data->arg_1 = regs->rsi;
+    syscall_data->arg_2 = regs->rdx;
+    syscall_data->arg_3 = regs->rcx;
+    syscall_data->arg_4 = regs->r8;
+
+    task_t* syscall_task = create_task(syscall, syscall_data);
 
     // syscall_task->context->regs.rdi = regs->rdi;
     // syscall_task->context->regs.rsi = regs->rsi;
     // syscall_task->context->regs.rdx = regs->rdx;
     // syscall_task->context->regs.rcx = regs->rcx;
 
-    task_t* syscall_task = create_task(g_syscalls[regs->rax], NULL);
+    // task_t* syscall_task = create_task(g_syscalls[regs->rax], NULL);
 
-    syscall_task->context->regs.rdi = regs->rsi;
-    syscall_task->context->regs.rsi = regs->rdx;
-    syscall_task->context->regs.rdx = regs->rcx;
-    syscall_task->context->regs.rcx = regs->r8;
+    // syscall_task->context->regs.rdi = regs->rsi;
+    // syscall_task->context->regs.rsi = regs->rdx;
+    // syscall_task->context->regs.rdx = regs->rcx;
+    // syscall_task->context->regs.rcx = regs->r8;
     
     schedule_task(syscall_task);
     g_current_task_id = schedule();
-
-    // print_regs(&syscall_task->context->regs);
 }
 
 void init_irq_handlers() {

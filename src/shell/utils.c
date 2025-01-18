@@ -10,8 +10,7 @@
 #include "lib/string.h"
 
 shell_command sh_hello(char* command) {
-    //printk(NONE, "Hello, Kernel!\n");
-    __syscall(1, "Hello, Kernel!\n", 5);
+    __syscall(1, "Hello, Kernel!\n", 15);
     return 0;
 } 
 

@@ -27,7 +27,6 @@ static size_t shell_execute(char* command, shell_function_t functions[]) {
         return 1;
     }
     return functions[index].shell_command(command);
-    //schedule_task(create_task(functions[index].shell_command, command));
 }
 
 static void clear_shell_buffer() {
@@ -41,8 +40,8 @@ void init_shell(shell_function_t functions[]) {
     g_shell_dir = &g_vfs_root;
     while (1) {
         printk(NONE, g_prompt, g_shell_dir->name);
-        kget(g_shell_buffer);
-        //__syscall(0, g_shell_buffer, SHELL_BUFFER_SIZE);
+        //kget(g_shell_buffer);
+        __syscall(0, g_shell_buffer, SHELL_BUFFER_SIZE);
         shell_execute(g_shell_buffer, functions);
         clear_shell_buffer();
     }
