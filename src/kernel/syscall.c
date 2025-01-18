@@ -53,6 +53,6 @@ static void set_syscall_handler(size_t number, size_t handler) {
 }
 
 void init_syscalls() {
-    set_syscall_handler(0, in);
-    set_syscall_handler(1, out);
+    set_syscall_handler(SYSCALL_IN, in);
+    set_syscall_handler(SYSCALL_OUT, out);
 }

@@ -1,7 +1,5 @@
 global isr
 extern irq_handler
-extern get_task_register
-extern get_task
 
 section .text
 bits 64

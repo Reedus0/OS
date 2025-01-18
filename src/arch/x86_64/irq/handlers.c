@@ -35,7 +35,7 @@ void __attribute__((cdecl)) irq_handler(struct regs regs, irq_data_t irq_data) {
         g_interrupt_handlers[irq_data.interrupt_number](&irq_data);
     }
     else {
-        printk(NONE, "Unhandeled interrupt: 0x%x!\n", irq_data.interrupt_number);
+        printk(NONE, "\nUnhandeled interrupt: 0x%x!\n", irq_data.interrupt_number);
         panic("Unhandeled interrupt");
     }
 
@@ -86,18 +86,6 @@ interrupt_t irq_syscall(irq_data_t* irq_data) {
     syscall_data->arg_4 = regs->r8;
 
     task_t* syscall_task = create_task(syscall, syscall_data);
-
-    // syscall_task->context->regs.rdi = regs->rdi;
-    // syscall_task->context->regs.rsi = regs->rsi;
-    // syscall_task->context->regs.rdx = regs->rdx;
-    // syscall_task->context->regs.rcx = regs->rcx;
-
-    // task_t* syscall_task = create_task(g_syscalls[regs->rax], NULL);
-
-    // syscall_task->context->regs.rdi = regs->rsi;
-    // syscall_task->context->regs.rsi = regs->rdx;
-    // syscall_task->context->regs.rdx = regs->rcx;
-    // syscall_task->context->regs.rcx = regs->r8;
     
     schedule_task(syscall_task);
     g_current_task_id = schedule();

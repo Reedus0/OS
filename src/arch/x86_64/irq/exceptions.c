@@ -45,14 +45,14 @@ static void print_exception_info(irq_data_t* irq_data) {
 }
 
 interrupt_t irq_handle_exception(irq_data_t* irq_data) {
-    printk(NONE, "Exception: %s!\n", exceptions[irq_data->interrupt_number]);
+    printk(NONE, "\nException: %s!\n", exceptions[irq_data->interrupt_number]);
     print_exception_info(irq_data);
     panic("Got an exception!");
 }
 
 interrupt_t irq_page_fault(irq_data_t* irq_data) {
     uint64_t page_fault_address = get_page_fault_address();
-    printk(NONE, "Page fault address: 0x%x\n", page_fault_address);
+    printk(NONE, "\nPage fault address: 0x%x\n", page_fault_address);
 
     size_t virtual_address = page_fault_address & 0xFFFFFFF00000;
     size_t physical_address = allocate_physical_address(virtual_address);

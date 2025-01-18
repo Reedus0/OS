@@ -26,7 +26,7 @@ struct task_context {
 };
 
 struct task {
-    uint16_t id;
+    uint32_t id;
     int (*entry)();
     struct task_context* context;
     void* stack;
@@ -37,8 +37,8 @@ typedef struct task task_t;
 
 task_t* g_task_list;
 task_t g_kernel_task;
-uint16_t g_current_task_id = KERNEL_TASK;
-uint16_t g_max_task_id = 0;
+uint32_t g_current_task_id = KERNEL_TASK;
+uint32_t g_max_task_id = 0;
 
 void task_entry(void* param) {
     int (*func)() = get_context_register();

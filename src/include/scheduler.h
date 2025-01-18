@@ -43,7 +43,7 @@ void clean_exited_tasks() {
     }
 }
 
-uint16_t schedule() {
+uint32_t schedule() {
     task_t* current_task = g_task_list;
     size_t schedule_count = 0;
     
@@ -55,7 +55,6 @@ uint16_t schedule() {
             g_task_list = container_of(next, task_t, list);
             return current_task->id;
         }
-        task_t* next_task = container_of(next, task_t, list);
         if (schedule_count > MAX_SCHEDULE_COUNT) {
             break;
         }

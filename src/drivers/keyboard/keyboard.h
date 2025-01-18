@@ -6,6 +6,10 @@
 #include "include/module.h"
 
 #define KEYBOARD_DEFAULT_PORT 0x60
+#define KEYBOARD_STATUS_PORT 0x64
+
+#define BUFFER_EMPTY 0
+#define BUFFER_FULL 1
 
 uint8_t g_key_map[256] = {
     NULL, 49,   50,   51,   52,   53,   54,   55,
@@ -30,6 +34,7 @@ uint8_t g_caps_map[256] = {
 };
 
 #define KEYBOARD_SET_PORT 16
+#define KEYBOARD_SET_STATUS_PORT 17
 
 void enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
 void update_cursor(int x, int y);

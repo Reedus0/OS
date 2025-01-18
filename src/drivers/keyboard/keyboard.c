@@ -4,6 +4,7 @@
 #include "include/types.h"
 
 static uint16_t keyboard_port;
+static uint16_t status_port;
 static bool caps_mode;
 
 static void keyboard_enable_caps() {
@@ -15,14 +16,19 @@ static void keyboard_disable_caps() {
 }
 
 static byte keyboard_process_key() {
+    uint8_t status = in8(status_port);
+
+    if (status & 1 == 0) return NULL;
+
     uint8_t key = in8(keyboard_port);
+
     if (key == 0x2A | key == 0x36) {
         keyboard_enable_caps();
-        return 0;
+        return NULL;
     }
     if (key == 0xAA | key == 0xB6) {
         keyboard_disable_caps();
-        return 0;
+        return NULL;
     }
     if (caps_mode) {
         return g_caps_map[key - 1];
@@ -34,8 +40,13 @@ static void keyboard_set_port(uint16_t port) {
     keyboard_port = port;
 }
 
+static void keyboard_set_status_port(uint16_t port) {
+    status_port = port;
+}
+
 static void init_keyboard() {
     keyboard_port = KEYBOARD_DEFAULT_PORT;
+    status_port = KEYBOARD_STATUS_PORT;
     caps_mode = 0;
 }
 
@@ -52,6 +63,7 @@ module_t* init_keyboard_module() {
 
     MODULE_FUNCTION(keyboard_module, SDEV_DRIVER_READ_BYTE) = keyboard_process_key;
     MODULE_FUNCTION(keyboard_module, KEYBOARD_SET_PORT) = keyboard_set_port;
+    MODULE_FUNCTION(keyboard_module, KEYBOARD_SET_STATUS_PORT) = keyboard_set_status_port;
 
     keyboard_module->deinit = deinit_keyboard;
 

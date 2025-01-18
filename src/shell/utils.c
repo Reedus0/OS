@@ -6,11 +6,11 @@
 #include "include/task.h"
 #include "drivers/tty/tty.h"
 #include "kernel/printk.h"
-#include "kernel/kget.h"
+#include "kernel/syscall.h"
 #include "lib/string.h"
 
 shell_command sh_hello(char* command) {
-    __syscall(1, "Hello, Kernel!\n", 15);
+    __syscall(SYSCALL_OUT, "Hello, Kernel!\n", 15);
     return 0;
 } 
 
@@ -110,7 +110,7 @@ shell_command sh_read(char* command) {
     char* arg = strchr(command, ' ') + 1;
 
     printk(NONE, "Offset: ");
-    kget(offset);
+    __syscall(SYSCALL_IN, offset, 64);
     
     file_t* file = vfs_open_file(arg);
     vfs_seek(file, atoi(offset));
@@ -132,13 +132,13 @@ shell_command sh_write(char* command) {
     char* arg = strchr(command, ' ') + 1;
 
     printk(NONE, "Offset: ");
-    kget(offset);
+    __syscall(SYSCALL_IN, offset, 64);
     
     file_t* file = vfs_open_file(arg);
     vfs_seek(file, atoi(offset));
     vfs_read_file(file, buffer, 256);
     
-    kget(buffer);
+    __syscall(SYSCALL_IN, offset, 64);
 
     vfs_write_file(file, buffer, 256);
     vfs_close_file(file);

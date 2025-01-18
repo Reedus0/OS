@@ -11,9 +11,6 @@ global get_gs
 global get_fs
 global get_context_register
 
-global set_task_register
-global get_task_register
-
 global get_regs
 global set_regs
 
