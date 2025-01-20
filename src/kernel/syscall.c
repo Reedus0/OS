@@ -1,20 +1,24 @@
 #include "syscall.h"
 #include "kernel/printk.h"
-#include "kernel/stdin.h"
 #include "kernel/sysout.h"
 #include "asm/io.h"
 
 syscall_t in(byte* buffer, size_t count) {
-    clear_stdin();
+    task_t* current_task = get_task(g_current_task_id);
+
+    clear_stream(&current_task->stdin);
     size_t last_size = 0;
+    
     while(1) {
-        byte last_byte = stdin_get_last_byte();
-        size_t stdin_size = stdin_get_size();
+        while(!current_task->stdin_updated);
+        current_task->stdin_updated = 0;
+        byte last_byte = stream_get_last_byte(&current_task->stdin);
+        size_t stdin_size = stream_get_size(&current_task->stdin);
         
         if (stdin_size > last_size) {
             sysout_add_byte(last_byte);
         }
-        if (last_byte == '\n') {
+        if (last_byte == '\n') { 
             break;
         }
         if (stdin_size <= last_size) {

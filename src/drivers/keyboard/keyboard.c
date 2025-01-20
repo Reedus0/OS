@@ -2,6 +2,7 @@
 #include "include/io.h"
 #include "include/dev.h"
 #include "include/types.h"
+#include "asm/io.h"
 
 static uint16_t keyboard_port;
 static uint16_t status_port;

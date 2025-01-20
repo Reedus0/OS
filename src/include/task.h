@@ -35,6 +35,7 @@ struct task {
     void* stack;
     enum TASK_STATUS status;
     stream_t stdin;
+    bool stdin_updated;
     stream_t stdout;
     list_t list;
 };
@@ -88,6 +89,8 @@ task_t* create_task(int (*func)(), void* param) {
     new_task->stdout.buffer = stdout_buffer;
     new_task->stdout.ended = 0;
     new_task->stdout.size = 0;
+
+    new_task->stdin_updated = 0;
 
     return new_task;
 }

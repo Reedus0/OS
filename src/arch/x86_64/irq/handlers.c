@@ -6,7 +6,6 @@
 #include "include/task.h"
 #include "include/scheduler.h"
 #include "kernel/printk.h"
-#include "kernel/stdin.h"
 #include "kernel/syscall.h"
 #include "drivers/pic/pic.h"
 
@@ -60,13 +59,15 @@ interrupt_t irq_timer(irq_data_t* irq_data) {
 
 interrupt_t irq_keyboard(irq_data_t* irq_data) {
     char character = sdev_read(&g_keyboard);
+    task_t* current_task = get_task(g_current_task_id);
+    
     if (character != NULL) {
         if (character != '\b') {
-            stdin_add_byte(character);
+            stream_add_byte(&current_task->stdin, character);
         } else {
-            stdin_delete_byte();
+            stream_delete_byte(&current_task->stdin);
         }
-        stdin_update();
+        current_task->stdin_updated = 1;
     }
     MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(33);
 }
