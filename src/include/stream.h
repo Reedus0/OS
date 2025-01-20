@@ -21,7 +21,7 @@ void stream_add_byte(stream_t* stream, char new_byte) {
 void stream_delete_byte(stream_t* stream) {
     if (stream->ended) return;
     if (stream->size > 0) {
-        stream->buffer[stream->size]  = 0;
+        stream->buffer[stream->size] = 0;
         stream->size -= 1;
     }
 }

@@ -1,7 +1,7 @@
 #include "syscall.h"
 #include "kernel/printk.h"
 #include "kernel/stdin.h"
-#include "kernel/stdout.h"
+#include "kernel/sysout.h"
 #include "asm/io.h"
 
 syscall_t in(byte* buffer, size_t count) {
@@ -12,14 +12,14 @@ syscall_t in(byte* buffer, size_t count) {
         size_t stdin_size = stdin_get_size();
         
         if (stdin_size > last_size) {
-            stdout_add_byte(last_byte);
+            sysout_add_byte(last_byte);
         }
         if (last_byte == '\n') {
             break;
         }
         if (stdin_size <= last_size) {
             if (last_size > 0) {
-                stdout_add_byte('\b');
+                sysout_add_byte('\b');
                 last_size--;
             }
         }
@@ -33,7 +33,7 @@ syscall_t in(byte* buffer, size_t count) {
 
 syscall_t out(byte* buffer, size_t count) {
     for (int i = 0; i < count; i++) {
-        stdout_add_byte(buffer[i]);
+        sysout_add_byte(buffer[i]);
     }
     return 0;
 }

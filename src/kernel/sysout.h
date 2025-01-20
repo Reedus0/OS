@@ -5,5 +5,5 @@
 
 #include "include/types.h"
 
-void stdout_add_string(byte* string);
-void stdout_add_byte(byte character);
+void sysout_add_string(byte* string);
+void sysout_add_byte(byte character);

@@ -1,4 +1,4 @@
-#include "kernel/stdout.h"
+#include "kernel/sysout.h"
 #include "printk.h"
 #include "lib/string.h"
 
@@ -9,7 +9,7 @@ int printk(char* level, const char* format, ...) {
     int result = 0;
     size_t current_arg = 0;
 
-    stdout_add_string(level);
+    sysout_add_string(level);
 
     va_list arg;
     va_start(arg, format);
@@ -67,13 +67,13 @@ int printk(char* level, const char* format, ...) {
                     strncpy(buffer + offset, number, strlen(number));
                     break;
             }
-            stdout_add_string(buffer);
+            sysout_add_string(buffer);
             format += 2;
             result += 2;
             padding = 0;
             continue;
         }
-        stdout_add_byte(current_char);
+        sysout_add_byte(current_char);
         format++;
         result++;
     }

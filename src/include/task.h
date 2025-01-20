@@ -9,10 +9,13 @@
 #include "include/list.h"
 #include "include/types.h"
 #include "include/macro.h"
+#include "include/stream.h"
 #include "asm/asm.h"
 
 #define TASK_STACK_SIZE 8192
 #define KERNEL_TASK 0xFFFF
+
+#define STD_BUFFER_SIZE 256
 
 enum TASK_STATUS {
     NOT_READY = 0,
@@ -31,6 +34,8 @@ struct task {
     struct task_context* context;
     void* stack;
     enum TASK_STATUS status;
+    stream_t stdin;
+    stream_t stdout;
     list_t list;
 };
 typedef struct task task_t;
@@ -72,6 +77,18 @@ task_t* create_task(int (*func)(), void* param) {
         g_task_list = new_task;
     }
 
+    byte* stdin_buffer = kalloc(STD_BUFFER_SIZE);
+
+    new_task->stdin.buffer = stdin_buffer;
+    new_task->stdin.ended = 0;
+    new_task->stdin.size = 0;
+
+    byte* stdout_buffer = kalloc(STD_BUFFER_SIZE);
+
+    new_task->stdout.buffer = stdout_buffer;
+    new_task->stdout.ended = 0;
+    new_task->stdout.size = 0;
+
     return new_task;
 }
 
@@ -79,6 +96,7 @@ void delete_task(task_t* task) {
     list_remove(&task->list);
 
     kfree(task->stack - TASK_STACK_SIZE);
+    kfree(task->stdin.buffer);
     kfree(task->context);
     kfree(task);
 }
