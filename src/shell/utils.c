@@ -7,10 +7,11 @@
 #include "drivers/tty/tty.h"
 #include "kernel/printk.h"
 #include "kernel/syscall.h"
+#include "kernel/elf.h"
 #include "lib/string.h"
 
 shell_command sh_hello(char* command) {
-    __syscall(SYSCALL_OUT, "Hello, Kernel!\n", 15);
+    __syscall(1, "Hello, Kernel!\n", 15);
     return 0;
 } 
 
@@ -110,7 +111,7 @@ shell_command sh_read(char* command) {
     char* arg = strchr(command, ' ') + 1;
 
     printk(NONE, "Offset: ");
-    __syscall(SYSCALL_IN, offset, 64);
+    __syscall(0, offset, 64);
     
     file_t* file = vfs_open_file(arg);
     vfs_seek(file, atoi(offset));
@@ -132,13 +133,13 @@ shell_command sh_write(char* command) {
     char* arg = strchr(command, ' ') + 1;
 
     printk(NONE, "Offset: ");
-    __syscall(SYSCALL_IN, offset, 64);
+    __syscall(0, offset, 64);
     
     file_t* file = vfs_open_file(arg);
     vfs_seek(file, atoi(offset));
     vfs_read_file(file, buffer, 256);
     
-    __syscall(SYSCALL_IN, offset, 64);
+    __syscall(0, offset, 64);
 
     vfs_write_file(file, buffer, 256);
     vfs_close_file(file);
@@ -168,4 +169,15 @@ shell_command sh_task(char* command) {
         current_task = container_of(next, task_t, list);
         if (current_task->id == 0) break;
     }
+}
+
+shell_command sh_readelf(char* command) {
+    byte buffer[512] = {0};
+    char* arg = strchr(command, ' ') + 1;
+
+    struct elf_64* elf = read_elf(arg);
+
+    kfree(elf);
+
+    return 0;
 }

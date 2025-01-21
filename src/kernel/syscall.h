@@ -20,7 +20,4 @@ struct syscall_data {
 typedef struct syscall_data syscall_data_t;
 
 size_t syscall(syscall_data_t* syscall_data);
-void init_syscalls();
-
-#define SYSCALL_IN 0
-#define SYSCALL_OUT 1
+void set_syscall_handler(size_t number, size_t handler);

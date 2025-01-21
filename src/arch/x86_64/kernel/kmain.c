@@ -37,6 +37,7 @@ void kmain(multiboot2_info_t* mbd) {
         {"write ", sh_write},
         {"time", sh_time},
         {"task", sh_task},
+        {"r ", sh_readelf},
         {NULL, NULL},
     };
 

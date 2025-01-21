@@ -20,3 +20,4 @@ shell_command sh_read(char* command);
 shell_command sh_write(char* command);
 shell_command sh_time(char* command);
 shell_command sh_task(char* command);
+shell_command sh_readelf(char* command);
