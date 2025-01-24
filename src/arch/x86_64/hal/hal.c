@@ -14,6 +14,7 @@
 #include "drivers/tty/tty.h"
 #include "include/module.h"
 #include "include/scheduler.h"
+#include "memory/heap.h"
 #include "include/dev.h"
 
 void init_hal(multiboot2_info_t* mbd) {
@@ -25,6 +26,7 @@ void init_hal(multiboot2_info_t* mbd) {
     init_idt();
     init_irq_handlers();
 
+    discover_memory(mbd);
     init_heap();
 
     module_t* tty_module = init_tty_module();
@@ -57,8 +59,6 @@ void init_hal(multiboot2_info_t* mbd) {
     g_hdd.driver = ide_module;
 
     printk(SUCCESS, "Initiated modules!\n");
-
-    discover_memory(mbd);
 
     printk(SUCCESS, "Initiated HAL!\n");
 }

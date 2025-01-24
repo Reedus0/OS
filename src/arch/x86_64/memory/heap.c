@@ -1,5 +1,6 @@
-#include "memory/memory.h"
 #include "kernel/printk.h"
+#include "memory/memory.h"
+#include "memory/paging.h"
 #include "heap.h"
 
 static void heap_descriptor_set_address(heap_descriptor_t* heap_descriptor, uint64_t address) {
@@ -27,7 +28,7 @@ void init_heap() {
 
     heap_descriptor_t* base_descriptor = &g_heap_descriptors[g_heap_descriptor_count];
     heap_descriptor_set_address(base_descriptor, g_heap_base);
-    heap_descriptor_set_size(base_descriptor, HEAP_SIZE);
+    heap_descriptor_set_size(base_descriptor, PAGE_SIZE * g_available_pages);
     heap_descriptor_set_available(base_descriptor);
 
     g_heap_descriptor_count += 1;
@@ -74,10 +75,6 @@ void* heap_alloc(size_t bytes) {
 
     if (bytes == 0) {
         panic("Tying to allocate 0 bytes!");
-    }
-
-    if (bytes > HEAP_SIZE) {
-        panic("Trying to allocate bytes > HEAP_SIZE");
     }
 
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {

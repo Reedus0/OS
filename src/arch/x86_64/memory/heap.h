@@ -4,8 +4,8 @@
 #include <stddef.h>
 
 #include "include/types.h"
+#include "memory/memory.h"
 
-#define HEAP_SIZE 0x2000000
 #define HEAP_DESCRIPTORS_SIZE 0x20000
 
 struct heap_descriptor {
@@ -18,7 +18,7 @@ struct heap_descriptor {
 typedef struct heap_descriptor heap_descriptor_t;
 
 heap_descriptor_t g_heap_descriptors[HEAP_DESCRIPTORS_SIZE];
-byte g_heap_base[HEAP_SIZE];
+byte* g_heap_base = KERNEL_OFFSET;
 
 size_t g_heap_descriptor_count;
 
