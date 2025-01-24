@@ -1,4 +1,5 @@
 #include "include/time.h"
+#include "include/kalloc.h"
 #include "cmos.h"
 
 static uint8_t cmos_read_register(uint8_t offset) {

@@ -9,6 +9,7 @@
 #include "drivers/bus/pci/pci.h"
 #include "drivers/pic/pic.h"
 #include "drivers/keyboard/keyboard.h"
+#include "drivers/rtc/cmos/cmos.h"
 #include "drivers/ata/ide.h"
 #include "drivers/tty/tty.h"
 #include "include/module.h"
@@ -41,12 +42,13 @@ void init_hal(multiboot2_info_t* mbd) {
     register_module(g_pci_module);
     MODULE_FUNCTION(g_pci_module, PCI_CHECK_BUSES)();
 
+    module_t* cmos_module = init_cmos_module();
+    register_module(cmos_module);
+    
     module_t* keyboard_module = init_keyboard_module();
     register_module(keyboard_module);
 
     g_keyboard.driver = keyboard_module;
-    // module_t* cmos_module = init_cmos_module();
-    // register_module(cmos_module);
 
     module_t* ide_module = init_ide_module();
     register_module(ide_module);
@@ -56,7 +58,7 @@ void init_hal(multiboot2_info_t* mbd) {
 
     printk(SUCCESS, "Initiated modules!\n");
 
-    // discover_memory(mbd);
+    discover_memory(mbd);
 
     printk(SUCCESS, "Initiated HAL!\n");
 }

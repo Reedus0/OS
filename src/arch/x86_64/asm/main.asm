@@ -57,7 +57,7 @@ check_long_mode:
     cpuid
     test edx, 1 << 3 ; PSE flag
     jz stop
-    pop ebx
+    pop edi
 
     ret
 

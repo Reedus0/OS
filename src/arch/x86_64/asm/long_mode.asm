@@ -11,8 +11,6 @@ long_mode_start:
     mov fs, ax
     mov gs, ax
 
-    mov rdi, rbx
-
     xor ebp, ebp
     call kmain
     
