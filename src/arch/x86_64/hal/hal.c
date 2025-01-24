@@ -45,9 +45,8 @@ void init_hal(multiboot2_info_t* mbd) {
     register_module(keyboard_module);
 
     g_keyboard.driver = keyboard_module;
-
-    module_t* cmos_module = init_cmos_module();
-    register_module(cmos_module);
+    // module_t* cmos_module = init_cmos_module();
+    // register_module(cmos_module);
 
     module_t* ide_module = init_ide_module();
     register_module(ide_module);
@@ -57,7 +56,7 @@ void init_hal(multiboot2_info_t* mbd) {
 
     printk(SUCCESS, "Initiated modules!\n");
 
-    discover_memory(mbd);
+    // discover_memory(mbd);
 
     printk(SUCCESS, "Initiated HAL!\n");
 }

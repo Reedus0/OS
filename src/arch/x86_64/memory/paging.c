@@ -1,5 +1,6 @@
 #include "memory.h"
 #include "paging.h"
+#include "asm/paging.h"
 
 static void physical_page_set_address(physical_page_t* physical_page, uint64_t address) {
     physical_page->address = address;
@@ -113,4 +114,10 @@ void map_page(size_t physical_address, size_t virtual_address, size_t flags) {
     page_table_entry_map(l2_address);
 
     g_available_pages -= 1;
+}
+
+void remap_kernel() {
+    for (int i = 0; i < 128; i++) {
+        map_page(i * PAGE_SIZE, i * PAGE_SIZE + 0xC0000000, 0x82);
+    }
 }

@@ -12,7 +12,6 @@
 #include "include/asm.h"
 
 void kmain(multiboot2_info_t* mbd) {
-    
     init_hal(mbd);
     init_vfs();
     init_scheduler();
