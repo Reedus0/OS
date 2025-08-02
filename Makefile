@@ -10,15 +10,13 @@ GRUB_MKRESCUE := grub-mkrescue
 QEMU := qemu-system-x86_64
 BOCHS := bochs
 
-QEMU_FLAGS := -m 1024 -drive format=raw,file=dist/x86_64/kernel.iso -drive format=raw,if=ide,file=fs
+QEMU_FLAGS := -m 1024 -drive format=raw,if=ide,file=drive
 
 # x86_64 target
 
 ASM_FLAGS := -f elf64
-CC_FLAGS := -I $(SRC_DIR) -I $(SRC_DIR)/arch/x86_64 -ffreestanding -MMD -fno-asynchronous-unwind-tables
+CC_FLAGS := -I $(SRC_DIR) -I $(SRC_DIR)/arch/x86_64 -ffreestanding -MMD -fno-asynchronous-unwind-tables -g
 LD_FLAGS := -n --allow-multiple-definition -T target/x86_64/linker.ld
-
-ISO_DIR := target/x86_64/iso
 
 ASM_FILES := $(shell find $(SRC_DIR) -name *.asm)
 C_FILES := $(shell find $(SRC_DIR) -name *.c)
@@ -28,12 +26,6 @@ OBJ_FILES := $(ASM_FILES:$(SRC_DIR)/%.asm=$(BUILD_DIR)/%.o) $(C_FILES:$(SRC_DIR)
 -include $(DEPEND_FILES)
 
 TARGET := $(DIST_DIR)/x86_64/kernel.bin
-ISO := $(DIST_DIR)/x86_64/kernel.iso
-
-$(ISO): $(TARGET)
-	@mkdir -p $(ISO_DIR)/boot
-	cp $(TARGET) $(ISO_DIR)/boot/kernel.bin
-	$(GRUB_MKRESCUE) /usr/lib/grub/i386-pc -o $(ISO) $(ISO_DIR)
 
 $(TARGET): $(OBJ_FILES)
 	@mkdir -p $(DIST_DIR)
@@ -48,18 +40,17 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(@D)
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
-build-x86_64: $(ISO)
+build-x86_64: $(TARGET)
 
-run: $(ISO)
+run: $(TARGET)
 	make build-x86_64
+	./fs.sh
 	$(QEMU) $(QEMU_FLAGS)
 
-dbg_win: $(ISO)
-	make build-x86_64
+dbg_win: $(TARGET)
 	$(BOCHS) -f bochs_config_win.bxrc
 
-dbg_linux: $(ISO)
-	make build-x86_64
+dbg_linux: $(TARGET)
 	$(BOCHS) -f bochs_config_linux.bxrc
 
 clean:

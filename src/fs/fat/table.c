@@ -8,13 +8,13 @@ static size_t get_fat_size(vfs_fs_t* fs) {
     size_t fat_size = 0;
 
     switch (fat_info->fat_type) {
-        case FAT12:
-            fat_size = (fat_info->fat_size * fat_info->sector_size * 2) / 3 + 1;
-            break;
-        case FAT16:
-            break;
-        case FAT32:
-            break;
+    case FAT12:
+        fat_size = (fat_info->fat_size * fat_info->sector_size * 2) / 3 + 1;
+        break;
+    case FAT16:
+        break;
+    case FAT32:
+        break;
     }
 
     return fat_size;
@@ -39,16 +39,16 @@ size_t fat_read_table(vfs_fs_t* fs, size_t index) {
     byte* table = read_table(fs, index);
 
     switch (fat_info->fat_type) {
-        case FAT12:
-            size_t fat_index = index + (index / 2);
-            unsigned short short_value = *(unsigned short*)&table[fat_index];
-            short_value = (index & 1) ? short_value >> 4 : short_value & 0xFFF;
-            result = short_value;
-            break;
-        case FAT16:
-            break;
-        case FAT32:
-            break;
+    case FAT12:
+        size_t fat_index = index + (index / 2);
+        unsigned short short_value = *(unsigned short*)&table[fat_index];
+        short_value = (index & 1) ? short_value >> 4 : short_value & 0xFFF;
+        result = short_value;
+        break;
+    case FAT16:
+        break;
+    case FAT32:
+        break;
     }
 
     kfree(table);
@@ -77,19 +77,20 @@ void fat_write_table(vfs_fs_t* fs, size_t index, size_t data) {
     byte* table = read_table(fs, index);
 
     switch (fat_info->fat_type) {
-        case FAT12:
-            size_t fat_index = index + (index / 2);
-            unsigned short* short_value = (unsigned short*)&table[fat_index];
-            if (index % 2 == 0) {
-                *short_value = (*short_value & 0xF000) | data & 0x0FFF;
-            } else {
-                *short_value = (*short_value & 0x0FFF) | ((data & 0x0FFF) << 4);
-            }
-            break;
-        case FAT16:
-            break;
-        case FAT32:
-            break;
+    case FAT12:
+        size_t fat_index = index + (index / 2);
+        unsigned short* short_value = (unsigned short*)&table[fat_index];
+        if (index % 2 == 0) {
+            *short_value = (*short_value & 0xF000) | data & 0x0FFF;
+        }
+        else {
+            *short_value = (*short_value & 0x0FFF) | ((data & 0x0FFF) << 4);
+        }
+        break;
+    case FAT16:
+        break;
+    case FAT32:
+        break;
     }
 
     write_table(fs, index, table);

@@ -23,7 +23,7 @@ struct elf_64* read_elf(char* path) {
         elf->pheaders = pheaders;
     }
 
-    if (elf->file_header->e_shnum) { 
+    if (elf->file_header->e_shnum) {
         struct elf_sheader_64* sheaders = kalloc(elf->file_header->e_shnum * sizeof(struct elf_sheader_64));
 
         vfs_seek(file, elf->file_header->e_shoff);

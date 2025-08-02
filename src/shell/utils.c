@@ -13,7 +13,7 @@
 shell_command sh_hello(char* command) {
     __syscall(1, "Hello, Kernel!\n", 15);
     return 0;
-} 
+}
 
 shell_command sh_clear(char* command) {
     MODULE_FUNCTION(g_terminal.driver, TTY_CLEAR)();
@@ -79,40 +79,40 @@ shell_command sh_ls(char* command) {
 
 shell_command sh_mkfile(char* command) {
     char* arg = strchr(command, ' ') + 1;
-    
+
     vfs_create_file(arg);
     return 0;
 }
 
 shell_command sh_mkdir(char* command) {
     char* arg = strchr(command, ' ') + 1;
-    
+
     vfs_create_dir(arg);
     return 0;
 }
 
 shell_command sh_rm(char* command) {
     char* arg = strchr(command, ' ') + 1;
-    
+
     vfs_delete_file(arg);
     return 0;
 }
 
 shell_command sh_rmdir(char* command) {
     char* arg = strchr(command, ' ') + 1;
-    
+
     vfs_delete_dir(arg);
     return 0;
 }
 
 shell_command sh_read(char* command) {
-    byte buffer[256] = {0};
-    byte offset[64] = {0};
+    byte buffer[256] = { 0 };
+    byte offset[64] = { 0 };
     char* arg = strchr(command, ' ') + 1;
 
     printk(NONE, "Offset: ");
     __syscall(0, offset, 64);
-    
+
     file_t* file = vfs_open_file(arg);
     vfs_seek(file, atoi(offset));
     size_t bytes_read = vfs_read_file(file, buffer, 256);
@@ -128,17 +128,17 @@ shell_command sh_read(char* command) {
 }
 
 shell_command sh_write(char* command) {
-    byte buffer[256] = {0};
-    byte offset[64] = {0};
+    byte buffer[256] = { 0 };
+    byte offset[64] = { 0 };
     char* arg = strchr(command, ' ') + 1;
 
     printk(NONE, "Offset: ");
     __syscall(0, offset, 64);
-    
+
     file_t* file = vfs_open_file(arg);
     vfs_seek(file, atoi(offset));
     vfs_read_file(file, buffer, 256);
-    
+
     __syscall(0, offset, 64);
 
     vfs_write_file(file, buffer, 256);
@@ -150,8 +150,8 @@ shell_command sh_write(char* command) {
 
 shell_command sh_time(char* command) {
     struct time ktime = time();
-    
-    printk(NONE, "%2d:%2d:%2d %2d/%2d/%4d\n", 
+
+    printk(NONE, "%2d:%2d:%2d %2d/%2d/%4d\n",
         ktime.hour, ktime.minute, ktime.second,
         ktime.day, ktime.month, ktime.year
     );
@@ -172,7 +172,7 @@ shell_command sh_task(char* command) {
 }
 
 shell_command sh_readelf(char* command) {
-    byte buffer[512] = {0};
+    byte buffer[512] = { 0 };
     char* arg = strchr(command, ' ') + 1;
 
     struct elf_64* elf = read_elf(arg);

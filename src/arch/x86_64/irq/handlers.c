@@ -126,7 +126,7 @@ void init_irq_handlers() {
     set_irq_handler(30, irq_handle_exception);
     set_irq_handler(31, irq_handle_exception);
     set_irq_handler(32, irq_timer);
-    set_irq_handler(33, irq_keyboard);
+    set_irq_handler(33, irq_keyboard); 
     set_irq_handler(46, irq_ide);
     set_irq_handler(128, irq_syscall);
 }

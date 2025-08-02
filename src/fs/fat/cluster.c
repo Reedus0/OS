@@ -10,12 +10,12 @@ static fat_cluster_t* read_cluster(vfs_fs_t* fs, size_t index) {
     fat_cluster_t* fat_cluster = kalloc(sizeof(fat_cluster_t));
     void* fat_entry = kalloc(fat_info->cluster_size);
 
-    fat_cluster->cluster = fat_entry;  
-    
+    fat_cluster->cluster = fat_entry;
+
     size_t entry_sector = ((index - 2) * fat_info->sectors_per_claster) + fat_info->data_region;
 
     bdev_read(fs->dev, fat_cluster->cluster, entry_sector, fat_info->sectors_per_claster);
-    
+
     return fat_cluster;
 }
 
@@ -30,7 +30,9 @@ static size_t fat_read_cluster(vfs_fs_t* fs, size_t index, byte buffer[], size_t
             fat_cluster_t* cluster_content = read_cluster(fs, index);
             for (size_t i = offset % fat_info->cluster_size; i < fat_info->cluster_size; i++) {
                 if (read_bytes >= count) {
-                    break;
+                    kfree(cluster_content->cluster);
+                    kfree(cluster_content);
+                    return read_bytes;
                 }
                 buffer[read_bytes] = cluster_content->cluster[offset % fat_info->cluster_size];
                 offset++;
@@ -45,6 +47,7 @@ static size_t fat_read_cluster(vfs_fs_t* fs, size_t index, byte buffer[], size_t
 
         current_cluster++;
     }
+
     return read_bytes;
 }
 
@@ -57,7 +60,7 @@ static void write_cluster(vfs_fs_t* fs, size_t index, fat_cluster_t* data) {
 
     kfree(data->cluster);
     kfree(data);
-} 
+}
 
 static size_t fat_write_cluster(vfs_fs_t* fs, size_t index, byte buffer[], size_t offset, size_t count) {
     struct fat_info* fat_info = fs->fs_data;
@@ -83,7 +86,8 @@ static size_t fat_write_cluster(vfs_fs_t* fs, size_t index, byte buffer[], size_
         if ((fat_read_table(fs, index) & fat_info->eof) == fat_info->eof) {
             if (wrote_bytes < count) {
                 fat_table_allocate_cluster(fs, index);
-            } else {
+            }
+            else {
                 break;
             }
         }
@@ -157,7 +161,8 @@ static size_t fat_write_root(vfs_fs_t* fs, byte buffer[], size_t offset, size_t 
 size_t fat_read_content(vfs_fs_t* fs, size_t index, byte buffer[], size_t offset, size_t count) {
     if (index == ROOT_CLUSTER) {
         fat_read_root(fs, buffer, offset, count);
-    } else {
+    }
+    else {
         fat_read_cluster(fs, index, buffer, offset, count);
     }
 }
@@ -165,7 +170,8 @@ size_t fat_read_content(vfs_fs_t* fs, size_t index, byte buffer[], size_t offset
 size_t fat_write_content(vfs_fs_t* fs, size_t index, byte buffer[], size_t offset, size_t count) {
     if (index == ROOT_CLUSTER) {
         fat_write_root(fs, buffer, offset, count);
-    } else {
+    }
+    else {
         fat_write_cluster(fs, index, buffer, offset, count);
     }
 }

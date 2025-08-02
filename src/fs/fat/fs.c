@@ -38,14 +38,14 @@ void deinit(vfs_fs_t* fs) {
 size_t read_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t offset, size_t count) {
     struct fat_info* fat_info = fs->fs_data;
     fat_file_data_t* file_data = file->fs_data;
-    
+
     fat_read_content(fs, file_data->cluster, buffer, offset, count);
 }
 
 size_t write_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t offset, size_t count) {
     struct fat_info* fat_info = fs->fs_data;
     fat_file_data_t* file_data = file->fs_data;
-    
+
     fat_write_content(fs, file_data->cluster, buffer, offset, count);
 }
 

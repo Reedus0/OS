@@ -40,8 +40,8 @@ static char* exceptions[] = {
 };
 
 static void print_exception_info(irq_data_t* irq_data) {
-    printk(NONE, "error code:   0x%x\noriginal rip: 0x%16x\noriginal rsp: 0x%16x\nrflags: 0x%8x\n", 
-     irq_data->error_code, irq_data->rip, irq_data->rsp, irq_data->rflags);
+    printk(NONE, "error code:   0x%x\noriginal rip: 0x%16x\noriginal rsp: 0x%16x\nrflags: 0x%8x\n",
+        irq_data->error_code, irq_data->rip, irq_data->rsp, irq_data->rflags);
 }
 
 interrupt_t irq_handle_exception(irq_data_t* irq_data) {

@@ -1,5 +1,8 @@
 /build/
 /dist/
-/fs
+/fs/grub/*
+/fs/kernel/*
+!/fs/grub/grub.cfg
 target/x86_64/iso/boot/kernel.bin
 bx_enh_dbg.ini
+.editorconfig

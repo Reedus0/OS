@@ -30,13 +30,7 @@ struct elf_sheader_64 {
 } __attribute__((packed));
 
 struct elf_file_header_64 {
-    uint32_t EI_MAG;
-    uint8_t EI_CLASS;
-    uint8_t EI_DATA;
-    uint8_t EI_VERSION;
-    uint8_t EI_OSABI;
-    uint8_t EI_ABIVERSION;
-    uint8_t padding[7];
+    uint8_t e_ident[16];
     uint16_t e_type;
     uint16_t e_machine;
     uint32_t e_version;

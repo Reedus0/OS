@@ -1,4 +1,3 @@
-#include "boot/multiboot2.h"
 #include "hal/hal.h"
 #include "memory/memory.h"
 #include "drivers/bus/pci/pci.h"
@@ -10,13 +9,15 @@
 #include "fs/vfs.h"
 #include "asm/io.h"
 #include "include/asm.h"
+#include "kernel/symbols.h"
 
-void kmain(multiboot2_info_t* mbd) {
-    init_hal(mbd);
+void kmain() {
+    init_hal();
     init_vfs();
-    init_scheduler();
     init_syscalls();
+    init_scheduler();
 
+    // load_kernel_symbols("/kernel/kernel.bin");
     enable_irq();
 
     static shell_function_t functions[] = {
@@ -41,5 +42,5 @@ void kmain(multiboot2_info_t* mbd) {
     };
 
     schedule_task(create_task(init_shell, functions));
-    while(1);
+    while (1);
 }

@@ -115,9 +115,3 @@ void map_page(size_t physical_address, size_t virtual_address, size_t flags) {
 
     g_available_pages -= 1;
 }
-
-void remap_kernel() {
-    for (int i = 0; i < 128; i++) {
-        map_page(i * PAGE_SIZE, i * PAGE_SIZE + 0xC0000000, 0x82);
-    }
-}
