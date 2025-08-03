@@ -18,12 +18,12 @@ start:
     call setup_pages
     call enable_paging
 
-    call remap_kernel
+    ; call remap_kernel
 
-    add esp, 0xC0000000
+    ; add esp, 0xC0000000
     
     lgdt [gdt.pointer]
-    jmp gdt.code_segment:long_mode_start + 0xC0000000
+    jmp gdt.code_segment:long_mode_start ; + 0xC0000000
 
 check_cpuid:
     pushfd
@@ -80,7 +80,7 @@ setup_pages:
     mov [g_page_table_l2 + ecx * 8], eax
 
     inc ecx
-    cmp ecx, 128
+    cmp ecx, 256
     jne .loop
 
     ret
@@ -122,7 +122,7 @@ remap_kernel:
 
     inc ecx
     inc ebx
-    cmp ecx, 128
+    cmp ecx, 256
     jne .loop
 
     ret

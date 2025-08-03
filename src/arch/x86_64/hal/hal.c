@@ -6,11 +6,11 @@
 #include "memory/discover.h"
 #include "boot/multiboot2.h"
 #include "kernel/printk.h"
-#include "drivers/bus/pci/pci.h"
+#include "drivers/pci/pci.h"
 #include "drivers/pic/pic.h"
 #include "drivers/keyboard/keyboard.h"
 #include "drivers/rtc/cmos/cmos.h"
-#include "drivers/ata/ide.h"
+#include "drivers/pci/ahci.h"
 #include "drivers/tty/tty.h"
 #include "include/module.h"
 #include "include/scheduler.h"
@@ -40,23 +40,19 @@ void init_hal(multiboot2_info_t* mbd) {
     register_module(g_pic_module);
     MODULE_FUNCTION(g_pic_module, PIC_REMAP)(0x20, 0x28);
 
-    g_pci_module = init_pci_module();
-    register_module(g_pci_module);
-    MODULE_FUNCTION(g_pci_module, PCI_CHECK_BUSES)();
+    init_pci();
 
     module_t* cmos_module = init_cmos_module();
     register_module(cmos_module);
-    
+
     module_t* keyboard_module = init_keyboard_module();
     register_module(keyboard_module);
 
     g_keyboard.driver = keyboard_module;
 
-    module_t* ide_module = init_ide_module();
-    register_module(ide_module);
-    MODULE_FUNCTION(ide_module, IDE_SET_PORT)(0x1F0, 1);
-
-    g_hdd.driver = ide_module;
+    module_t* ahci_module = init_ahci_module();
+    register_module(ahci_module);
+    g_hdd.driver = ahci_module;
 
     printk(SUCCESS, "Initiated modules!\n");
 

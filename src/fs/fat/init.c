@@ -24,24 +24,26 @@ struct fat_info* fat_get_info(vfs_fs_t* fs) {
 
     if (total_sectors < 4085) {
         fat_info->fat_type = FAT12;
-    } else if (total_sectors < 65525) {
+    }
+    else if (total_sectors < 65525) {
         fat_info->fat_type = FAT16;
-    } else {
+    }
+    else {
         fat_info->fat_type = FAT32;
     }
 
     switch (fat_info->fat_type) {
-        case FAT12:
-            fat_info->eof = 0xFFF;
-            fat_info->root_dir_region = fat_info->data_region - fat_info->total_root_dir_sectors;
-            break;
-        case FAT16:
-            fat_info->eof = 0xFFFF;
-            fat_info->root_dir_region = fat_info->data_region - fat_info->total_root_dir_sectors;
-            break;
-        case FAT32:
-            fat_info->eof = 0xFFFFFFFF;
-            break;
+    case FAT12:
+        fat_info->eof = 0xFFF;
+        fat_info->root_dir_region = fat_info->data_region - fat_info->total_root_dir_sectors;
+        break;
+    case FAT16:
+        fat_info->eof = 0xFFFF;
+        fat_info->root_dir_region = fat_info->data_region - fat_info->total_root_dir_sectors;
+        break;
+    case FAT32:
+        fat_info->eof = 0xFFFFFFFF;
+        break;
     }
 
     kfree(bpb);

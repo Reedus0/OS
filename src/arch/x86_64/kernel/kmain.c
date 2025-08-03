@@ -1,6 +1,6 @@
 #include "hal/hal.h"
 #include "memory/memory.h"
-#include "drivers/bus/pci/pci.h"
+#include "drivers/pci/pci.h"
 #include "shell/utils.h"
 #include "shell/shell.h"
 #include "include/task.h"
@@ -13,12 +13,13 @@
 
 void kmain() {
     init_hal();
-    init_vfs();
+    // init_vfs();
     init_syscalls();
     init_scheduler();
 
     // load_kernel_symbols("/kernel/kernel.bin");
     enable_irq();
+    int zero = 0;
 
     static shell_function_t functions[] = {
         {NULL, NULL},
@@ -41,6 +42,6 @@ void kmain() {
         {NULL, NULL},
     };
 
-    schedule_task(create_task(init_shell, functions));
+    // schedule_task(create_task(init_shell, functions));
     while (1);
 }

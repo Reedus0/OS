@@ -5,7 +5,6 @@ sudo losetup -P /dev/loop0  /home/debian/OS/drive
 mkdir -p /tmp/fs
 sudo mount -t vfat /dev/loop0p1 /tmp/fs
 
-cp -r /tmp/fs/* ./fs/
 cp ./dist/x86_64/kernel.bin ./fs/kernel/
 cp -r ./fs/* /tmp/fs/
 

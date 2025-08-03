@@ -18,7 +18,7 @@ struct heap_descriptor {
 typedef struct heap_descriptor heap_descriptor_t;
 
 heap_descriptor_t g_heap_descriptors[HEAP_DESCRIPTORS_SIZE];
-byte* g_heap_base = KERNEL_OFFSET;
+byte* g_heap_base = KERNEL_PHYSICAL_ADDRESS_OFFSET;
 
 size_t g_heap_descriptor_count;
 

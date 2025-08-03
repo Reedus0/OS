@@ -58,5 +58,4 @@ interrupt_t irq_page_fault(irq_data_t* irq_data) {
     size_t physical_address = allocate_physical_address(virtual_address);
 
     map_page(physical_address, virtual_address, 0x82);
-    flush_page();
 }

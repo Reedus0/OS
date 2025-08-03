@@ -74,10 +74,15 @@ static void page_table_entry_unmap(page_table_entry_t* page_table_entry) {
     page_table_entry->address ^= page_table_entry->address & 1;
 }
 
+static page_table_entry_t* allocate_page_table() {
+    return kalloc(sizeof(page_table_entry_t) * 512);
+}
+
 void unmap_page(size_t virtual_address) {
-    size_t l4_offset = (virtual_address >> 39);
-    size_t l3_offset = (virtual_address >> 30);
-    size_t l2_offset = (virtual_address >> 21);
+    printk(NONE, "Unapping: %x\n", virtual_address);
+    size_t l4_offset = (virtual_address >> 39) & 0x1FF;
+    size_t l3_offset = (virtual_address >> 30) & 0x1FF;
+    size_t l2_offset = (virtual_address >> 21) & 0x1FF;
 
     page_table_entry_t* l4_address = &g_page_table_l4[l4_offset];
     page_table_entry_t* l3_address = &g_page_table_l3[l3_offset];
@@ -93,12 +98,15 @@ void unmap_page(size_t virtual_address) {
     page_table_entry_unmap(l2_address);
 
     g_available_pages += 1;
+
+    flush_page();
 }
 
 void map_page(size_t physical_address, size_t virtual_address, size_t flags) {
-    size_t l4_offset = (virtual_address >> 39);
-    size_t l3_offset = (virtual_address >> 30);
-    size_t l2_offset = (virtual_address >> 21);
+    printk(NONE, "Mapping: %x to %x\n", virtual_address, physical_address);
+    size_t l4_offset = (virtual_address >> 39) & 0x1FF;
+    size_t l3_offset = (virtual_address >> 30) & 0x1FF;
+    size_t l2_offset = (virtual_address >> 21) & 0x1FF;
 
     page_table_entry_t* l4_address = &g_page_table_l4[l4_offset];
     page_table_entry_t* l3_address = &g_page_table_l3[l3_offset];
@@ -114,4 +122,6 @@ void map_page(size_t physical_address, size_t virtual_address, size_t flags) {
     page_table_entry_map(l2_address);
 
     g_available_pages -= 1;
+
+    flush_page();
 }

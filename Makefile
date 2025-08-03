@@ -5,12 +5,11 @@ DIST_DIR := dist
 AS := nasm
 CC := gcc
 LD := ld
-GRUB_MKRESCUE := grub-mkrescue
 
 QEMU := qemu-system-x86_64
 BOCHS := bochs
 
-QEMU_FLAGS := -m 1024 -drive format=raw,if=ide,file=drive
+QEMU_FLAGS := -m 1024 -d cpu_reset -no-reboot -drive id=disk,file=drive,if=none -device ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0
 
 # x86_64 target
 

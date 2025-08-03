@@ -7,9 +7,6 @@
 
 #include "memory/discover.h"
 
-#define PAGE_SIZE 0x200000
-#define KERNEL_OFFSET 0x10000000
-
 struct page_table_entry {
     union {
         uint8_t flags;
@@ -29,9 +26,9 @@ typedef struct physical_page physical_page_t;
 
 physical_page_t g_phisycal_pages[4096];
 
-page_table_entry_t g_page_table_l4[256] __attribute__((aligned (4096)));
-page_table_entry_t g_page_table_l3[512] __attribute__((aligned (4096))); // 512 * 256
-page_table_entry_t g_page_table_l2[512 * 512 * 4] __attribute__((aligned (4096))); // 512 * 512 * 256
+page_table_entry_t g_page_table_l4[256] __attribute__((aligned(4096))) __attribute__((packed));
+page_table_entry_t g_page_table_l3[512] __attribute__((aligned(4096))) __attribute__((packed)); // 512 * 256
+page_table_entry_t g_page_table_l2[512 * 512 * 16] __attribute__((aligned(4096))) __attribute__((packed)); // 512 * 512 * 256
 
 size_t g_total_pages;
 size_t g_available_pages;
