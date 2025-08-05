@@ -85,15 +85,26 @@ static page_table_descriptor_t* allocate_page_table(byte level, short offset) {
     return descriptor;
 }
 
-static void unllocate_page_table(page_table_descriptor_t* descriptor) {
+static byte unllocate_page_table(page_table_descriptor_t* descriptor) {
     for (int i = 0; i < 512; i++) {
-        if (descriptor->table[i].present & 1) return;
+        if (descriptor->table[i].present & 1) return 1;
+    }
+
+    for (int i = 0; i < g_page_table_descriptors_size; i++) {
+        if (g_page_table_descriptors[i] == descriptor) {
+            for (int j = i; j < g_page_table_descriptors_size - 1; j++) {
+                g_page_table_descriptors[j] = g_page_table_descriptors[j + 1];
+            }
+            g_page_table_descriptors_size--;
+            break;
+        }
     }
 
     kfree(descriptor->table);
     kfree(descriptor);
-}
 
+    return 0;
+}
 static void add_table_descriptor(page_table_descriptor_t* descriptor) {
     g_page_table_descriptors[g_page_table_descriptors_size] = descriptor;
     g_page_table_descriptors_size += 1;
@@ -107,14 +118,6 @@ static page_table_descriptor_t* get_table_descriptor(byte level, short offset) {
         }
     }
     return 0;
-}
-
-static void delete_table_descriptor(page_table_descriptor_t* descriptor) {
-
-}
-
-static byte get_page_present(page_table_descriptor_t* descriptor, size_t index) {
-    return descriptor->table[index].present & 1;
 }
 
 void init_paging() {
@@ -140,12 +143,30 @@ void init_paging() {
 }
 
 void unmap_page(size_t virtual_address) {
-    printk(NONE, "Unapping: %x\n", virtual_address);
+    printk(NONE, "Unmapping: %x\n", virtual_address);
+    size_t l5_offset = (virtual_address >> 48) & 0x1FF;
     size_t l4_offset = (virtual_address >> 39) & 0x1FF;
     size_t l3_offset = (virtual_address >> 30) & 0x1FF;
     size_t l2_offset = (virtual_address >> 21) & 0x1FF;
 
-    printk(NONE, "%x %x %x\n", l4_offset, l3_offset, l2_offset);
+    page_table_descriptor_t* l4_descriptor = get_table_descriptor(4, l5_offset);
+    page_table_descriptor_t* l3_descriptor = get_table_descriptor(3, l4_offset);
+    page_table_descriptor_t* l2_descriptor = get_table_descriptor(2, l3_offset);
+
+    page_table_entry_t* l2_address = &l2_descriptor->table[l2_offset];
+    page_table_entry_unmap(l2_address);
+
+    if (!unllocate_page_table(l2_descriptor)) {
+        page_table_entry_t* l3_address = &l3_descriptor->table[l3_offset];
+        page_table_entry_unmap(l3_address);
+
+        if (!unllocate_page_table(l3_descriptor)) {
+            page_table_entry_t* l4_address = &l4_descriptor->table[l3_offset];
+            page_table_entry_unmap(l4_address);
+
+            unllocate_page_table(l4_descriptor);
+        }
+    }
 
     g_available_pages += 1;
 

@@ -107,6 +107,9 @@ static void pci_check_buses() {
 
 static void map_pci_address_range() {
     map_page(0xFEA00000, 0xFEA00000, 0x82);
+    unmap_page(0xFEA00000);
+
+    while (1);
 }
 
 void init_pci() {
