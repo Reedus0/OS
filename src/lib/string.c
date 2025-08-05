@@ -10,7 +10,7 @@ int strlen(const char* string) {
 }
 
 bool strncmp(const char* first, const char* second, int n) {
-    for (int i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
         if (first[i] != second[i]) return 0;
     }
 
@@ -49,7 +49,7 @@ char* strrchr(const char* string, char character) {
 
 int strncpy(char* dest, const char* src, int n) {
     int result = 0;
-    for (int i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
         dest[i] = src[i];
         result++;
     }
@@ -71,36 +71,36 @@ char toupper(char character) {
 }
 
 char* ltrim(char* string) {
-	char* char_pointer = string;
-	while (*char_pointer == 0x20) char_pointer++;
-	memcpy(string, char_pointer, strlen(char_pointer) + 1);
-	return string;
+    char* char_pointer = string;
+    while (*char_pointer == 0x20) char_pointer++;
+    memcpy(string, char_pointer, strlen(char_pointer) + 1);
+    return string;
 }
 
 char* rtrim(char* string) {
-	char* back = string + strlen(string);
-	while (*--back == 0x20);
-	*(back + 1) = '\0';
-	return string;
+    char* back = string + strlen(string);
+    while (*--back == 0x20);
+    *(back + 1) = '\0';
+    return string;
 }
 
 char* trim_string(char* string) {
-	char* left_trim = ltrim(string);
-	if (strlen(left_trim) == 0) {
-		return left_trim;
-	}
-	return rtrim(left_trim);
+    char* left_trim = ltrim(string);
+    if (strlen(left_trim) == 0) {
+        return left_trim;
+    }
+    return rtrim(left_trim);
 }
 
 void* memset(byte* dest, byte c, int count) {
-    for (int i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         dest[i] = c;
     }
     return dest;
 }
 
 void* memcpy(byte* dest, byte* src, int count) {
-    for (int i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         dest[i] = src[i];
     }
     return dest;
@@ -121,9 +121,10 @@ char* itoa(size_t num, char* str, int radix) {
 
     while (num > 0) {
         size_t current_number = num % radix;
-        if(current_number > 9) {
+        if (current_number > 9) {
             *(str + i) = (current_number % 10) + 0x60 + 1;
-        } else {
+        }
+        else {
             *(str + i) = current_number + 0x30;
         }
         num /= radix;
@@ -132,7 +133,7 @@ char* itoa(size_t num, char* str, int radix) {
 
     *(str + i) = '\0';
 
-    for (int j = 0; j < i / 2; j++) {
+    for (size_t j = 0; j < i / 2; j++) {
         char tmp = *(str + j);
         *(str + j) = *(str + i - j - 1);
         *(str + i - j - 1) = tmp;

@@ -9,17 +9,17 @@ syscall_t in(byte* buffer, size_t count) {
 
     clear_stream(&current_task->stdin);
     size_t last_size = 0;
-    
-    while(1) {
-        while(!current_task->stdin_updated);
+
+    while (1) {
+        while (!current_task->stdin_updated);
         current_task->stdin_updated = 0;
         byte last_byte = stream_get_last_byte(&current_task->stdin);
         size_t stdin_size = stream_get_size(&current_task->stdin);
-        
+
         if (stdin_size > last_size) {
             sysout_add_byte(last_byte);
         }
-        if (last_byte == '\n') { 
+        if (last_byte == '\n') {
             break;
         }
         if (stdin_size <= last_size) {
@@ -37,7 +37,7 @@ syscall_t in(byte* buffer, size_t count) {
 }
 
 syscall_t out(byte* buffer, size_t count) {
-    for (int i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         sysout_add_byte(buffer[i]);
     }
     return 0;

@@ -14,9 +14,9 @@ int printk(char* level, const char* format, ...) {
     va_list arg;
     va_start(arg, format);
 
-    while(*format != '\0') {
+    while (*format != '\0') {
         char current_char = *format;
-        if(current_char == '%') {
+        if (current_char == '%') {
             char* type = format + 1;
             if (isdigit(*type)) {
                 padding = atoi(type);
@@ -28,46 +28,48 @@ int printk(char* level, const char* format, ...) {
                 }
             }
             int offset = 0;
-            switch(*type) {
-                case 's':
-                    current_arg = va_arg(arg, char*);
-                    offset = padding != 0 ? padding - strlen(current_arg) : 0;
-                    for (size_t i = 0; i < offset; i++) {
-                        buffer[i] = ' ';
-                    }
-                    strncpy(buffer + offset, current_arg, strlen(current_arg));
-                    break;
-                case 'd':
-                    current_arg = va_arg(arg, size_t);
-                    itoa(current_arg, number, 10);
-                    offset = padding != 0 ? padding - strlen(number) : 0;
-                    for (size_t i = 0; i < offset; i++) {
-                        buffer[i] = '0';
-                    }
-                    strncpy(buffer + offset, number, strlen(number));
-                    break;
-                case 'x':
-                case 'p':
-                    current_arg = va_arg(arg, size_t);
-                    itoa(current_arg, number, 16);
-                    offset = padding != 0 ? padding - strlen(number) : 0;
-                    for (size_t i = 0; i < offset; i++) {
-                        buffer[i] = '0';
-                    }
-                    strncpy(buffer + offset, number, strlen(number));
-                    break;
-                case 'c':
-                default:
-                    current_arg = va_arg(arg, size_t);
-                    itoa(current_arg, number, 10);
-                    offset = padding != 0 ? padding - strlen(number) : 0;
-                    for (size_t i = 0; i < offset; i++) {
-                        buffer[i] = '0';
-                    }
-                    strncpy(buffer + offset, number, strlen(number));
-                    break;
+            switch (*type) {
+            case 's':
+                current_arg = va_arg(arg, char*);
+                offset = padding != 0 ? padding - strlen(current_arg) : 0;
+                for (size_t i = 0; i < offset; i++) {
+                    buffer[i] = ' ';
+                }
+                strncpy(buffer + offset, current_arg, strlen(current_arg));
+                break;
+            case 'd':
+                current_arg = va_arg(arg, size_t);
+                itoa(current_arg, number, 10);
+                offset = padding != 0 ? padding - strlen(number) : 0;
+                for (size_t i = 0; i < offset; i++) {
+                    buffer[i] = '0';
+                }
+                strncpy(buffer + offset, number, strlen(number));
+                break;
+            case 'x':
+            case 'p':
+                current_arg = va_arg(arg, size_t);
+                itoa(current_arg, number, 16);
+                offset = padding != 0 ? padding - strlen(number) : 0;
+                for (size_t i = 0; i < offset; i++) {
+                    buffer[i] = '0';
+                }
+                strncpy(buffer + offset, number, strlen(number));
+                break;
+            case 'c':
+            default:
+                current_arg = va_arg(arg, size_t);
+                itoa(current_arg, number, 10);
+                offset = padding != 0 ? padding - strlen(number) : 0;
+                for (size_t i = 0; i < offset; i++) {
+                    buffer[i] = '0';
+                }
+                strncpy(buffer + offset, number, strlen(number));
+                break;
             }
             sysout_add_string(buffer);
+            memset(number, 0, 64);
+            memset(buffer, 0, 64);
             format += 2;
             result += 2;
             padding = 0;

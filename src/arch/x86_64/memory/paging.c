@@ -82,17 +82,20 @@ static page_table_descriptor_t* allocate_page_table(byte level, short offset) {
     descriptor->offset = offset;
     descriptor->table = kalloc_aligned(sizeof(page_table_entry_t) * 512, 4096);
 
+    g_page_table_descriptors[g_page_table_descriptors_size] = descriptor;
+    g_page_table_descriptors_size += 1;
+
     return descriptor;
 }
 
 static byte unllocate_page_table(page_table_descriptor_t* descriptor) {
-    for (int i = 0; i < 512; i++) {
+    for (size_t i = 0; i < 512; i++) {
         if (descriptor->table[i].present & 1) return 1;
     }
 
-    for (int i = 0; i < g_page_table_descriptors_size; i++) {
+    for (size_t i = 0; i < g_page_table_descriptors_size; i++) {
         if (g_page_table_descriptors[i] == descriptor) {
-            for (int j = i; j < g_page_table_descriptors_size - 1; j++) {
+            for (size_t j = i; j < g_page_table_descriptors_size - 1; j++) {
                 g_page_table_descriptors[j] = g_page_table_descriptors[j + 1];
             }
             g_page_table_descriptors_size--;
@@ -105,13 +108,9 @@ static byte unllocate_page_table(page_table_descriptor_t* descriptor) {
 
     return 0;
 }
-static void add_table_descriptor(page_table_descriptor_t* descriptor) {
-    g_page_table_descriptors[g_page_table_descriptors_size] = descriptor;
-    g_page_table_descriptors_size += 1;
-}
 
 static page_table_descriptor_t* get_table_descriptor(byte level, short offset) {
-    for (int i = 0; i < g_page_table_descriptors_size; i++) {
+    for (size_t i = 0; i < g_page_table_descriptors_size; i++) {
         page_table_descriptor_t* current_descriptor = g_page_table_descriptors[i];
         if (current_descriptor->level == level && current_descriptor->offset == offset) {
             return current_descriptor;
@@ -185,11 +184,8 @@ void map_page(size_t physical_address, size_t virtual_address, size_t flags) {
     page_table_descriptor_t* l2_descriptor = get_table_descriptor(2, l3_offset);
 
     if (!l4_descriptor) l4_descriptor = allocate_page_table(4, l4_offset);
-    add_table_descriptor(l4_descriptor);
     if (!l3_descriptor) l3_descriptor = allocate_page_table(3, l3_offset);
-    add_table_descriptor(l3_descriptor);
     if (!l2_descriptor) l2_descriptor = allocate_page_table(2, l2_offset);
-    add_table_descriptor(l2_descriptor);
 
     page_table_entry_t* l4_address = &l4_descriptor->table[l4_offset];
     page_table_entry_t* l3_address = &l3_descriptor->table[l3_offset];

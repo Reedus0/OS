@@ -71,17 +71,19 @@ static void insert_heap_descriptor(heap_descriptor_t new_descriptor) {
 }
 
 void* heap_alloc(size_t bytes) {
-    bytes = bytes % 8 == 0 ? bytes : (((bytes / 8) + 1) * 8);
-
     if (bytes == 0) {
         panic("Tying to allocate 0 bytes!");
     }
 
+    bytes = bytes % 8 == 0 ? bytes : (((bytes / 8) + 1) * 8);
+
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
+
         if (!heap_descriptor_is_available(current_descriptor)) {
             continue;
         }
+
         if (current_descriptor->size >= bytes) {
             uint32_t old_size = current_descriptor->size;
             if (current_descriptor->size > bytes) {
@@ -126,26 +128,31 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
 
         if (padding > 0) {
             heap_descriptor_t padding_descriptor;
+
             heap_descriptor_set_address(&padding_descriptor, real_address);
             heap_descriptor_set_size(&padding_descriptor, padding);
             heap_descriptor_set_available(&padding_descriptor);
+
             insert_heap_descriptor(padding_descriptor);
         }
 
         uint64_t remaining = current_descriptor->size - (padding + bytes);
         if (remaining > 0) {
             heap_descriptor_t tail_descriptor;
+
             heap_descriptor_set_address(&tail_descriptor, aligned_address + bytes);
             heap_descriptor_set_size(&tail_descriptor, remaining);
             heap_descriptor_set_available(&tail_descriptor);
+
             insert_heap_descriptor(tail_descriptor);
         }
 
         heap_descriptor_set_address(current_descriptor, aligned_address);
         heap_descriptor_set_size(current_descriptor, bytes);
         heap_descriptor_clear_available(current_descriptor);
+        print_heap();
 
-        return (void*)aligned_address;
+        return current_descriptor->address;
     }
 
     print_heap();
