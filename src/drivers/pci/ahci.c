@@ -3,7 +3,7 @@
 #include "asm/io.h"
 
 static pci_device_t* ahci_device;
-static uint32_t ahci_registers_address = 0xFEBF1000; // 0xFFFC1000 0xFEBF1000
+static uint32_t ahci_registers_address;
 
 static size_t ahci_get_block_size() {
     return 512;
@@ -20,7 +20,8 @@ static void init_ahci() {
 
     if (!ahci_device) return;
 
-    // pci_device_write(ahci_device, PCI_DEVICE_BASE_ADDRESS_5, ahci_registers_address);
+    ahci_registers_address = pci_device_read(ahci_device, PCI_DEVICE_BASE_ADDRESS_5);
+
     pci_device_enable_mmio(ahci_device);
     pci_device_take_bus(ahci_device);
     printk(NONE, "%x\n", pci_device_read(ahci_device, PCI_DEVICE_BASE_ADDRESS_5));

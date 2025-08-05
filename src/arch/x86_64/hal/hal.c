@@ -28,6 +28,7 @@ void init_hal(multiboot2_info_t* mbd) {
 
     discover_memory(mbd);
     init_heap();
+    init_paging();
 
     module_t* tty_module = init_tty_module();
     register_module(tty_module);

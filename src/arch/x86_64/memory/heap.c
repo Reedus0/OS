@@ -32,9 +32,9 @@ void init_heap() {
     heap_descriptor_set_available(base_descriptor);
 
     g_heap_descriptor_count += 1;
-} 
+}
 
-static void print_heap() {
+void print_heap() {
     printk(NONE, "Heap:\n");
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
@@ -102,12 +102,63 @@ void* heap_alloc(size_t bytes) {
     panic("Couldn't allocate memory!");
 }
 
+void* heap_alloc_aligned(size_t bytes, size_t alignment) {
+    if (bytes == 0 || alignment == 0 || (alignment & (alignment - 1)) != 0) {
+        panic("Invalid allocation size or alignment!");
+    }
+
+    bytes = bytes % 8 == 0 ? bytes : (((bytes / 8) + 1) * 8);
+
+    for (size_t i = 0; i < g_heap_descriptor_count; i++) {
+        heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
+
+        if (!heap_descriptor_is_available(current_descriptor)) {
+            continue;
+        }
+
+        uint64_t real_address = current_descriptor->address & MAX_ADDRESS_MASK;
+        uint64_t aligned_address = (real_address + alignment - 1) & ~(alignment - 1);
+        uint64_t padding = aligned_address - real_address;
+
+        if (current_descriptor->size < bytes + padding) {
+            continue;
+        }
+
+        if (padding > 0) {
+            heap_descriptor_t padding_descriptor;
+            heap_descriptor_set_address(&padding_descriptor, real_address);
+            heap_descriptor_set_size(&padding_descriptor, padding);
+            heap_descriptor_set_available(&padding_descriptor);
+            insert_heap_descriptor(padding_descriptor);
+        }
+
+        uint64_t remaining = current_descriptor->size - (padding + bytes);
+        if (remaining > 0) {
+            heap_descriptor_t tail_descriptor;
+            heap_descriptor_set_address(&tail_descriptor, aligned_address + bytes);
+            heap_descriptor_set_size(&tail_descriptor, remaining);
+            heap_descriptor_set_available(&tail_descriptor);
+            insert_heap_descriptor(tail_descriptor);
+        }
+
+        heap_descriptor_set_address(current_descriptor, aligned_address);
+        heap_descriptor_set_size(current_descriptor, bytes);
+        heap_descriptor_clear_available(current_descriptor);
+
+        return (void*)aligned_address;
+    }
+
+    print_heap();
+    panic("Couldn't allocate aligned memory!");
+}
+
+
 static void heap_descriptor_clear_memory(heap_descriptor_t* available_descriptor) {
     memset(available_descriptor->address & MAX_ADDRESS_MASK, 0, available_descriptor->size);
 }
 
 static void merge_descriptors(heap_descriptor_t* available_descriptor) {
-    for (size_t i = 0; i < g_heap_descriptor_count; i++) { 
+    for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
         if (!heap_descriptor_is_available(current_descriptor)) {
             continue;
@@ -140,7 +191,7 @@ void heap_free(void* ptr) {
             heap_descriptor_set_available(current_descriptor);
             heap_descriptor_clear_memory(current_descriptor);
             merge_descriptors(current_descriptor);
-            return; 
+            return;
         }
     }
     print_heap();

@@ -1,6 +1,7 @@
 #include "memory.h"
 #include "paging.h"
 #include "asm/paging.h"
+#include "memory/heap.h"
 
 static void physical_page_set_address(physical_page_t* physical_page, uint64_t address) {
     physical_page->address = address;
@@ -67,15 +68,75 @@ static void page_table_entry_set_address(page_table_entry_t* page_table_entry, c
 }
 
 static void page_table_entry_map(page_table_entry_t* page_table_entry) {
-    page_table_entry->address |= 1;
+    page_table_entry->present |= 1;
 }
 
 static void page_table_entry_unmap(page_table_entry_t* page_table_entry) {
-    page_table_entry->address ^= page_table_entry->address & 1;
+    page_table_entry->present ^= page_table_entry->present & 1;
 }
 
-static page_table_entry_t* allocate_page_table() {
-    return kalloc(sizeof(page_table_entry_t) * 512);
+static page_table_descriptor_t* allocate_page_table(byte level, short offset) {
+    page_table_descriptor_t* descriptor = kalloc(sizeof(page_table_descriptor_t));
+
+    descriptor->level = level;
+    descriptor->offset = offset;
+    descriptor->table = kalloc_aligned(sizeof(page_table_entry_t) * 512, 4096);
+
+    return descriptor;
+}
+
+static void unllocate_page_table(page_table_descriptor_t* descriptor) {
+    for (int i = 0; i < 512; i++) {
+        if (descriptor->table[i].present & 1) return;
+    }
+
+    kfree(descriptor->table);
+    kfree(descriptor);
+}
+
+static void add_table_descriptor(page_table_descriptor_t* descriptor) {
+    g_page_table_descriptors[g_page_table_descriptors_size] = descriptor;
+    g_page_table_descriptors_size += 1;
+}
+
+static page_table_descriptor_t* get_table_descriptor(byte level, short offset) {
+    for (int i = 0; i < g_page_table_descriptors_size; i++) {
+        page_table_descriptor_t* current_descriptor = g_page_table_descriptors[i];
+        if (current_descriptor->level == level && current_descriptor->offset == offset) {
+            return current_descriptor;
+        }
+    }
+    return 0;
+}
+
+static void delete_table_descriptor(page_table_descriptor_t* descriptor) {
+
+}
+
+static byte get_page_present(page_table_descriptor_t* descriptor, size_t index) {
+    return descriptor->table[index].present & 1;
+}
+
+void init_paging() {
+    page_table_descriptor_t* g_kernel_table_l4_descriptor = kalloc(sizeof(page_table_descriptor_t));
+    g_kernel_table_l4_descriptor->level = 4;
+    g_kernel_table_l4_descriptor->offset = 0;
+    g_kernel_table_l4_descriptor->table = g_kernel_table_l4;
+    g_page_table_descriptors[0] = g_kernel_table_l4_descriptor;
+
+    page_table_descriptor_t* g_kernel_table_l3_descriptor = kalloc(sizeof(page_table_descriptor_t));
+    g_kernel_table_l3_descriptor->level = 3;
+    g_kernel_table_l3_descriptor->offset = 0;
+    g_kernel_table_l3_descriptor->table = g_kernel_table_l3;
+    g_page_table_descriptors[1] = g_kernel_table_l3_descriptor;
+
+    page_table_descriptor_t* g_kernel_table_l2_descriptor = kalloc(sizeof(page_table_descriptor_t));
+    g_kernel_table_l2_descriptor->level = 2;
+    g_kernel_table_l2_descriptor->offset = 0;
+    g_kernel_table_l2_descriptor->table = g_kernel_table_l2;
+    g_page_table_descriptors[2] = g_kernel_table_l2_descriptor;
+
+    g_page_table_descriptors_size = 2;
 }
 
 void unmap_page(size_t virtual_address) {
@@ -84,18 +145,7 @@ void unmap_page(size_t virtual_address) {
     size_t l3_offset = (virtual_address >> 30) & 0x1FF;
     size_t l2_offset = (virtual_address >> 21) & 0x1FF;
 
-    page_table_entry_t* l4_address = &g_page_table_l4[l4_offset];
-    page_table_entry_t* l3_address = &g_page_table_l3[l3_offset];
-    page_table_entry_t* l2_address = &g_page_table_l2[l2_offset];
-
-    page_table_entry_set_address(l3_address, 0);
-    page_table_entry_set_address(l2_address, 0);
-
-    page_table_entry_set_flags(l3_address, 0);
-    page_table_entry_set_flags(l2_address, 0);
-
-    page_table_entry_unmap(l3_address);
-    page_table_entry_unmap(l2_address);
+    printk(NONE, "%x %x %x\n", l4_offset, l3_offset, l2_offset);
 
     g_available_pages += 1;
 
@@ -104,20 +154,35 @@ void unmap_page(size_t virtual_address) {
 
 void map_page(size_t physical_address, size_t virtual_address, size_t flags) {
     printk(NONE, "Mapping: %x to %x\n", virtual_address, physical_address);
+    size_t l5_offset = (virtual_address >> 48) & 0x1FF;
     size_t l4_offset = (virtual_address >> 39) & 0x1FF;
     size_t l3_offset = (virtual_address >> 30) & 0x1FF;
     size_t l2_offset = (virtual_address >> 21) & 0x1FF;
 
-    page_table_entry_t* l4_address = &g_page_table_l4[l4_offset];
-    page_table_entry_t* l3_address = &g_page_table_l3[l3_offset];
-    page_table_entry_t* l2_address = &g_page_table_l2[l2_offset];
+    page_table_descriptor_t* l4_descriptor = get_table_descriptor(4, l5_offset);
+    page_table_descriptor_t* l3_descriptor = get_table_descriptor(3, l4_offset);
+    page_table_descriptor_t* l2_descriptor = get_table_descriptor(2, l3_offset);
 
+    if (!l4_descriptor) l4_descriptor = allocate_page_table(4, l4_offset);
+    add_table_descriptor(l4_descriptor);
+    if (!l3_descriptor) l3_descriptor = allocate_page_table(3, l3_offset);
+    add_table_descriptor(l3_descriptor);
+    if (!l2_descriptor) l2_descriptor = allocate_page_table(2, l2_offset);
+    add_table_descriptor(l2_descriptor);
+
+    page_table_entry_t* l4_address = &l4_descriptor->table[l4_offset];
+    page_table_entry_t* l3_address = &l3_descriptor->table[l3_offset];
+    page_table_entry_t* l2_address = &l2_descriptor->table[l2_offset];
+
+    page_table_entry_set_address(l4_address, l3_address);
     page_table_entry_set_address(l3_address, l2_address);
     page_table_entry_set_address(l2_address, physical_address);
 
+    page_table_entry_set_flags(l4_address, 0x2);
     page_table_entry_set_flags(l3_address, 0x2);
     page_table_entry_set_flags(l2_address, flags);
 
+    page_table_entry_map(l4_address);
     page_table_entry_map(l3_address);
     page_table_entry_map(l2_address);
 

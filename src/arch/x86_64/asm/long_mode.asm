@@ -12,6 +12,7 @@ long_mode_start:
     mov gs, ax
 
     xor ebp, ebp
+
     call kmain
     
     hlt

@@ -5,6 +5,8 @@
         "*.c": "c",
         "typeinfo": "c",
         "string_view": "c",
-        "functional": "c"
+        "functional": "c",
+        "array": "c",
+        "initializer_list": "c"
     }
 }

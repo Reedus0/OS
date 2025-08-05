@@ -1,7 +1,7 @@
 global get_page_fault_address
 global flush_page
 
-extern g_page_table_l4
+extern g_kernel_table_l4
 
 section .text
 bits 64
@@ -11,7 +11,7 @@ get_page_fault_address:
     ret
 
 flush_page:
-    mov rax, g_page_table_l4
+    mov rax, g_kernel_table_l4
     mov cr3, rax
 
     ret

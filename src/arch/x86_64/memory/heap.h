@@ -24,3 +24,4 @@ size_t g_heap_descriptor_count;
 
 void init_heap();
 void* heap_alloc(size_t bytes);
+void* heap_alloc_aligned(size_t bytes, size_t alignment);

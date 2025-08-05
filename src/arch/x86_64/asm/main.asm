@@ -1,9 +1,9 @@
 global start
 global gdt
 
-extern g_page_table_l4
-extern g_page_table_l3
-extern g_page_table_l2
+extern g_kernel_table_l4
+extern g_kernel_table_l3
+extern g_kernel_table_l2
 
 extern long_mode_start
 
@@ -21,7 +21,6 @@ start:
     ; call remap_kernel
 
     ; add esp, 0xC0000000
-    
     lgdt [gdt.pointer]
     jmp gdt.code_segment:long_mode_start ; + 0xC0000000
 
@@ -62,13 +61,13 @@ check_long_mode:
     ret
 
 setup_pages:
-    mov eax, g_page_table_l3
+    mov eax, g_kernel_table_l3
     or eax, 0b11
-    mov [g_page_table_l4], eax
+    mov [g_kernel_table_l4], eax
 
-    mov eax, g_page_table_l2
+    mov eax, g_kernel_table_l2
     or eax, 0b11
-    mov [g_page_table_l3], eax
+    mov [g_kernel_table_l3], eax
 
     mov ecx, 0
     
@@ -77,7 +76,7 @@ setup_pages:
     mul ecx
 
     or eax, 0b10000011
-    mov [g_page_table_l2 + ecx * 8], eax
+    mov [g_kernel_table_l2 + ecx * 8], eax
 
     inc ecx
     cmp ecx, 256
@@ -86,7 +85,7 @@ setup_pages:
     ret
     
 enable_paging:
-    mov eax, g_page_table_l4
+    mov eax, g_kernel_table_l4
     mov cr3, eax
 
     mov eax, cr4
@@ -105,20 +104,19 @@ enable_paging:
     ret
 
 remap_kernel:
-
     mov ecx, 0
     mov ebx, 512
 
-    lea eax, [g_page_table_l2 + 1536]
+    lea eax, [g_kernel_table_l2 + 1536]
     or eax, 0b11
-    mov [g_page_table_l3 + 24], eax
+    mov [g_kernel_table_l3 + 24], eax
 
 .loop:
     mov eax, 0x200000
     mul ecx
 
     or eax, 0b10000011
-    mov [g_page_table_l2 + ebx * 8], eax
+    mov [g_kernel_table_l2 + ebx * 8], eax
 
     inc ecx
     inc ebx
