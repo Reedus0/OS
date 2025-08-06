@@ -97,6 +97,7 @@ void* heap_alloc(size_t bytes) {
             }
             heap_descriptor_set_size(current_descriptor, bytes);
             heap_descriptor_clear_available(current_descriptor);
+
             return current_descriptor->address;
         }
     }
@@ -118,41 +119,35 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
             continue;
         }
 
-        uint64_t real_address = current_descriptor->address & MAX_ADDRESS_MASK;
-        uint64_t aligned_address = (real_address + alignment - 1) & ~(alignment - 1);
-        uint64_t padding = aligned_address - real_address;
+        uint32_t real_address = current_descriptor->address & MAX_ADDRESS_MASK;
+        uint32_t aligned_address = (real_address + alignment - 1) & ~(alignment - 1);
+        uint32_t padding = aligned_address - real_address;
 
         if (current_descriptor->size < bytes + padding) {
             continue;
         }
 
-        if (padding > 0) {
-            heap_descriptor_t padding_descriptor;
+        uint32_t remaining = current_descriptor->size - (padding + bytes);
+        if (remaining) {
+            heap_descriptor_t new_descriptor;
 
-            heap_descriptor_set_address(&padding_descriptor, real_address);
-            heap_descriptor_set_size(&padding_descriptor, padding);
-            heap_descriptor_set_available(&padding_descriptor);
+            heap_descriptor_set_address(&new_descriptor, current_descriptor->address + bytes);
+            heap_descriptor_set_size(&new_descriptor, remaining);
+            heap_descriptor_set_available(&new_descriptor);
 
-            insert_heap_descriptor(padding_descriptor);
+            insert_heap_descriptor(new_descriptor);
         }
 
-        uint64_t remaining = current_descriptor->size - (padding + bytes);
-        if (remaining > 0) {
-            heap_descriptor_t tail_descriptor;
+        heap_descriptor_set_size(current_descriptor, padding);
 
-            heap_descriptor_set_address(&tail_descriptor, aligned_address + bytes);
-            heap_descriptor_set_size(&tail_descriptor, remaining);
-            heap_descriptor_set_available(&tail_descriptor);
+        heap_descriptor_t new_descriptor;
+        heap_descriptor_set_address(&new_descriptor, aligned_address);
+        heap_descriptor_set_size(&new_descriptor, bytes);
+        heap_descriptor_clear_available(&new_descriptor);
 
-            insert_heap_descriptor(tail_descriptor);
-        }
+        insert_heap_descriptor(new_descriptor);
 
-        heap_descriptor_set_address(current_descriptor, aligned_address);
-        heap_descriptor_set_size(current_descriptor, bytes);
-        heap_descriptor_clear_available(current_descriptor);
-        print_heap();
-
-        return current_descriptor->address;
+        return new_descriptor.address;
     }
 
     print_heap();
