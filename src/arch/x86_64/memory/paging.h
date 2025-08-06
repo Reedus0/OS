@@ -5,7 +5,6 @@
 
 // Reference: https://wiki.osdev.org/Paging
 
-#include "include/types.h"
 #include "memory/discover.h"
 
 struct page_table_entry {
@@ -27,8 +26,8 @@ struct physical_page {
 typedef struct physical_page physical_page_t;
 
 struct page_table_descriptor {
-    byte level;
-    short offset;
+    uint8_t level;
+    uint32_t id;
     page_table_entry_t* table;
 };
 typedef struct page_table_descriptor page_table_descriptor_t;

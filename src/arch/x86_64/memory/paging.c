@@ -75,11 +75,11 @@ static void page_table_entry_unmap(page_table_entry_t* page_table_entry) {
     page_table_entry->present ^= page_table_entry->present & 1;
 }
 
-static page_table_descriptor_t* allocate_page_table(byte level, short offset) {
+static page_table_descriptor_t* allocate_page_table(byte level, uint32_t id) {
     page_table_descriptor_t* descriptor = kalloc(sizeof(page_table_descriptor_t));
 
     descriptor->level = level;
-    descriptor->offset = offset;
+    descriptor->id = id;
     descriptor->table = kalloc_aligned(sizeof(page_table_entry_t) * 512, 4096);
 
     g_page_table_descriptors[g_page_table_descriptors_size] = descriptor;
@@ -109,10 +109,10 @@ static byte unllocate_page_table(page_table_descriptor_t* descriptor) {
     return 0;
 }
 
-static page_table_descriptor_t* get_table_descriptor(byte level, short offset) {
+static page_table_descriptor_t* get_table_descriptor(byte level, uint32_t id) {
     for (size_t i = 0; i < g_page_table_descriptors_size; i++) {
         page_table_descriptor_t* current_descriptor = g_page_table_descriptors[i];
-        if (current_descriptor->level == level && current_descriptor->offset == offset) {
+        if (current_descriptor->level == level && current_descriptor->id == id) {
             return current_descriptor;
         }
     }
@@ -122,19 +122,19 @@ static page_table_descriptor_t* get_table_descriptor(byte level, short offset) {
 void init_paging() {
     page_table_descriptor_t* g_kernel_table_l4_descriptor = kalloc(sizeof(page_table_descriptor_t));
     g_kernel_table_l4_descriptor->level = 4;
-    g_kernel_table_l4_descriptor->offset = 0;
+    g_kernel_table_l4_descriptor->id = 0;
     g_kernel_table_l4_descriptor->table = g_kernel_table_l4;
     g_page_table_descriptors[0] = g_kernel_table_l4_descriptor;
 
     page_table_descriptor_t* g_kernel_table_l3_descriptor = kalloc(sizeof(page_table_descriptor_t));
     g_kernel_table_l3_descriptor->level = 3;
-    g_kernel_table_l3_descriptor->offset = 0;
+    g_kernel_table_l3_descriptor->id = 0;
     g_kernel_table_l3_descriptor->table = g_kernel_table_l3;
     g_page_table_descriptors[1] = g_kernel_table_l3_descriptor;
 
     page_table_descriptor_t* g_kernel_table_l2_descriptor = kalloc(sizeof(page_table_descriptor_t));
     g_kernel_table_l2_descriptor->level = 2;
-    g_kernel_table_l2_descriptor->offset = 0;
+    g_kernel_table_l2_descriptor->id = 0;
     g_kernel_table_l2_descriptor->table = g_kernel_table_l2;
     g_page_table_descriptors[2] = g_kernel_table_l2_descriptor;
 
@@ -148,9 +148,9 @@ void unmap_page(size_t virtual_address) {
     size_t l3_offset = (virtual_address >> 30) & 0x1FF;
     size_t l2_offset = (virtual_address >> 21) & 0x1FF;
 
-    page_table_descriptor_t* l4_descriptor = get_table_descriptor(4, l5_offset);
-    page_table_descriptor_t* l3_descriptor = get_table_descriptor(3, l4_offset);
-    page_table_descriptor_t* l2_descriptor = get_table_descriptor(2, l3_offset);
+    page_table_descriptor_t* l4_descriptor = get_table_descriptor(4, ((l4_offset << 9) | l5_offset));
+    page_table_descriptor_t* l3_descriptor = get_table_descriptor(3, ((l3_offset << 18) | (l4_offset << 9) | l5_offset));
+    page_table_descriptor_t* l2_descriptor = get_table_descriptor(2, ((l2_offset << 27) | (l3_offset << 18) | (l4_offset << 9) | l5_offset));
 
     page_table_entry_t* l2_address = &l2_descriptor->table[l2_offset];
     page_table_entry_unmap(l2_address);
@@ -179,13 +179,13 @@ void map_page(size_t physical_address, size_t virtual_address, size_t flags) {
     size_t l3_offset = (virtual_address >> 30) & 0x1FF;
     size_t l2_offset = (virtual_address >> 21) & 0x1FF;
 
-    page_table_descriptor_t* l4_descriptor = get_table_descriptor(4, l5_offset);
-    page_table_descriptor_t* l3_descriptor = get_table_descriptor(3, l4_offset);
-    page_table_descriptor_t* l2_descriptor = get_table_descriptor(2, l3_offset);
+    page_table_descriptor_t* l4_descriptor = get_table_descriptor(4, ((l4_offset << 9) | l5_offset));
+    page_table_descriptor_t* l3_descriptor = get_table_descriptor(3, ((l3_offset << 18) | (l4_offset << 9) | l5_offset));
+    page_table_descriptor_t* l2_descriptor = get_table_descriptor(2, ((l2_offset << 27) | (l3_offset << 18) | (l4_offset << 9) | l5_offset));
 
-    if (!l4_descriptor) l4_descriptor = allocate_page_table(4, l4_offset);
-    if (!l3_descriptor) l3_descriptor = allocate_page_table(3, l3_offset);
-    if (!l2_descriptor) l2_descriptor = allocate_page_table(2, l2_offset);
+    if (!l4_descriptor) l4_descriptor = allocate_page_table(4, ((l4_offset << 9) | l5_offset));
+    if (!l3_descriptor) l3_descriptor = allocate_page_table(3, ((l3_offset << 18) | (l4_offset << 9) | l5_offset));
+    if (!l2_descriptor) l2_descriptor = allocate_page_table(2, ((l2_offset << 27) | (l3_offset << 18) | (l4_offset << 9) | l5_offset));
 
     page_table_entry_t* l4_address = &l4_descriptor->table[l4_offset];
     page_table_entry_t* l3_address = &l3_descriptor->table[l3_offset];
