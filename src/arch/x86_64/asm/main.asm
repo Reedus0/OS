@@ -1,7 +1,7 @@
 global start
 global gdt
 
-extern g_kernel_table_l4
+extern g_kernel_page_directory
 extern g_kernel_table_l3
 extern g_kernel_table_l2
 
@@ -63,7 +63,7 @@ check_long_mode:
 setup_pages:
     mov eax, g_kernel_table_l3
     or eax, 0b11
-    mov [g_kernel_table_l4], eax
+    mov [g_kernel_page_directory], eax
 
     mov eax, g_kernel_table_l2
     or eax, 0b11
@@ -85,7 +85,7 @@ setup_pages:
     ret
     
 enable_paging:
-    mov eax, g_kernel_table_l4
+    mov eax, g_kernel_page_directory
     mov cr3, eax
 
     mov eax, cr4
