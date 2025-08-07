@@ -35,7 +35,7 @@ static void clear_shell_buffer() {
 }
 
 void init_shell(shell_function_t functions[]) {
-    MODULE_FUNCTION(g_terminal.driver, TTY_CLEAR)();
+    MODULE_FUNCTION(g_terminal->driver, TTY_CLEAR)(g_terminal);
     g_shell_dir = &g_vfs_root;
     while (1) {
         printk(NONE, g_prompt, g_shell_dir->name);

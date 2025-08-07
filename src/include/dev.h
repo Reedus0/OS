@@ -20,25 +20,26 @@ struct dev {
 typedef struct dev dev_t;
 
 byte sdev_read(dev_t* sdev) {
-    return MODULE_FUNCTION(sdev->driver, SDEV_DRIVER_READ_BYTE)();
+    return MODULE_FUNCTION(sdev->driver, SDEV_DRIVER_READ_BYTE)(sdev);
 }
 
 void sdev_write(dev_t* sdev, byte new_byte) {
-    MODULE_FUNCTION(sdev->driver, SDEV_DRIVER_WRITE_BYTE)(new_byte);
+    MODULE_FUNCTION(sdev->driver, SDEV_DRIVER_WRITE_BYTE)(sdev, new_byte);
 }
 
 void bdev_read(dev_t* bdev, byte* buffer, size_t offset, size_t count) {
-    MODULE_FUNCTION(bdev->driver, BDEV_DRIVER_READ_BLOCK)(buffer, offset, count);
+    MODULE_FUNCTION(bdev->driver, BDEV_DRIVER_READ_BLOCK)(bdev, buffer, offset, count);
 }
 
 void bdev_write(dev_t* bdev, byte* buffer, size_t offset, size_t count) {
-    MODULE_FUNCTION(bdev->driver, BDEV_DRIVER_WRITE_BLOCK)(buffer, offset, count);
+    MODULE_FUNCTION(bdev->driver, BDEV_DRIVER_WRITE_BLOCK)(bdev, buffer, offset, count);
 }
 
 size_t bdev_get_block_size(dev_t* bdev) {
-    return MODULE_FUNCTION(bdev->driver, BDEV_DRIVER_GET_BLOCK_SIZE)();
+    return MODULE_FUNCTION(bdev->driver, BDEV_DRIVER_GET_BLOCK_SIZE)(bdev);
 }
 
-dev_t g_keyboard;
-dev_t g_terminal;
-dev_t g_hdd;
+dev_t* g_keyboard;
+dev_t* g_terminal;
+dev_t* g_pic;
+dev_t* g_hdd;

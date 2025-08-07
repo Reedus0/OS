@@ -3,12 +3,7 @@
 #include "drivers/tty/tty.h"
 
 static void sysout_print(byte character) {
-    if (g_terminal.driver == NULL) return;
-    if (character == '\b') {
-        MODULE_FUNCTION(g_terminal.driver, TTY_DELETE_CHAR)();
-        return;
-    }
-    MODULE_FUNCTION(g_terminal.driver, TTY_PRINT_CHAR)(character);
+    sdev_write(g_terminal, character);
 }
 
 void sysout_add_string(byte* string) {

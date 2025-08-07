@@ -1,61 +1,65 @@
 #include "pic.h"
 #include "include/io.h"
 
-static uint16_t pic_port_1;
-static uint16_t pic_port_2;
+static void pic_remap(dev_t* dev, uint8_t offset_1, uint8_t offset_2) {
+	pic_data_t* pic_data = dev->dev_data;
 
-static void pic_remap(uint8_t offset_1, uint8_t offset_2) {
-    uint8_t a1, a2;
+	uint8_t a1, a2;
 
-	a1 = in8(pic_port_1 + 1);
-	a2 = in8(pic_port_2 + 1);
+	a1 = in8(pic_data->port_1 + 1);
+	a2 = in8(pic_data->port_2 + 1);
 
-    out8(pic_port_1, ICW1_INIT | ICW1_ICW4);
+	out8(pic_data->port_1, ICW1_INIT | ICW1_ICW4);
 	io_wait();
-	out8(pic_port_2, ICW1_INIT | ICW1_ICW4);
+	out8(pic_data->port_2, ICW1_INIT | ICW1_ICW4);
 	io_wait();
-	out8(pic_port_1 + 1, offset_1);
+	out8(pic_data->port_1 + 1, offset_1);
 	io_wait();
-	out8(pic_port_2 + 1, offset_2);
+	out8(pic_data->port_2 + 1, offset_2);
 	io_wait();
-	out8(pic_port_1 + 1, 4);
+	out8(pic_data->port_1 + 1, 4);
 	io_wait();
-	out8(pic_port_2 + 1, 2);
-	io_wait();
-	
-	out8(pic_port_1 + 1, ICW4_8086);
-	io_wait();
-	out8(pic_port_2 + 1, ICW4_8086);
+	out8(pic_data->port_2 + 1, 2);
 	io_wait();
 
-	out8(pic_port_1 + 1, a1);
-	out8(pic_port_2 + 1, a2);
+	out8(pic_data->port_1 + 1, ICW4_8086);
+	io_wait();
+	out8(pic_data->port_2 + 1, ICW4_8086);
+	io_wait();
+
+	out8(pic_data->port_1 + 1, a1);
+	out8(pic_data->port_2 + 1, a2);
 }
 
-static void pic_send_eoi(uint8_t irq) {
-    if(irq >= 8) {
-		out8(pic_port_2, PIC_EOI);
+static void pic_send_eoi(dev_t* dev, uint8_t irq) {
+	pic_data_t* pic_data = dev->dev_data;
+
+	if (irq >= 8) {
+		out8(pic_data->port_2, PIC_EOI);
 	}
-	out8(pic_port_1, PIC_EOI);
+	out8(pic_data->port_1, PIC_EOI);
 }
 
-static void pic_set_ports(uint16_t port_1, uint16_t port_2) {
-    pic_port_1 = port_1;
-    pic_port_2 = port_2;
+static void pic_set_ports(dev_t* dev, uint16_t port_1, uint16_t port_2) {
+	pic_data_t* pic_data = dev->dev_data;
+
+	pic_data->port_1 = port_1;
+	pic_data->port_2 = port_2;
 }
 
-static void pic_disable() {
-    out8(pic_port_1 + 1, 0xff);
-    out8(pic_port_2 + 1, 0xff);
+static void pic_disable(dev_t* dev) {
+	pic_data_t* pic_data = dev->dev_data;
+
+	out8(pic_data->port_1 + 1, 0xff);
+	out8(pic_data->port_2 + 1, 0xff);
 }
 
-static void init_pic() {
-    pic_port_1 = PIC_DEFAULT_PORT_1;
-    pic_port_2 = PIC_DEFAULT_PORT_2;
+static void init_pic(dev_t* dev) {
+
 }
 
-static void deinit_pic() {
-	pic_disable();
+static void deinit_pic(dev_t* dev) {
+	pic_disable(dev);
 }
 
 module_t* init_pic_module() {
@@ -73,4 +77,25 @@ module_t* init_pic_module() {
 	pic_module->deinit = deinit_pic;
 
 	return pic_module;
+}
+
+dev_t* init_pic_dev(uint8_t port_1, uint8_t port_2) {
+	dev_t* pic_dev = kalloc(sizeof(dev_t));
+
+	pic_data_t* pic_data = kalloc(sizeof(pic_data_t));
+
+	pic_data->port_1 = port_1;
+	pic_data->port_2 = port_2;
+
+	pic_dev->dev_data = pic_data;
+	pic_dev->driver = init_pic_module(pic_dev);
+
+	return pic_dev;
+}
+
+void deinit_pic_dev(dev_t* pic_dev) {
+	pic_dev->driver->deinit(pic_dev);
+
+	kfree(pic_dev->dev_data);
+	kfree(pic_dev);
 }

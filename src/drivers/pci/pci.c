@@ -2,6 +2,8 @@
 #include "include/io.h"
 #include "memory/paging.h"
 
+static size_t pci_mmio_base = PCI_MMIO_BASE;
+
 static uint16_t pci_read(uint8_t bus, uint8_t slot, uint8_t function, uint8_t offset) {
     uint32_t address = (
         (uint32_t)((uint32_t)bus << 16) |
@@ -106,7 +108,7 @@ static void pci_check_buses() {
 }
 
 static void map_pci_address_range() {
-    map_page(0xFEA00000, 0xFEA00000, 0x82);
+    map_page(PCI_MMIO_BASE, PCI_MMIO_BASE, 0x82);
 }
 
 void init_pci() {
@@ -156,6 +158,14 @@ void pci_device_release_bus(pci_device_t* pci_device) {
     pci_device_write(pci_device, PCI_COMMAND, command_register);
 }
 
+void* pci_device_request_region(pci_device_t* pci_device, uint8_t bar) {
+    void* mmio_address = pci_mmio_base;
+    pci_device_write(pci_device, PCI_DEVICE_BASE_ADDRESS_0 + (bar * 4), mmio_address);
+    pci_device_enable_mmio(pci_device);
+    pci_mmio_base += 0x1000;
+
+    return mmio_address;
+}
 
 shell_command sh_pci(char* command) {
     for (size_t i = 0; i < g_pci_devices_count; i++) {

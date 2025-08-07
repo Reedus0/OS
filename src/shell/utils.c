@@ -16,7 +16,7 @@ shell_command sh_hello(char* command) {
 }
 
 shell_command sh_clear(char* command) {
-    MODULE_FUNCTION(g_terminal.driver, TTY_CLEAR)();
+    MODULE_FUNCTION(g_terminal->driver, TTY_CLEAR)(g_terminal);
     return 0;
 }
 

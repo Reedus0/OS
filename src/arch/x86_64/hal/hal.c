@@ -30,30 +30,23 @@ void init_hal(multiboot2_info_t* mbd) {
     init_heap();
     init_paging();
 
-    module_t* tty_module = init_tty_module();
-    register_module(tty_module);
-
-    g_terminal.driver = tty_module;
+    g_terminal = init_tty_dev();
 
     printk(INFO, "Initiating modules...\n");
 
-    g_pic_module = init_pic_module();
-    register_module(g_pic_module);
-    MODULE_FUNCTION(g_pic_module, PIC_REMAP)(0x20, 0x28);
+    g_pic = init_pic_dev(PIC_DEFAULT_PORT_1, PIC_DEFAULT_PORT_2);
+    MODULE_FUNCTION(g_pic->driver, PIC_REMAP)(g_pic, 0x20, 0x28);
 
     init_pci();
 
     module_t* cmos_module = init_cmos_module();
     register_module(cmos_module);
 
-    module_t* keyboard_module = init_keyboard_module();
-    register_module(keyboard_module);
-
-    g_keyboard.driver = keyboard_module;
+    g_keyboard = init_keyboard_dev(KEYBOARD_DEFAULT_PORT, KEYBOARD_STATUS_PORT);
 
     module_t* ahci_module = init_ahci_module();
     register_module(ahci_module);
-    g_hdd.driver = ahci_module;
+    g_hdd->driver = ahci_module;
 
     printk(SUCCESS, "Initiated modules!\n");
 

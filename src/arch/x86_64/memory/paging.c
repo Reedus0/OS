@@ -148,9 +148,9 @@ void unmap_page(size_t virtual_address) {
     size_t l3_offset = (virtual_address >> 30) & 0x1FF;
     size_t l2_offset = (virtual_address >> 21) & 0x1FF;
 
-    page_table_descriptor_t* l4_descriptor = get_table_descriptor(4, ((l4_offset << 9) | l5_offset));
-    page_table_descriptor_t* l3_descriptor = get_table_descriptor(3, ((l3_offset << 18) | (l4_offset << 9) | l5_offset));
-    page_table_descriptor_t* l2_descriptor = get_table_descriptor(2, ((l2_offset << 27) | (l3_offset << 18) | (l4_offset << 9) | l5_offset));
+    page_table_descriptor_t* l4_descriptor = get_table_descriptor(4, l5_offset);
+    page_table_descriptor_t* l3_descriptor = get_table_descriptor(3, ((l4_offset << 9) | l5_offset));
+    page_table_descriptor_t* l2_descriptor = get_table_descriptor(2, ((l3_offset << 18) | (l4_offset << 9) | l5_offset));
 
     page_table_entry_t* l2_address = &l2_descriptor->table[l2_offset];
     page_table_entry_unmap(l2_address);
@@ -179,13 +179,13 @@ void map_page(size_t physical_address, size_t virtual_address, size_t flags) {
     size_t l3_offset = (virtual_address >> 30) & 0x1FF;
     size_t l2_offset = (virtual_address >> 21) & 0x1FF;
 
-    page_table_descriptor_t* l4_descriptor = get_table_descriptor(4, ((l4_offset << 9) | l5_offset));
-    page_table_descriptor_t* l3_descriptor = get_table_descriptor(3, ((l3_offset << 18) | (l4_offset << 9) | l5_offset));
-    page_table_descriptor_t* l2_descriptor = get_table_descriptor(2, ((l2_offset << 27) | (l3_offset << 18) | (l4_offset << 9) | l5_offset));
+    page_table_descriptor_t* l4_descriptor = get_table_descriptor(4, l5_offset);
+    page_table_descriptor_t* l3_descriptor = get_table_descriptor(3, ((l4_offset << 9) | l5_offset));
+    page_table_descriptor_t* l2_descriptor = get_table_descriptor(2, ((l3_offset << 18) | (l4_offset << 9) | l5_offset));
 
-    if (!l4_descriptor) l4_descriptor = allocate_page_table(4, ((l4_offset << 9) | l5_offset));
-    if (!l3_descriptor) l3_descriptor = allocate_page_table(3, ((l3_offset << 18) | (l4_offset << 9) | l5_offset));
-    if (!l2_descriptor) l2_descriptor = allocate_page_table(2, ((l2_offset << 27) | (l3_offset << 18) | (l4_offset << 9) | l5_offset));
+    if (!l4_descriptor) l4_descriptor = allocate_page_table(4, l5_offset);
+    if (!l3_descriptor) l3_descriptor = allocate_page_table(3, ((l4_offset << 9) | l5_offset));
+    if (!l2_descriptor) l2_descriptor = allocate_page_table(2, ((l3_offset << 18) | (l4_offset << 9) | l5_offset));
 
     page_table_entry_t* l4_address = &l4_descriptor->table[l4_offset];
     page_table_entry_t* l3_address = &l3_descriptor->table[l3_offset];

@@ -12,6 +12,8 @@
 #define PCI_DEFAULT_CONFIG_ADDRESS 0xCF8
 #define PCI_DEFAULT_CONFIG_DATA 0xCFC
 
+#define PCI_MMIO_BASE 0xFEA00000
+
 #define PCI_VENDOR 0
 #define PCI_DEVICE 2
 #define PCI_COMMAND 4
@@ -75,4 +77,5 @@ void pci_device_enable_mmio(pci_device_t* pci_device);
 void pci_device_disable_mmio(pci_device_t* pci_device);
 void pci_device_take_bus(pci_device_t* pci_device);
 void pci_device_release_bus(pci_device_t* pci_device);
+void* pci_device_request_region(pci_device_t* pci_device, uint8_t bar);
 shell_command sh_pci(char* command);

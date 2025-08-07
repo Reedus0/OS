@@ -3,7 +3,11 @@
 #include "asm/io.h"
 
 static pci_device_t* ahci_device;
-static uint32_t ahci_registers_address = 0xFEA00000;
+static ahci_registers_t* ahci_registers;
+
+static void ahci_read(byte* buffer, size_t offset, size_t count) {
+
+}
 
 static size_t ahci_get_block_size() {
     return 512;
@@ -20,22 +24,25 @@ static void init_ahci() {
 
     if (!ahci_device) return;
 
-    // ahci_registers_address = pci_device_read(ahci_device, PCI_DEVICE_BASE_ADDRESS_5);
+    ahci_registers = pci_device_request_region(ahci_device, 5);
 
-    pci_device_write(ahci_device, PCI_DEVICE_BASE_ADDRESS_5, ahci_registers_address);
-
-    pci_device_enable_mmio(ahci_device);
-    pci_device_take_bus(ahci_device);
-    printk(NONE, "%x\n", pci_device_read(ahci_device, PCI_DEVICE_BASE_ADDRESS_5));
-
-    for (size_t i = 0; i < 128; i++) {
-        printk(NONE, "%x ", *(volatile char*)(ahci_registers_address + i));
+    for (size_t i = 0; i < 32; i++) {
+        hba_port_t* current_port = &ahci_registers->ports[i];
+        if (current_port->sig == SATA_SIG_ATA && current_port->ssts > 1) {
+            current_port->clb = kalloc_aligned(1024, 1024);
+            current_port->fb = kalloc_aligned(256, 256);
+        }
     }
-
 }
 
 static void deinit_ahci() {
-
+    for (size_t i = 0; i < 32; i++) {
+        hba_port_t* current_port = &ahci_registers->ports[i];
+        if (current_port->sig == SATA_SIG_ATA && current_port->ssts > 1) {
+            kfree(current_port->clb);
+            kfree(current_port->fb);
+        }
+    }
 }
 
 module_t* init_ahci_module() {

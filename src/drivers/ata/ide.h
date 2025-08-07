@@ -7,6 +7,7 @@
 
 #include "include/types.h"
 #include "include/module.h"
+#include "include/dev.h"
 
 #define IDE_DEFAULT_PORT 0x1F0
 #define IDE_DEFAULT_DRIVE 0xE0
@@ -24,4 +25,12 @@
 
 #define IDE_SET_PORT 16
 
+struct ide_data {
+    uint16_t port;
+    uint8_t drive;
+};
+typedef struct ide_data ide_data_t;
+
 module_t* init_ide_module();
+dev_t* init_ide_dev(uint16_t port, uint8_t drive);
+void deinit_ide_dev(dev_t* ide_dev);

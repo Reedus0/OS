@@ -42,6 +42,6 @@ void kmain() {
         {NULL, NULL},
     };
 
-    // schedule_task(create_task(init_shell, functions));
+    schedule_task(create_task(init_shell, functions));
     while (1);
 }

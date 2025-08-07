@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "include/module.h"
+#include "include/dev.h"
 
 #define PIC_DEFAULT_PORT_1 0x20
 #define PIC_DEFAULT_PORT_2 0xA0
@@ -18,5 +19,13 @@
 #define PIC_DISABLE 18
 #define PIC_SET_PORTS 19
 
-module_t* g_pic_module;
+struct pic_data {
+    uint16_t port_1;
+    uint16_t port_2;
+};
+typedef struct pic_data pic_data_t;
+
+
 module_t* init_pic_module();
+dev_t* init_pic_dev(uint8_t port_1, uint8_t port_2);
+void deinit_pic_dev(dev_t* pic_dev);

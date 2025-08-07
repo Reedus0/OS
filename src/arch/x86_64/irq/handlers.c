@@ -30,7 +30,7 @@ static void load_task(struct regs* regs, irq_data_t* irq_data) {
 void __attribute__((cdecl)) irq_handler(struct regs regs, irq_data_t irq_data) {
     save_task(&regs, &irq_data);
 
-    if(g_interrupt_handlers[irq_data.interrupt_number] != NULL) {
+    if (g_interrupt_handlers[irq_data.interrupt_number] != NULL) {
         g_interrupt_handlers[irq_data.interrupt_number](&irq_data);
     }
     else {
@@ -46,7 +46,7 @@ static void set_irq_handler(size_t number, size_t handler) {
 }
 
 interrupt_t irq_ide(irq_data_t* irq_data) {
-    MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(46);
+    MODULE_FUNCTION(g_pic->driver, PIC_SEND_EOI)(g_pic, 46);
 }
 
 interrupt_t irq_timer(irq_data_t* irq_data) {
@@ -54,22 +54,23 @@ interrupt_t irq_timer(irq_data_t* irq_data) {
 
     TIMER_FUNCTION(10, update_time());
     TIMER_FUNCTION(10, g_current_task_id = schedule());
-    MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(32);
+    MODULE_FUNCTION(g_pic->driver, PIC_SEND_EOI)(g_pic, 32);
 }
 
 interrupt_t irq_keyboard(irq_data_t* irq_data) {
-    char character = sdev_read(&g_keyboard);
+    char character = sdev_read(g_keyboard);
     task_t* current_task = get_task(g_current_task_id);
-    
+
     if (character != NULL) {
         if (character != '\b') {
             stream_add_byte(&current_task->stdin, character);
-        } else {
+        }
+        else {
             stream_delete_byte(&current_task->stdin);
         }
         current_task->stdin_updated = 1;
     }
-    MODULE_FUNCTION(g_pic_module, PIC_SEND_EOI)(33);
+    MODULE_FUNCTION(g_pic->driver, PIC_SEND_EOI)(g_pic, 33);
 }
 
 interrupt_t irq_syscall(irq_data_t* irq_data) {
@@ -87,7 +88,7 @@ interrupt_t irq_syscall(irq_data_t* irq_data) {
     syscall_data->arg_4 = regs->r8;
 
     task_t* syscall_task = create_task(syscall, syscall_data);
-    
+
     schedule_task(syscall_task);
     g_current_task_id = schedule();
 }
@@ -126,7 +127,7 @@ void init_irq_handlers() {
     set_irq_handler(30, irq_handle_exception);
     set_irq_handler(31, irq_handle_exception);
     set_irq_handler(32, irq_timer);
-    set_irq_handler(33, irq_keyboard); 
+    set_irq_handler(33, irq_keyboard);
     set_irq_handler(46, irq_ide);
     set_irq_handler(128, irq_syscall);
 }
