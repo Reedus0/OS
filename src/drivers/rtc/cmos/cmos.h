@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "include/module.h"
+#include "include/dev.h"
 
 #define CMOS_REGISTER_SELECT_PORT 0x70
 #define CMOS_DATA_READ_PORT 0x71
@@ -17,3 +18,5 @@
 #define CENTURY_REGISTER 50
 
 module_t* init_cmos_module();
+dev_t* init_cmos_dev();
+void deinit_cmos_dev(dev_t* cmos_dev);

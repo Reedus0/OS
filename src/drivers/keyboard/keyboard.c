@@ -58,6 +58,7 @@ dev_t* init_keyboard_dev(uint16_t port, uint16_t status) {
 
     keyboard_dev->dev_data = keyboard_data;
     keyboard_dev->driver = init_keyboard_module(keyboard_dev);
+    keyboard_dev->driver->init(keyboard_dev);
 
     return keyboard_dev;
 }

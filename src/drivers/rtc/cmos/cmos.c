@@ -20,12 +20,12 @@ static void cmos_read_time() {
     set_time(second, minute, hour, day, month, year);
 }
 
-static void init_cmos() {
+static void init_cmos(dev_t* dev) {
     cmos_read_time();
 }
 
-static void deinit_cmos() {
-    
+static void deinit_cmos(dev_t* dev) {
+
 }
 
 module_t* init_cmos_module() {
@@ -38,4 +38,19 @@ module_t* init_cmos_module() {
     cmos_module->deinit = deinit_cmos;
 
     return cmos_module;
+}
+
+dev_t* init_cmos_dev() {
+    dev_t* cmos_dev = kalloc(sizeof(dev_t));
+
+    cmos_dev->driver = init_cmos_module(cmos_dev);
+    cmos_dev->driver->init(cmos_dev);
+
+    return cmos_dev;
+}
+
+void deinit_cmos_dev(dev_t* cmos_dev) {
+    cmos_dev->driver->deinit(cmos_dev);
+
+    kfree(cmos_dev);
 }

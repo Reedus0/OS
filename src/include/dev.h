@@ -42,4 +42,6 @@ size_t bdev_get_block_size(dev_t* bdev) {
 dev_t* g_keyboard;
 dev_t* g_terminal;
 dev_t* g_pic;
+dev_t* g_cmos;
+dev_t* g_ahci;
 dev_t* g_hdd;

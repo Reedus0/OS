@@ -149,6 +149,7 @@ dev_t* init_tty_dev() {
 
     tty_dev->dev_data = tty_data;
     tty_dev->driver = init_tty_module(tty_dev);
+    tty_dev->driver->init(tty_dev);
 
     return tty_dev;
 }

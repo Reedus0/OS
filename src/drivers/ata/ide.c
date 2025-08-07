@@ -103,6 +103,7 @@ dev_t* init_ide_dev(uint16_t port, uint8_t drive) {
 
     ide_dev->dev_data = ide_data;
     ide_dev->driver = init_ide_module(ide_dev);
+    ide_dev->driver->init(ide_dev);
 
     return ide_dev;
 }

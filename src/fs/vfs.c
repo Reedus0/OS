@@ -38,7 +38,7 @@ static void clean_dir(vfs_dir_t* root) {
             break;
         }
         current_dir = container_of(next, vfs_dir_t, list);
-    }    
+    }
     clean_files(root);
 }
 
@@ -50,7 +50,7 @@ void vfs_mount(vfs_dir_t* root, vfs_fs_t* fs) {
         list_insert_after(&g_fs_list->list, &fs->list);
     }
     g_fs_list = fs;
-    
+
     root->mount_point = 1;
 }
 
@@ -105,7 +105,7 @@ static vfs_file_t* find_file(vfs_dir_t* dir, char* filename) {
         vfs_add_file(dir, new_file);
         return new_file;
     }
-    
+
     while (1) {
         if (strcmp(current_file->name, filename)) {
             return current_file;
@@ -165,7 +165,7 @@ void vfs_delete_file(char* path) {
     if (filename == 1) filename = path;
 
     vfs_file_t* file = find_file(file_dir, filename);
-    
+
     g_fs_list->func->delete_file(g_fs_list, file);
     vfs_remove_file(file);
 }
@@ -193,9 +193,9 @@ void init_vfs() {
     g_vfs_root.name = "/";
     g_vfs_root.parent = &g_vfs_root;
 
-    vfs_fs_t* fat = vfs_new_fs(&g_hdd, &g_vfs_func_fat);
+    vfs_fs_t* fat = vfs_new_fs(g_hdd, &g_vfs_func_fat);
 
-    vfs_mount(&g_vfs_root, fat);   
+    vfs_mount(&g_vfs_root, fat);
 
-    printk(SUCCESS, "Initiated VFS!\n"); 
+    printk(SUCCESS, "Initiated VFS!\n");
 }

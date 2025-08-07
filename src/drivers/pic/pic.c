@@ -89,6 +89,7 @@ dev_t* init_pic_dev(uint8_t port_1, uint8_t port_2) {
 
 	pic_dev->dev_data = pic_data;
 	pic_dev->driver = init_pic_module(pic_dev);
+	pic_dev->driver->init(pic_dev);
 
 	return pic_dev;
 }
