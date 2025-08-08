@@ -43,7 +43,8 @@ page_table_entry_t g_kernel_table_l2[512] __attribute__((aligned(4096))) __attri
 size_t g_total_pages;
 size_t g_available_pages;
 
-size_t allocate_physical_address(size_t virtual_address);
+size_t allocate_physical_page(size_t virtual_address);
+size_t get_physical_address(size_t virtual_address);
 void init_paging();
 void map_page(size_t physical_address, size_t virtual_address, size_t flags);
 void unmap_page(size_t virtual_address);

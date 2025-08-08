@@ -23,7 +23,7 @@ static void physical_page_set_virtual_address(physical_page_t* physical_page, ui
     physical_page->virtual_address = virtual_address;
 }
 
-size_t allocate_physical_address(size_t virtual_address) {
+size_t allocate_physical_page(size_t virtual_address) {
     if (g_available_pages == 0) {
         for (size_t i = 0; i < g_total_pages; i++) {
             physical_page_t* current_page = &g_phisycal_pages[i];
@@ -43,6 +43,16 @@ size_t allocate_physical_address(size_t virtual_address) {
             return current_page->address & 0xFFFFFFF00000;
         }
     }
+}
+
+size_t get_physical_address(size_t virtual_address) {
+    for (size_t i = 0; i < g_total_pages; i++) {
+        physical_page_t* current_page = &g_phisycal_pages[i];
+        if (current_page->virtual_address = virtual_address & 0xFFFFFFF00000) {
+            return (current_page->address + (virtual_address & 0xFFFFF) & ((size_t)1 << MAX_ADDRESS_SIZE) - 1);
+        }
+    }
+    return -1;
 }
 
 void add_physical_pages(memory_chunk_t chunk) {

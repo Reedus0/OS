@@ -13,7 +13,7 @@ char* fat_entry_read_lfn(fat_entry_t* fat_entry) {
         if ((order & 0x40) == 0x40) {
             order ^= 0x40;
         }
-        size_t position = (order - 1) * 13; 
+        size_t position = (order - 1) * 13;
         size_t offset = 0;
         char* ptr = fat_long_name->name_1;
         for (size_t i = 0; i < 13; i++) {
@@ -71,7 +71,8 @@ static fat_long_name_t* create_lfn(char* name) {
             }
             if (name_not_ended) {
                 ptr[j - offset] = name[(j / 2) * (i + 1)];
-            } else {
+            }
+            else {
                 ptr[j - offset] = 0xFF;
                 ptr[j - offset + 1] = 0xFF;
             }
@@ -93,7 +94,7 @@ fat_entry_t* fat_entry_create(char* name, size_t cluster, enum FAT_ATTRIBUTES at
     kfree(file_name);
 
     fat_entry_t* last_entry = (result + entry_count - 1);
-    
+
     for (size_t i = 0; i < 12; i++) {
         if (strlen(name) <= i) {
             last_entry->name[i] = ' ';
@@ -120,10 +121,10 @@ void fat_entry_add(fat_entry_t* dir, fat_entry_t* fat_entry) {
 }
 
 void fat_entry_remove(fat_entry_t* dir, size_t index) {
-    for (size_t i = 0; i < index + 1; i++){
+    for (size_t i = 0; i < index + 1; i++) {
         dir++;
     }
-    while(VALID_ENTRY(dir)) {
+    while (VALID_ENTRY(dir)) {
         *(dir - 1) = *dir;
         dir++;
     }

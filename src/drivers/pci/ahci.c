@@ -1,14 +1,126 @@
 #include "ahci.h"
+#include "memory/paging.h"
 #include "asm/io.h"
+
+static void ahci_drive_start_cmd(dev_t* dev) {
+    ahci_drive_data_t* ahci_drive_data = dev->dev_data;
+
+    hba_port_t* current_port = ahci_drive_data->port;
+
+    current_port->cmd |= HBA_CMD_ST;
+    current_port->cmd |= HBA_CMD_FRE;
+}
+
+static void ahci_drive_stop_cmd(dev_t* dev) {
+    ahci_drive_data_t* ahci_drive_data = dev->dev_data;
+
+    hba_port_t* current_port = ahci_drive_data->port;
+
+    current_port->cmd &= ~HBA_CMD_ST;
+    current_port->cmd &= ~HBA_CMD_FRE;
+}
 
 static void ahci_read(dev_t* dev, byte* buffer, size_t offset, size_t count) {
     ahci_drive_data_t* ahci_drive_data = dev->dev_data;
     ahci_data_t* ahci_data = ahci_drive_data->ahci->dev_data;
 
-    // for (size_t i = 0; i < 256; i++) {
-    //     printk(NONE, "%x ", *(((char*)ahci_drive_data->port->fbs) + i));
-    // }
-    // while (1);
+    ahci_drive_data->port->is = 0xFFFFFFFF;
+
+    hba_cmd_header_t* cmd_header = (hba_cmd_header_t*)ahci_drive_data->port->clb;
+    cmd_header->cfl = sizeof(fis_reg_h2d_t) / sizeof(uint32_t);
+    cmd_header->w = 0;
+    cmd_header->prdtl = (uint16_t)((count - 1) >> 4) + 1;
+
+
+    hba_cmd_table_t* cmd_table = kalloc_aligned(sizeof(hba_cmd_table_t), 16);
+    cmd_header->ctba = (uint32_t)get_physical_address((size_t)cmd_table);
+
+    uint16_t* tmp = kalloc_aligned(count * 512, 2);
+
+    cmd_table->prdt_entry[0].dba = (uint32_t)tmp;
+    cmd_table->prdt_entry[0].dbau = (uint32_t)((uint64_t)tmp >> 32);
+    cmd_table->prdt_entry[0].dbc = (count * 512) - 1;
+    cmd_table->prdt_entry[0].i = 0;
+
+    fis_reg_h2d_t* cmd_fis = (fis_reg_h2d_t*)get_physical_address((size_t)&cmd_table->cfis);
+
+    cmd_fis->fis_type = FIS_TYPE_REG_H2D;
+    cmd_fis->c = 1;
+    cmd_fis->command = ATA_CMD_READ_DMA_EX;
+
+    cmd_fis->lba0 = (uint8_t)offset;
+    cmd_fis->lba1 = (uint8_t)(offset >> 8);
+    cmd_fis->lba2 = (uint8_t)(offset >> 16);
+    cmd_fis->device = 1 << 6;
+
+    cmd_fis->lba3 = (uint8_t)(offset >> 24);
+    cmd_fis->lba4 = (uint8_t)(offset >> 32);
+    cmd_fis->lba5 = (uint8_t)(offset >> 40);
+
+    cmd_fis->countl = count & 0xFF;
+    cmd_fis->counth = (count >> 8) & 0xFF;
+
+    while (ahci_drive_data->port->tfd & (ATA_DEV_BUSY | ATA_DEV_DRQ));
+
+    ahci_drive_data->port->ci = 1;
+
+    while (ahci_drive_data->port->ci);
+
+    memcpy(buffer, tmp, count * 512);
+
+    kfree(cmd_table);
+    kfree(tmp);
+}
+
+static void ahci_write(dev_t* dev, byte* buffer, size_t offset, size_t count) {
+    ahci_drive_data_t* ahci_drive_data = dev->dev_data;
+    ahci_data_t* ahci_data = ahci_drive_data->ahci->dev_data;
+
+    ahci_drive_data->port->is = 0xFFFFFFFF;
+
+    hba_cmd_header_t* cmd_header = (hba_cmd_header_t*)ahci_drive_data->port->clb;
+    cmd_header->cfl = sizeof(fis_reg_h2d_t) / sizeof(uint32_t);
+    cmd_header->w = 1;
+    cmd_header->prdtl = (uint16_t)((count - 1) >> 4) + 1;
+
+
+    hba_cmd_table_t* cmd_table = kalloc_aligned(sizeof(hba_cmd_table_t), 16);
+    cmd_header->ctba = (uint32_t)get_physical_address((size_t)cmd_table);
+
+    uint16_t* tmp = kalloc_aligned(count * 512, 2);
+    memcpy(tmp, buffer, count * 512);
+
+    cmd_table->prdt_entry[0].dba = (uint32_t)tmp;
+    cmd_table->prdt_entry[0].dbau = (uint32_t)((uint64_t)tmp >> 32);
+    cmd_table->prdt_entry[0].dbc = (count * 512) - 1;
+    cmd_table->prdt_entry[0].i = 0;
+
+    fis_reg_h2d_t* cmd_fis = (fis_reg_h2d_t*)get_physical_address((size_t)&cmd_table->cfis);
+
+    cmd_fis->fis_type = FIS_TYPE_REG_H2D;
+    cmd_fis->c = 1;
+    cmd_fis->command = ATA_CMD_WRITE_DMA_EX;
+
+    cmd_fis->lba0 = (uint8_t)offset;
+    cmd_fis->lba1 = (uint8_t)(offset >> 8);
+    cmd_fis->lba2 = (uint8_t)(offset >> 16);
+    cmd_fis->device = 1 << 6;
+
+    cmd_fis->lba3 = (uint8_t)(offset >> 24);
+    cmd_fis->lba4 = (uint8_t)(offset >> 32);
+    cmd_fis->lba5 = (uint8_t)(offset >> 40);
+
+    cmd_fis->countl = count & 0xFF;
+    cmd_fis->counth = (count >> 8) & 0xFF;
+
+    while (ahci_drive_data->port->tfd & (ATA_DEV_BUSY | ATA_DEV_DRQ));
+
+    ahci_drive_data->port->ci = 1;
+
+    while (ahci_drive_data->port->ci);
+
+    kfree(cmd_table);
+    kfree(tmp);
 }
 
 static size_t ahci_get_block_size(dev_t* dev) {
@@ -73,22 +185,26 @@ static void init_ahci_drive(dev_t* dev) {
     ahci_drive_data_t* ahci_drive_data = dev->dev_data;
 
     hba_port_t* current_port = ahci_drive_data->port;
+
+    ahci_drive_stop_cmd(dev);
+
     if (current_port->sig == SATA_SIG_ATA && current_port->ssts > 1) {
-        current_port->clb = kalloc_aligned(1024, 1024);
-        current_port->fb = kalloc_aligned(256, 256);
+        void* clb = kalloc_aligned(1024, 1024);
+        void* fb = kalloc_aligned(256, 256);
+
+        current_port->clb = (uint32_t)clb;
+        current_port->clbu = (uint32_t)((uint64_t)clb >> 32);
+        current_port->fb = (uint32_t)fb;
+        current_port->fbu = (uint32_t)((uint64_t)fb >> 32);
     }
 
-    current_port->cmd |= HBA_CMD_ST;
-    current_port->cmd |= HBA_CMD_FRE;
+    ahci_drive_start_cmd(dev);
 }
 
 static void deinit_ahci_drive(dev_t* dev) {
     ahci_drive_data_t* ahci_drive_data = dev->dev_data;
 
     hba_port_t* current_port = ahci_drive_data->port;
-
-    current_port->cmd &= ~HBA_CMD_ST;
-    current_port->cmd &= ~HBA_CMD_FRE;
 
     kfree(current_port->clb);
     kfree(current_port->fb);
@@ -102,7 +218,7 @@ module_t* init_ahci_drive_module() {
     ahci_drive_module->init = init_ahci_drive;
 
     MODULE_FUNCTION(ahci_drive_module, BDEV_DRIVER_READ_BLOCK) = ahci_read;
-    MODULE_FUNCTION(ahci_drive_module, BDEV_DRIVER_WRITE_BLOCK) = NONE;
+    MODULE_FUNCTION(ahci_drive_module, BDEV_DRIVER_WRITE_BLOCK) = ahci_write;
     MODULE_FUNCTION(ahci_drive_module, BDEV_DRIVER_GET_BLOCK_SIZE) = ahci_get_block_size;
 
     ahci_drive_module->deinit = deinit_ahci_drive;
