@@ -32,7 +32,7 @@ void init_hal(multiboot2_info_t* mbd) {
 
     g_terminal = init_tty_dev();
 
-    printk(INFO, "Initiating modules...\n");
+    printk(INFO, "Initiating devices...\n");
 
     g_pic = init_pic_dev(PIC_DEFAULT_PORT_1, PIC_DEFAULT_PORT_2);
     MODULE_FUNCTION(g_pic->driver, PIC_REMAP)(g_pic, 0x20, 0x28);
