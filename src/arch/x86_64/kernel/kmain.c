@@ -5,7 +5,6 @@
 #include "shell/shell.h"
 #include "include/task.h"
 #include "include/scheduler.h"
-#include "kernel/syscall.h"
 #include "fs/vfs.h"
 #include "asm/io.h"
 #include "include/asm.h"
@@ -13,8 +12,7 @@
 
 void kmain() {
     init_hal();
-    // init_vfs();
-    init_syscalls();
+    init_vfs();
     init_scheduler();
 
     // load_kernel_symbols("/kernel/kernel.bin");
@@ -25,7 +23,6 @@ void kmain() {
         {NULL, NULL},
         {"hello", sh_hello},
         {"clear", sh_clear},
-        {"module", sh_module},
         {"pci", sh_pci},
         {"memory", sh_memory},
         {"cd ", sh_cd},
@@ -42,6 +39,6 @@ void kmain() {
         {NULL, NULL},
     };
 
-    // schedule_task(create_task(init_shell, functions));
+    schedule_task(create_task(init_shell, functions));
     while (1);
 }

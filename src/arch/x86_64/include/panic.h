@@ -1,7 +1,7 @@
 #pragma once
 
 #include "kernel/panic.h"
-#include "kernel/printk.h"
+#include "kernel/io.h"
 #include "include/kalloc.h"
 #include "include/types.h"
 #include "asm/asm.h"
@@ -11,13 +11,13 @@
 void print_regs(struct regs* regs) {
     printk(NONE, "Registers:\n");
     printk(NONE, "rsp: 0x%16x rbp: 0x%16x\nrsi: 0x%16x rdi: 0x%16x\n",
-     regs->rsp, regs->rbp, regs->rsi, regs->rdi);
+        regs->rsp, regs->rbp, regs->rsi, regs->rdi);
     printk(NONE, "rdx: 0x%16x rcx: 0x%16x\nrbx: 0x%16x rax: 0x%16x\n",
-     regs->rdx, regs->rcx, regs->rbx, regs->rax);
+        regs->rdx, regs->rcx, regs->rbx, regs->rax);
     printk(NONE, "r8:  0x%16x r9:  0x%16x\nr10: 0x%16x r11: 0x%16x\n",
-     regs->r8, regs->r9, regs->r10, regs->r11);
+        regs->r8, regs->r9, regs->r10, regs->r11);
     printk(NONE, "r12: 0x%16x r13: 0x%16x\nr14: 0x%16x r15: 0x%16x\n",
-     regs->r12, regs->r13, regs->r14, regs->r15);
+        regs->r12, regs->r13, regs->r14, regs->r15);
     printk(NONE, "rflags: 0x%8x\n", regs->rflags);
 }
 

@@ -31,16 +31,28 @@ static void ahci_read(dev_t* dev, byte* buffer, size_t offset, size_t count) {
     cmd_header->w = 0;
     cmd_header->prdtl = (uint16_t)((count - 1) >> 4) + 1;
 
-
     hba_cmd_table_t* cmd_table = kalloc_aligned(sizeof(hba_cmd_table_t), 16);
     cmd_header->ctba = (uint32_t)get_physical_address((size_t)cmd_table);
 
     uint16_t* tmp = kalloc_aligned(count * 512, 2);
 
-    cmd_table->prdt_entry[0].dba = (uint32_t)tmp;
-    cmd_table->prdt_entry[0].dbau = (uint32_t)((uint64_t)tmp >> 32);
-    cmd_table->prdt_entry[0].dbc = (count * 512) - 1;
-    cmd_table->prdt_entry[0].i = 0;
+    uint16_t* __tmp = tmp;
+    size_t __count = count;
+
+    for (size_t i = 0; i < cmd_header->prdtl - 1; i++) {
+        cmd_table->prdt_entry[i].dba = (uint32_t)__tmp;
+        cmd_table->prdt_entry[i].dbau = (uint32_t)((uint64_t)__tmp >> 32);
+        cmd_table->prdt_entry[i].dbc = 8192 - 1;
+        cmd_table->prdt_entry[i].i = 0;
+
+        __tmp += 4096;
+        __count -= 16;
+    }
+
+    cmd_table->prdt_entry[cmd_header->prdtl - 1].dba = (uint32_t)__tmp;
+    cmd_table->prdt_entry[cmd_header->prdtl - 1].dbau = (uint32_t)((uint64_t)__tmp >> 32);
+    cmd_table->prdt_entry[cmd_header->prdtl - 1].dbc = (__count * 512) - 1;
+    cmd_table->prdt_entry[cmd_header->prdtl - 1].i = 0;
 
     fis_reg_h2d_t* cmd_fis = (fis_reg_h2d_t*)get_physical_address((size_t)&cmd_table->cfis);
 
@@ -90,10 +102,23 @@ static void ahci_write(dev_t* dev, byte* buffer, size_t offset, size_t count) {
     uint16_t* tmp = kalloc_aligned(count * 512, 2);
     memcpy(tmp, buffer, count * 512);
 
-    cmd_table->prdt_entry[0].dba = (uint32_t)tmp;
-    cmd_table->prdt_entry[0].dbau = (uint32_t)((uint64_t)tmp >> 32);
-    cmd_table->prdt_entry[0].dbc = (count * 512) - 1;
-    cmd_table->prdt_entry[0].i = 0;
+    uint16_t* __tmp = tmp;
+    size_t __count = count;
+
+    for (size_t i = 0; i < cmd_header->prdtl - 1; i++) {
+        cmd_table->prdt_entry[i].dba = (uint32_t)__tmp;
+        cmd_table->prdt_entry[i].dbau = (uint32_t)((uint64_t)__tmp >> 32);
+        cmd_table->prdt_entry[i].dbc = 8192 - 1;
+        cmd_table->prdt_entry[i].i = 0;
+
+        __tmp += 4096;
+        __count -= 16;
+    }
+
+    cmd_table->prdt_entry[cmd_header->prdtl - 1].dba = (uint32_t)__tmp;
+    cmd_table->prdt_entry[cmd_header->prdtl - 1].dbau = (uint32_t)((uint64_t)__tmp >> 32);
+    cmd_table->prdt_entry[cmd_header->prdtl - 1].dbc = (__count * 512) - 1;
+    cmd_table->prdt_entry[cmd_header->prdtl - 1].i = 0;
 
     fis_reg_h2d_t* cmd_fis = (fis_reg_h2d_t*)get_physical_address((size_t)&cmd_table->cfis);
 

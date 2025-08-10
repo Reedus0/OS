@@ -1,4 +1,4 @@
-#include "printk.h"
+#include "io.h"
 #include "symbols.h"
 #include "elf.h"
 #include "include/kalloc.h"

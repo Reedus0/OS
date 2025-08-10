@@ -51,7 +51,7 @@ struct hba_cmd_table {
 
     uint8_t reserved[48];
 
-    hba_prdt_entry_t prdt_entry[1];
+    hba_prdt_entry_t prdt_entry[8];
 };
 typedef struct hba_cmd_table hba_cmd_table_t;
 

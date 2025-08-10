@@ -1,4 +1,4 @@
-#include "kernel/printk.h"
+#include "kernel/io.h"
 #include "panic.h"
 #include "asm/io.h"
 
@@ -11,5 +11,5 @@ void panic(char* string) {
     print_regs(&regs);
     //print_stack();
     printk(ERROR, "Kernel panic: %s\n", string);
-    while(1);
+    while (1);
 }

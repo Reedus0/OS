@@ -73,8 +73,8 @@ static void page_table_entry_set_flags(page_table_entry_t* page_table_entry, uin
 }
 
 static void page_table_entry_set_address(page_table_entry_t* page_table_entry, char* address) {
-    page_table_entry->address ^= (page_table_entry->address & ~0x3FF);
-    page_table_entry->address |= (uint64_t)address & ~0x3FF;
+    page_table_entry->address ^= (page_table_entry->address & 0xFFFFFFFFF000);
+    page_table_entry->address |= (uint64_t)address & 0xFFFFFFFFF000;
 }
 
 static void page_table_entry_map(page_table_entry_t* page_table_entry) {
@@ -213,4 +213,23 @@ void map_page(size_t physical_address, size_t virtual_address, size_t flags) {
     g_available_pages -= 1;
 
     flush_page();
+}
+
+static print_page_table(page_table_entry_t* table, uint8_t level) {
+    if (!table) return;
+    if (level < 2) return;
+
+    for (size_t i = 0; i < 512; i++) {
+        page_table_entry_t* current_entry = table + i;
+        if (current_entry->address && current_entry->present & 1) {
+            for (size_t i = 0; i < 4 - level; i++) printk(NONE, "  ");
+            printk(NONE, "- %d: %x\n", i, current_entry->address & 0xFFFFFFFFF000);
+            print_page_table(current_entry->address & 0xFFFFFFFFF000, level - 1);
+        }
+    }
+}
+
+void print_pages() {
+    printk(NONE, "Page table:\n");
+    print_page_table(g_kernel_page_directory, 4);
 }

@@ -101,7 +101,7 @@ void* memset(byte* dest, byte c, int count) {
 
 void* memcpy(byte* dest, byte* src, int count) {
     for (size_t i = 0; i < count; i++) {
-        dest[i] = src[i];
+        *(dest + i) = *(src + i);
     }
     return dest;
 }

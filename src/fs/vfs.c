@@ -193,7 +193,7 @@ void init_vfs() {
     g_vfs_root.name = "/";
     g_vfs_root.parent = &g_vfs_root;
 
-    vfs_fs_t* fat = vfs_new_fs(g_hdd, &g_vfs_func_fat);
+    vfs_fs_t* fat = vfs_new_fs(g_partition, &g_vfs_func_fat);
 
     vfs_mount(&g_vfs_root, fat);
 

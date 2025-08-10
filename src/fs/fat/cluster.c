@@ -1,6 +1,7 @@
 #include "cluster.h"
 #include "init.h"
 #include "fs.h"
+#include "table.h"
 #include "include/macro.h"
 #include "include/types.h"
 
@@ -182,7 +183,7 @@ size_t fat_get_cluster_count(vfs_fs_t* fs, size_t index) {
     size_t result = 1;
     while (1) {
         index = fat_read_table(fs, index);
-        if ((index & fat_info->eof) == fat_info->eof) break;
+        if (index >= fat_info->eof) break;
         result++;
     }
 

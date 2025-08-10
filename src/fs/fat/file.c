@@ -7,7 +7,8 @@ size_t fat_create_file(vfs_fs_t* fs, size_t dir_cluster, char* name, enum FAT_AT
 
     if (dir_cluster == ROOT_CLUSTER) {
         content_size = fat_info->total_root_dir_sectors * fat_info->sector_size;
-    } else {
+    }
+    else {
         size_t dir_size = fat_get_cluster_count(fs, dir_cluster);
         content_size = dir_size * fat_info->cluster_size;
     }
@@ -15,7 +16,7 @@ size_t fat_create_file(vfs_fs_t* fs, size_t dir_cluster, char* name, enum FAT_AT
     fat_entry_t* buffer = kalloc(content_size);
     fat_read_content(fs, dir_cluster, buffer, 0, content_size);
 
-    size_t free_cluster = fat_table_find_free_cluster(fs); 
+    size_t free_cluster = fat_table_find_free_cluster(fs);
     fat_entry_t* new_entry = fat_entry_create(name, free_cluster, attributes);
     fat_write_table(fs, free_cluster, fat_info->eof);
 
@@ -29,7 +30,7 @@ size_t fat_create_file(vfs_fs_t* fs, size_t dir_cluster, char* name, enum FAT_AT
 
     fat_write_content(fs, dir_cluster, buffer, 0, content_size);
 
-    kfree(buffer);  
+    kfree(buffer);
 
     return free_cluster;
 }
@@ -41,7 +42,8 @@ void fat_delete_file(vfs_fs_t* fs, size_t file_cluster, size_t dir_cluster, char
 
     if (dir_cluster == ROOT_CLUSTER) {
         content_size = fat_info->total_root_dir_sectors * fat_info->sector_size;
-    } else {
+    }
+    else {
         size_t dir_size = fat_get_cluster_count(fs, dir_cluster);
         content_size = dir_size * fat_info->cluster_size;
     }
@@ -70,7 +72,7 @@ void fat_delete_file(vfs_fs_t* fs, size_t file_cluster, size_t dir_cluster, char
     while (1) {
         size_t next_cluster = fat_read_table(fs, file_cluster);
         fat_table_free_cluster(fs, file_cluster);
-        if ((next_cluster & fat_info->eof) == fat_info->eof) break;
+        if (next_cluster >= fat_info->eof) break;
         file_cluster = next_cluster;
     }
 }

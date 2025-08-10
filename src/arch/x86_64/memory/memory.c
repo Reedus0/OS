@@ -1,4 +1,4 @@
-#include "kernel/printk.h"
+#include "kernel/io.h"
 #include "memory.h"
 #include "paging.h"
 

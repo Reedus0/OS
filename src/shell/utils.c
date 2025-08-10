@@ -5,30 +5,17 @@
 #include "include/time.h"
 #include "include/task.h"
 #include "drivers/tty/tty.h"
-#include "kernel/printk.h"
-#include "kernel/syscall.h"
+#include "kernel/io.h"
 #include "kernel/elf.h"
 #include "lib/string.h"
 
 shell_command sh_hello(char* command) {
-    __syscall(1, "Hello, Kernel!\n", 15);
+    printk(NONE, "Hello, Kernel!\n", 15);
     return 0;
 }
 
 shell_command sh_clear(char* command) {
     MODULE_FUNCTION(g_terminal->driver, TTY_CLEAR)(g_terminal);
-    return 0;
-}
-
-shell_command sh_module(char* command) {
-    module_t* current_module = g_modules;
-    while (1) {
-        printk(NONE, "%s\n", current_module->name);
-        if (current_module->list.prev == NULL) {
-            break;
-        }
-        current_module = container_of(current_module->list.prev, module_t, list);
-    }
     return 0;
 }
 
@@ -111,7 +98,7 @@ shell_command sh_read(char* command) {
     char* arg = strchr(command, ' ') + 1;
 
     printk(NONE, "Offset: ");
-    __syscall(0, offset, 64);
+    kget(offset, 64);
 
     file_t* file = vfs_open_file(arg);
     vfs_seek(file, atoi(offset));
@@ -133,13 +120,13 @@ shell_command sh_write(char* command) {
     char* arg = strchr(command, ' ') + 1;
 
     printk(NONE, "Offset: ");
-    __syscall(0, offset, 64);
+    kget(offset, 64);
 
     file_t* file = vfs_open_file(arg);
     vfs_seek(file, atoi(offset));
     vfs_read_file(file, buffer, 256);
 
-    __syscall(0, offset, 64);
+    kget(offset, 64);
 
     vfs_write_file(file, buffer, 256);
     vfs_close_file(file);

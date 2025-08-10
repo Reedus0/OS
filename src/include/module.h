@@ -5,7 +5,7 @@
 
 #include "include/list.h"
 #include "include/kalloc.h"
-#include "kernel/printk.h"
+#include "kernel/io.h"
 
 #define MODULE_FUNCTION(module_ptr, function) ((module_ptr)->functions[function])
 
@@ -15,29 +15,7 @@ struct module {
 
     void (*init)();
     void (*deinit)();
-    
-    size_t (*functions[32])();
+
+    size_t(*functions[32])();
 };
 typedef struct module module_t;
-
-module_t* g_modules;
-
-void register_module(module_t* module) {
-    printk(INFO, "Registering %s module\n", module->name);
-    if (g_modules != NULL) {
-        list_insert_after(&g_modules->list, &module->list);
-    }
-    g_modules = module;
-
-    module->init();
-}
-
-void unregister_module(module_t* module) {
-    printk(INFO, "Unregistering %s module\n", module->name);
-    if (g_modules != NULL) {
-        list_remove(&module->list);
-    }
-
-    module->deinit();
-    kfree(module);
-}

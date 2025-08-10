@@ -225,14 +225,10 @@ void rb_remove(rb_tree_t* tree, rb_node_t* node) {
 }
 
 void rb_balance(rb_tree_t* tree, rb_node_t* node) {
-    rb_node_t* parent = node->parent;
-
-    if (parent->color == BLACK) return;
-
     while (node != tree->root && node->parent->color == RED) {
         if (node->parent == node->parent->parent->left) {
             rb_node_t* u = node->parent->parent->right;
-            if (u->color == RED) {
+            if (u != NULL && u->color == RED) {
                 node->parent->color = BLACK;
                 u->color = BLACK;
                 node->parent->parent->color = RED;
@@ -250,7 +246,7 @@ void rb_balance(rb_tree_t* tree, rb_node_t* node) {
         }
         else {
             rb_node_t* u = node->parent->parent->left;
-            if (u->color == RED) {
+            if (u != NULL && u->color == RED) {
                 node->parent->color = BLACK;
                 u->color = BLACK;
                 node->parent->parent->color = RED;

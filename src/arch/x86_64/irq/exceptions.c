@@ -1,6 +1,6 @@
 #include "handlers.h"
 #include "include/panic.h"
-#include "kernel/printk.h"
+#include "kernel/io.h"
 #include "memory/paging.h"
 #include "asm/paging.h"
 

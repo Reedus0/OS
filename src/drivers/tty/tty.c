@@ -61,7 +61,7 @@ static void tty_print_newline(dev_t* dev) {
         }
     }
 
-    tty_clear_row(dev, ROWS - 1);
+    tty_clear_row(tty_data->buffer, ROWS - 1);
 }
 
 static void tty_delete_char(dev_t* dev) {

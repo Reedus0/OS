@@ -5,13 +5,14 @@
 #include "irq/handlers.h"
 #include "memory/discover.h"
 #include "boot/multiboot2.h"
-#include "kernel/printk.h"
+#include "kernel/io.h"
 #include "drivers/pci/pci.h"
 #include "drivers/pic/pic.h"
 #include "drivers/keyboard/keyboard.h"
 #include "drivers/rtc/cmos/cmos.h"
 #include "drivers/pci/ahci.h"
 #include "drivers/tty/tty.h"
+#include "drivers/partition/partition.h"
 #include "include/module.h"
 #include "include/scheduler.h"
 #include "memory/heap.h"
@@ -44,6 +45,8 @@ void init_hal(multiboot2_info_t* mbd) {
 
     g_ahci = init_ahci_dev(AHCI_DEFAULT_VENDOR, AHCI_DEFAULT_DEVICE_ID);
     g_hdd = init_ahci_drive_dev(g_ahci, 0);
+
+    g_partition = init_partition_dev(g_hdd, 1);
 
     printk(SUCCESS, "Initiated modules!\n");
 

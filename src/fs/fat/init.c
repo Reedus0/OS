@@ -9,6 +9,7 @@ struct fat_info* fat_get_info(vfs_fs_t* fs) {
     struct fat_bpb* bpb = get_bpb(fs->dev);
     struct fat_info* fat_info = kalloc(sizeof(struct fat_info));
 
+    fat_info->fat = NULL;
     fat_info->sectors_per_claster = bpb->sec_per_clus;
     fat_info->sector_size = bpb->byts_per_sec;
     fat_info->total_fats = bpb->num_fats;
@@ -20,12 +21,15 @@ struct fat_info* fat_get_info(vfs_fs_t* fs) {
     fat_info->data_region = bpb->rsvd_sec_cnt + (bpb->num_fats * fat_info->fat_size) + fat_info->total_root_dir_sectors;
 
     size_t total_sectors = bpb->tot_sec_16 != 0 ? bpb->tot_sec_16 : bpb->tot_sec_32;
+    size_t data_sectors = total_sectors - (bpb->rsvd_sec_cnt + (bpb->num_fats * fat_info->fat_size) + fat_info->total_root_dir_sectors);
+    size_t total_clusters = data_sectors / bpb->sec_per_clus;
+
     fat_info->fat_region = bpb->rsvd_sec_cnt;
 
-    if (total_sectors < 4085) {
+    if (total_clusters < 4085) {
         fat_info->fat_type = FAT12;
     }
-    else if (total_sectors < 65525) {
+    else if (total_clusters < 65525) {
         fat_info->fat_type = FAT16;
     }
     else {
@@ -34,15 +38,15 @@ struct fat_info* fat_get_info(vfs_fs_t* fs) {
 
     switch (fat_info->fat_type) {
     case FAT12:
-        fat_info->eof = 0xFFF;
+        fat_info->eof = 0xFF8;
         fat_info->root_dir_region = fat_info->data_region - fat_info->total_root_dir_sectors;
         break;
     case FAT16:
-        fat_info->eof = 0xFFFF;
+        fat_info->eof = 0xFFF8;
         fat_info->root_dir_region = fat_info->data_region - fat_info->total_root_dir_sectors;
         break;
     case FAT32:
-        fat_info->eof = 0xFFFFFFFF;
+        fat_info->eof = 0xFFFFFF8;
         break;
     }
 
@@ -65,6 +69,7 @@ fat_entry_t* fat_parse_lfn(vfs_fs_t* fs, fat_entry_t* fat_entry, vfs_dir_t* root
     if (fat_entry->attributes == DIRECTORY) {
         vfs_dir_t* new_dir = fat_add_dir(root, GET_CLUSTER(fat_entry), dir_cluster, name);
         fat_parse_subdirs(fs, new_dir, GET_CLUSTER(fat_entry));
+
     }
     if (fat_entry->attributes == ARCHIVE) {
         fat_add_file(root, GET_CLUSTER(fat_entry), dir_cluster, name);
@@ -105,6 +110,7 @@ void fat_parse_subdirs(vfs_fs_t* fs, vfs_dir_t* root, size_t index) {
     size_t content_size = dir_size * fat_info->cluster_size;
 
     fat_entry_t* buffer = kalloc(content_size);
+
     fat_read_content(fs, index, buffer, 0, content_size);
 
     fat_parse_dir(fs, buffer, root, index);

@@ -5,8 +5,7 @@
 #include "include/dev.h"
 #include "include/task.h"
 #include "include/scheduler.h"
-#include "kernel/printk.h"
-#include "kernel/syscall.h"
+#include "kernel/io.h"
 #include "drivers/pic/pic.h"
 
 static void save_task(struct regs* regs, irq_data_t* irq_data) {
@@ -73,26 +72,6 @@ interrupt_t irq_keyboard(irq_data_t* irq_data) {
     MODULE_FUNCTION(g_pic->driver, PIC_SEND_EOI)(g_pic, 33);
 }
 
-interrupt_t irq_syscall(irq_data_t* irq_data) {
-    task_t* current_task = get_task(g_current_task_id);
-    struct regs* regs = &current_task->context->regs;
-
-    syscall_data_t* syscall_data = kalloc(sizeof(syscall_data_t));
-
-    syscall_data->number = regs->rax;
-    syscall_data->current_task = current_task;
-
-    syscall_data->arg_1 = regs->rsi;
-    syscall_data->arg_2 = regs->rdx;
-    syscall_data->arg_3 = regs->rcx;
-    syscall_data->arg_4 = regs->r8;
-
-    task_t* syscall_task = create_task(syscall, syscall_data);
-
-    schedule_task(syscall_task);
-    g_current_task_id = schedule();
-}
-
 void init_irq_handlers() {
     set_irq_handler(0, irq_handle_exception);
     set_irq_handler(1, irq_handle_exception);
@@ -129,5 +108,4 @@ void init_irq_handlers() {
     set_irq_handler(32, irq_timer);
     set_irq_handler(33, irq_keyboard);
     set_irq_handler(46, irq_ide);
-    set_irq_handler(128, irq_syscall);
 }

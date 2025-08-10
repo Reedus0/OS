@@ -49,3 +49,4 @@ void init_paging();
 void map_page(size_t physical_address, size_t virtual_address, size_t flags);
 void unmap_page(size_t virtual_address);
 void add_physical_pages(memory_chunk_t chunk);
+void print_pages();

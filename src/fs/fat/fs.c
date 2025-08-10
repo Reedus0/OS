@@ -23,7 +23,7 @@ void init(vfs_fs_t* fs) {
     size_t root_size = fat_info->total_root_dir_sectors * fat_info->sector_size;
     byte* root_dir = kalloc(root_size);
 
-    fat_read_content(fs, 0, root_dir, 0, root_size);
+    fat_read_content(fs, ROOT_CLUSTER, root_dir, 0, root_size);
 
     fat_parse_dir(fs, root_dir, fs->mount_point, ROOT_CLUSTER);
 
@@ -31,6 +31,9 @@ void init(vfs_fs_t* fs) {
 }
 
 void deinit(vfs_fs_t* fs) {
+    struct fat_info* fat_info = fs->fs_data;
+
+    kfree(fat_info->fat);
     kfree(fs->fs_data);
     kfree(fs->mount_point->fs_data);
 }

@@ -1,4 +1,4 @@
-#include "kernel/printk.h"
+#include "kernel/io.h"
 #include "memory/memory.h"
 #include "memory/paging.h"
 #include "heap.h"
@@ -84,24 +84,32 @@ void* heap_alloc(size_t bytes) {
             continue;
         }
 
-        if (current_descriptor->size >= bytes) {
-            uint32_t old_size = current_descriptor->size;
-            if (current_descriptor->size > bytes) {
-                heap_descriptor_t new_descriptor;
+        if (current_descriptor->size < bytes) {
+            continue;
+        }
 
-                heap_descriptor_set_address(&new_descriptor, current_descriptor->address + bytes);
-                heap_descriptor_set_size(&new_descriptor, old_size - bytes);
-                heap_descriptor_set_available(&new_descriptor);
-
-                insert_heap_descriptor(new_descriptor);
-            }
+        if (current_descriptor->size == bytes) {
             heap_descriptor_set_size(current_descriptor, bytes);
             heap_descriptor_clear_available(current_descriptor);
 
             return current_descriptor->address;
         }
+
+        uint32_t old_size = current_descriptor->size;
+        heap_descriptor_t new_descriptor;
+
+        heap_descriptor_set_address(&new_descriptor, current_descriptor->address + bytes);
+        heap_descriptor_set_size(&new_descriptor, old_size - bytes);
+        heap_descriptor_set_available(&new_descriptor);
+
+        insert_heap_descriptor(new_descriptor);
+
+        heap_descriptor_set_size(current_descriptor, bytes);
+        heap_descriptor_clear_available(current_descriptor);
+
+        return current_descriptor->address;
     }
-    print_heap();
+    // print_heap();
     panic("Couldn't allocate memory!");
 }
 
@@ -119,19 +127,40 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
             continue;
         }
 
-        uint32_t real_address = current_descriptor->address & MAX_ADDRESS_MASK;
-        uint32_t aligned_address = (real_address + alignment - 1) & ~(alignment - 1);
-        uint32_t padding = aligned_address - real_address;
+        uint64_t real_address = current_descriptor->address & MAX_ADDRESS_MASK;
+        uint64_t aligned_address = (real_address + alignment - 1) & ~(alignment - 1);
+        uint64_t padding = aligned_address - real_address;
 
         if (current_descriptor->size < bytes + padding) {
             continue;
         }
 
-        uint32_t remaining = current_descriptor->size - (padding + bytes);
+        uint64_t remaining = current_descriptor->size - (padding + bytes);
+
+        if (padding == 0) {
+            if (remaining == 0) {
+                heap_descriptor_set_size(current_descriptor, bytes);
+                heap_descriptor_clear_available(current_descriptor);
+                return real_address;
+            }
+            heap_descriptor_t new_descriptor;
+
+            heap_descriptor_set_address(&new_descriptor, real_address + bytes);
+            heap_descriptor_set_size(&new_descriptor, remaining);
+            heap_descriptor_set_available(&new_descriptor);
+
+            insert_heap_descriptor(new_descriptor);
+
+            heap_descriptor_set_size(current_descriptor, bytes);
+            heap_descriptor_clear_available(current_descriptor);
+
+            return real_address;
+        }
+
         if (remaining) {
             heap_descriptor_t new_descriptor;
 
-            heap_descriptor_set_address(&new_descriptor, current_descriptor->address + bytes);
+            heap_descriptor_set_address(&new_descriptor, aligned_address + bytes);
             heap_descriptor_set_size(&new_descriptor, remaining);
             heap_descriptor_set_available(&new_descriptor);
 
@@ -150,7 +179,7 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
         return new_descriptor.address;
     }
 
-    print_heap();
+    // print_heap();
     panic("Couldn't allocate aligned memory!");
 }
 

@@ -25,6 +25,7 @@ struct fat_info {
     size_t sectors_per_claster;
     size_t sector_size;
     size_t cluster_size;
+    byte* fat;
     size_t eof;
 };
 
