@@ -12,6 +12,11 @@ static byte keyboard_process_key(dev_t* dev) {
 
     uint8_t key = in8(keyboard_data->port);
 
+    if (key == 0xE0) {
+        uint8_t second_key = in8(keyboard_data->port);
+        return g_extended_map[second_key];
+    }
+
     if (key == 0x2A | key == 0x36) {
         keyboard_data->caps_mode = 1;
         return NULL;

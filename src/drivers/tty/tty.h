@@ -11,16 +11,33 @@
 
 #define WHITE_COLOR 15
 
+#define ARROW_UP 30
+#define ARROW_DOWN 31
+
+#define BUFFER_SIZE 50
+
 struct terminal_char {
     uint8_t character;
     uint8_t color;
 };
 typedef struct terminal_char terminal_char_t;
 
+struct tty_buffer {
+    char buffer[BUFFER_SIZE * COLUMNS];
+    size_t index;
+};
+typedef struct tty_buffer tty_buffer_t;
+
 struct tty_data {
     size_t current_column;
     size_t current_row;
-    terminal_char_t* buffer;
+    terminal_char_t* screen;
+
+    tty_buffer_t top;
+    tty_buffer_t bottom;
+
+    size_t cursor_row;
+    size_t cursor_column;
 };
 typedef struct tty_data tty_data_t;
 

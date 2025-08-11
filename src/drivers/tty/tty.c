@@ -22,25 +22,117 @@ static void tty_update_cursor(uint8_t x, uint8_t y, uint8_t max_columns) {
     out8(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
 }
 
-static void tty_clear_row(terminal_char_t* buffer, size_t row) {
+static void tty_clear_row(terminal_char_t* screen, size_t row) {
     terminal_char_t empty;
     empty.color = WHITE_COLOR;
     empty.character = ' ';
 
     for (size_t i = 0; i < COLUMNS; i++) {
-        *(buffer + i + (row * COLUMNS)) = empty;
+        *(screen + i + (row * COLUMNS)) = empty;
     }
 }
+
+static void tty_push_row(terminal_char_t* screen, size_t row, tty_buffer_t* buffer) {
+    if (buffer->index >= BUFFER_SIZE) {
+        for (size_t i = 0; i < (BUFFER_SIZE - 1) * COLUMNS; i++) {
+            buffer->buffer[i] = buffer->buffer[i + COLUMNS];
+        }
+        buffer->index = BUFFER_SIZE - 1;
+    }
+
+    for (size_t i = 0; i < COLUMNS; i++) {
+        terminal_char_t* current_char = screen + i + (row * COLUMNS);
+        buffer->buffer[i + COLUMNS * buffer->index] = current_char->character;
+    }
+
+    buffer->index++;
+}
+
+static void tty_pop_row(terminal_char_t* screen, size_t row, tty_buffer_t* buffer) {
+    if (buffer->index == 0) return;
+
+    buffer->index--;
+
+    for (size_t i = 0; i < COLUMNS; i++) {
+        terminal_char_t* current_char = screen + i + (row * COLUMNS);
+
+        terminal_char_t new_char;
+        new_char.color = WHITE_COLOR;
+        new_char.character = buffer->buffer[i + COLUMNS * buffer->index];
+
+        *current_char = new_char;
+    }
+}
+
 
 static void tty_print_clear(dev_t* dev) {
     tty_data_t* tty_data = dev->dev_data;
 
     for (size_t i = 0; i < ROWS; i++) {
-        tty_clear_row(tty_data->buffer, i);
+        tty_clear_row(tty_data->screen, i);
     }
+
+    tty_data->bottom.index = 0;
+    tty_data->top.index = 0;
 
     tty_data->current_column = 0;
     tty_data->current_row = 0;
+    tty_update_cursor(tty_data->current_column, tty_data->current_row, COLUMNS);
+}
+
+static void tty_insert_line_top(dev_t* dev) {
+    tty_data_t* tty_data = dev->dev_data;
+    if (!tty_data->top.index) return;
+
+    if (tty_data->bottom.index == 0) {
+        tty_data->cursor_row = tty_data->current_row;
+        tty_data->cursor_column = tty_data->current_column;
+    }
+
+    tty_push_row(tty_data->screen, ROWS - 1, &tty_data->bottom);
+
+    for (size_t i = ROWS - 1; i > 0; i--) {
+        for (size_t j = 0; j < COLUMNS; j++) {
+            terminal_char_t current_char = *(tty_data->screen + j + ((i - 1) * COLUMNS));
+            *(tty_data->screen + j + (i * COLUMNS)) = current_char;
+        }
+    }
+
+    tty_clear_row(tty_data->screen, 0);
+
+    tty_data->current_row = 0;
+    tty_data->current_column = 0;
+
+    tty_pop_row(tty_data->screen, 0, &tty_data->top);
+
+    tty_update_cursor(tty_data->current_column, tty_data->current_row, COLUMNS);
+}
+
+static void tty_insert_line_bottom(dev_t* dev) {
+    tty_data_t* tty_data = dev->dev_data;
+    if (!tty_data->bottom.index) return;
+
+    tty_push_row(tty_data->screen, 0, &tty_data->top);
+
+    for (size_t i = 0; i < ROWS - 1; i++) {
+        for (size_t j = 0; j < COLUMNS; j++) {
+            terminal_char_t current_char = *(tty_data->screen + j + ((i + 1) * COLUMNS));
+            *(tty_data->screen + j + (i * COLUMNS)) = current_char;
+        }
+    }
+
+    tty_clear_row(tty_data->screen, ROWS - 1);
+
+    tty_data->current_row = ROWS - 1;
+    tty_data->current_column = 0;
+
+    tty_pop_row(tty_data->screen, ROWS - 1, &tty_data->bottom);
+
+    if (tty_data->bottom.index == 0) {
+        tty_data->current_row = tty_data->cursor_row;
+        tty_data->current_column = tty_data->cursor_column;
+    }
+
     tty_update_cursor(tty_data->current_column, tty_data->current_row, COLUMNS);
 }
 
@@ -54,14 +146,17 @@ static void tty_print_newline(dev_t* dev) {
         return;
     }
 
+    tty_push_row(tty_data->screen, 0, &tty_data->top);
+
     for (size_t i = 1; i < ROWS; i++) {
         for (size_t j = 0; j < COLUMNS; j++) {
-            terminal_char_t current_char = *(tty_data->buffer + j + (i * COLUMNS));
-            *(tty_data->buffer + j + ((i - 1) * COLUMNS)) = current_char;
+            terminal_char_t current_char = *(tty_data->screen + j + (i * COLUMNS));
+            *(tty_data->screen + j + ((i - 1) * COLUMNS)) = current_char;
         }
     }
 
-    tty_clear_row(tty_data->buffer, ROWS - 1);
+
+    tty_clear_row(tty_data->screen, ROWS - 1);
 }
 
 static void tty_delete_char(dev_t* dev) {
@@ -82,23 +177,42 @@ static void tty_delete_char(dev_t* dev) {
 
     empty.color = WHITE_COLOR;
     empty.character = ' ';
-    tty_data->buffer[tty_data->current_column + COLUMNS * tty_data->current_row] = empty;
+    tty_data->screen[tty_data->current_column + COLUMNS * tty_data->current_row] = empty;
     tty_update_cursor(tty_data->current_column, tty_data->current_row, COLUMNS);
+}
+
+static void tty_return(dev_t* dev) {
+    tty_data_t* tty_data = dev->dev_data;
+
+    if (tty_data->bottom.index) tty_print_clear(dev);
 }
 
 static void tty_print_char(dev_t* dev, char character) {
     tty_data_t* tty_data = dev->dev_data;
 
-    if (character == '\n') {
-        tty_print_newline(dev);
-        tty_update_cursor(tty_data->current_column, tty_data->current_row, COLUMNS);
-        return;
-    }
-
     if (character == '\b') {
         tty_delete_char(dev);
         return;
     }
+
+    if (character == ARROW_UP) {
+        tty_insert_line_top(dev);
+        return;
+    }
+
+    if (character == ARROW_DOWN) {
+        tty_insert_line_bottom(dev);
+        return;
+    }
+
+    if (character == '\n') {
+        tty_print_newline(dev);
+        tty_return(dev);
+        tty_update_cursor(tty_data->current_column, tty_data->current_row, COLUMNS);
+        return;
+    }
+
+    if (tty_data->bottom.index) return;
 
     if (tty_data->current_column > COLUMNS - 1) {
         tty_print_newline(dev);
@@ -109,11 +223,12 @@ static void tty_print_char(dev_t* dev, char character) {
     new_char.color = WHITE_COLOR;
     new_char.character = character;
 
-    tty_data->buffer[tty_data->current_column + COLUMNS * tty_data->current_row] = new_char;
+    tty_data->screen[tty_data->current_column + COLUMNS * tty_data->current_row] = new_char;
 
     tty_data->current_column++;
     tty_update_cursor(tty_data->current_column, tty_data->current_row, COLUMNS);
 }
+
 
 static void init_tty(dev_t* dev) {
     tty_print_clear(dev);
@@ -145,7 +260,7 @@ dev_t* init_tty_dev() {
 
     tty_data->current_column = 0;
     tty_data->current_row = 0;
-    tty_data->buffer = (terminal_char_t*)0xb8000;
+    tty_data->screen = (terminal_char_t*)0xB8000;
 
     tty_dev->dev_data = tty_data;
     tty_dev->driver = init_tty_module(tty_dev);
