@@ -56,13 +56,54 @@ static void destroy_elf_symbol(elf64_symbol_t* symbol) {
 }
 
 static void elf_read_symbols(elf64_t* elf) {
-    elf64_symbol_t** symbols = kalloc(sizeof(elf64_symbol_t**) * elf->symbols_count);
+    rb_tree_t symbols = rb_init();
 
     for (size_t i = 0; i < elf->symbols_count; i++) {
-        *(symbols + i) = elf_read_symbol(elf, i);
+        elf64_symbol_t* new_symbol = elf_read_symbol(elf, i);
+
+        if (!symbols.root) {
+            symbols.root = &new_symbol->node;
+            continue;
+        }
+
+        rb_node_t** link = &symbols.root;
+        rb_node_t* parent = NULL;
+
+        while (*link) {
+            parent = *link;
+            elf64_symbol_t* entry = container_of(parent, elf64_symbol_t, node);
+
+            if (new_symbol->address < entry->address) link = &parent->left;
+            else link = &parent->right;
+        }
+
+        rb_insert(parent, &new_symbol->node, link);
+        rb_balance(&symbols, &new_symbol->node);
     }
 
     elf->symbols = symbols;
+}
+
+elf64_symbol_t* elf_get_symbol(elf64_t* elf, size_t address) {
+    rb_node_t* node = elf->symbols.root;
+    elf64_symbol_t* candidate = NULL;
+
+    while (node) {
+        elf64_symbol_t* data = container_of(node, elf64_symbol_t, node);
+
+        if (data->address == address) {
+            return data;
+        }
+        else if (data->address < address) {
+            candidate = data;
+            node = node->right;
+        }
+        else {
+            node = node->left;
+        }
+    }
+
+    return candidate;
 }
 
 elf64_t* read_elf(char* path) {
@@ -108,11 +149,11 @@ void destroy_elf(elf64_t* elf) {
     kfree(elf->pheaders);
     kfree(elf->sheaders);
 
-    for (size_t i = 0; i < elf->symbols_count; i++) {
-        destroy_elf_symbol(elf->symbols[i]);
-    }
+    // for (size_t i = 0; i < elf->symbols_count; i++) {
+    //     destroy_elf_symbol(elf->symbols[i]);
+    // }
 
-    kfree(elf->symbols);
+    // kfree(elf->symbols);
 
     vfs_close_file(elf->file);
 

@@ -7,6 +7,7 @@
         "string_view": "c",
         "functional": "c",
         "array": "c",
-        "initializer_list": "c"
+        "initializer_list": "c",
+        "string": "c"
     }
 }

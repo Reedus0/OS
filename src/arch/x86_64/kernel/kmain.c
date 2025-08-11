@@ -16,8 +16,6 @@ void kmain() {
     init_scheduler();
 
     g_kernel_elf = read_elf("/kernel/kernel.bin");
-    printk(NONE, "%s %x", g_kernel_elf->symbols[2]->name, g_kernel_elf->symbols[2]->address);
-    panic("");
 
     enable_irq();
 
@@ -41,6 +39,6 @@ void kmain() {
         {NULL, NULL},
     };
 
-    // schedule_task(create_task(init_shell, functions));
+    schedule_task(create_task(init_shell, functions));
     while (1);
 }

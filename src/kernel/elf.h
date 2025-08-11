@@ -5,6 +5,8 @@
 
 #include "fs/vfs.h"
 #include "include/types.h"
+#include "include/rb.h"
+#include "include/macro.h"
 
 #define SHT_SYMTAB 2
 #define SHT_STRTAB 3
@@ -61,6 +63,7 @@ struct elf_symtab_entry_64 {
 
 struct elf64_symbol {
     uint64_t address;
+    rb_node_t node;
     char* name;
 };
 typedef struct elf64_symbol elf64_symbol_t;
@@ -75,13 +78,14 @@ struct elf64 {
     size_t strtab;
     size_t symtab;
 
-    elf64_symbol_t** symbols;
+    rb_tree_t symbols;
     size_t symbols_count;
 };
 typedef struct elf64 elf64_t;
 
 
 elf64_t* read_elf(char* path);
+elf64_symbol_t* elf_get_symbol(elf64_t* elf, size_t address);
 void destroy_elf(elf64_t* elf);
 
 elf64_t* g_kernel_elf;
