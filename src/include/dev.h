@@ -30,10 +30,16 @@ void sdev_write(dev_t* sdev, byte new_byte) {
 }
 
 void bdev_read(dev_t* bdev, byte* buffer, size_t offset, size_t count) {
+    if (!count) panic("Invalid count");
+    if (!buffer) panic("Invalid buffer");
+
     MODULE_FUNCTION(bdev->driver, BDEV_DRIVER_READ_BLOCK)(bdev, buffer, offset, count);
 }
 
 void bdev_write(dev_t* bdev, byte* buffer, size_t offset, size_t count) {
+    if (!count) panic("Invalid count");
+    if (!buffer) panic("Invalid buffer");
+
     MODULE_FUNCTION(bdev->driver, BDEV_DRIVER_WRITE_BLOCK)(bdev, buffer, offset, count);
 }
 

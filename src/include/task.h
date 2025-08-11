@@ -30,13 +30,17 @@ struct task_context {
 
 struct task {
     uint32_t id;
+
     int (*entry)();
     struct task_context* context;
     void* stack;
+
     enum TASK_STATUS status;
+
     stream_t stdin;
     bool stdin_updated;
     stream_t stdout;
+
     list_t list;
 };
 typedef struct task task_t;
@@ -73,7 +77,8 @@ task_t* create_task(int (*func)(), void* param) {
     if (g_task_list == NULL) {
         g_task_list = new_task;
         list_insert_after(&g_task_list->list, &g_task_list->list);
-    } else {
+    }
+    else {
         list_insert_after(&g_task_list->list, &new_task->list);
         g_task_list = new_task;
     }
@@ -126,7 +131,7 @@ void exit_task() {
     task_t* current_task = get_task(g_current_task_id);
 
     current_task->status = EXITED;
-    while(1);
+    while (1);
 }
 
 void schedule_task(task_t* task) {

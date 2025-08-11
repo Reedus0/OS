@@ -7,7 +7,6 @@ vfs_dir_t g_vfs_root;
 
 vfs_fs_t* g_fs_list;
 
-
 file_t* vfs_open_file(char* path);
 void vfs_close_file(file_t* file);
 void vfs_seek(file_t* file, size_t position);

@@ -157,14 +157,3 @@ shell_command sh_task(char* command) {
         if (current_task->id == 0) break;
     }
 }
-
-shell_command sh_readelf(char* command) {
-    byte buffer[512] = { 0 };
-    char* arg = strchr(command, ' ') + 1;
-
-    struct elf_64* elf = read_elf(arg);
-
-    kfree(elf);
-
-    return 0;
-}

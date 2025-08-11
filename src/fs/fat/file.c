@@ -18,7 +18,7 @@ size_t fat_create_file(vfs_fs_t* fs, size_t dir_cluster, char* name, enum FAT_AT
 
     size_t free_cluster = fat_table_find_free_cluster(fs);
     fat_entry_t* new_entry = fat_entry_create(name, free_cluster, attributes);
-    fat_write_table(fs, free_cluster, fat_info->eof);
+    fat_write_table(fs, free_cluster, fat_info->eof | 0xF);
 
     fat_entry_t* ptr = new_entry;
     while (ptr->attributes == LFN) {

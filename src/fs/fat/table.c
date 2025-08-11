@@ -57,18 +57,14 @@ size_t fat_read_table(vfs_fs_t* fs, size_t index) {
     return result;
 }
 
-static void write_table(vfs_fs_t* fs, size_t index, byte* table) {
+static void write_table(vfs_fs_t* fs, size_t index) {
     struct fat_info* fat_info = fs->fs_data;
-
-    size_t fat_size = get_fat_size(fs);
 
     // for (size_t i = 0; i < fat_info->total_fats; i++) {
     //     size_t next_fat = fat_info->fat_region + fat_offset + (fat_info->fat_size * i);
     //     bdev_write(fs->dev, table, next_fat, 1);
     // }
-    bdev_write(fs->dev, table, fat_info->fat_region, fat_size);
-
-    return table;
+    bdev_write(fs->dev, fat_info->fat, fat_info->fat_region, fat_info->fat_size);
 }
 
 void fat_write_table(vfs_fs_t* fs, size_t index, size_t data) {
@@ -80,7 +76,7 @@ void fat_write_table(vfs_fs_t* fs, size_t index, size_t data) {
     switch (fat_info->fat_type) {
     case FAT12:
         size_t fat_index = index + (index / 2);
-        unsigned short* short_value = (unsigned short*)&fat_info->fat[fat_index];
+        unsigned short* short_value = (unsigned short*)&fat_info->fat[index + (index / 2)];
         if (index % 2 == 0) {
             *short_value = (*short_value & 0xF000) | data & 0x0FFF;
         }
@@ -89,12 +85,17 @@ void fat_write_table(vfs_fs_t* fs, size_t index, size_t data) {
         }
         break;
     case FAT16:
+        fat_index = index * 2;
+        short_value = (unsigned short*)&fat_info->fat[index * 2];
+        *short_value = (unsigned short)(data & 0xFFFF);
         break;
     case FAT32:
         break;
     }
 
-    write_table(fs, index, fat_info->fat);
+
+
+    write_table(fs, index);
 }
 
 size_t fat_table_find_free_cluster(vfs_fs_t* fs) {

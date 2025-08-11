@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "fs/vfs.h"
+#include "include/fs.h"
 #include "include/types.h"
 #include "include/rb.h"
 #include "include/macro.h"

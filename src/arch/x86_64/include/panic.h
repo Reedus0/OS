@@ -7,7 +7,7 @@
 #include "include/types.h"
 #include "asm/asm.h"
 
-#define STACK_FRAMES_COUNT 7
+#define STACK_FRAMES_COUNT 8
 
 void print_regs(struct regs* regs) {
     printk(NONE, "Registers:\n");
@@ -27,14 +27,14 @@ void print_stack() {
 
     byte count = get_stack(stack, STACK_FRAMES_COUNT);
     printk(NONE, "Stack trace:\n");
-    for (size_t i = 0; i < count; i++) {
+    for (size_t i = 1; i < count + 1; i++) {
         size_t call_address = stack[i].rip - 5;
         elf64_symbol_t* symbol = elf_get_symbol(g_kernel_elf, call_address);
 
         if (call_address == symbol->address) {
             printk(NONE, "0x%8x (%s)\n", call_address, symbol->name);
         }
-        else {
+        else if (call_address - symbol->address < 0x100000) {
             printk(NONE, "0x%8x (%s+0x%x)\n", call_address, symbol->name, call_address - symbol->address);
         }
 

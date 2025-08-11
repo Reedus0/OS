@@ -179,7 +179,7 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
         return new_descriptor.address;
     }
 
-    // print_heap();
+    print_heap();
     panic("Couldn't allocate aligned memory!");
 }
 

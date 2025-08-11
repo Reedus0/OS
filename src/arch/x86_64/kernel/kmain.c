@@ -35,7 +35,6 @@ void kmain() {
         {"write ", sh_write},
         {"time", sh_time},
         {"task", sh_task},
-        {"r ", sh_readelf},
         {NULL, NULL},
     };
 
