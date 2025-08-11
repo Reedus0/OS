@@ -8,16 +8,18 @@
 #include "fs/vfs.h"
 #include "asm/io.h"
 #include "include/asm.h"
-#include "kernel/symbols.h"
+#include "kernel/elf.h"
 
 void kmain() {
     init_hal();
     init_vfs();
     init_scheduler();
 
-    // load_kernel_symbols("/kernel/kernel.bin");
+    g_kernel_elf = read_elf("/kernel/kernel.bin");
+    printk(NONE, "%s %x", g_kernel_elf->symbols[2]->name, g_kernel_elf->symbols[2]->address);
+    panic("");
+
     enable_irq();
-    int zero = 0;
 
     static shell_function_t functions[] = {
         {NULL, NULL},
@@ -39,6 +41,6 @@ void kmain() {
         {NULL, NULL},
     };
 
-    schedule_task(create_task(init_shell, functions));
+    // schedule_task(create_task(init_shell, functions));
     while (1);
 }

@@ -49,10 +49,16 @@ char* strrchr(const char* string, char character) {
 
 int strncpy(char* dest, const char* src, int n) {
     int result = 0;
-    for (size_t i = 0; i < n; i++) {
-        dest[i] = src[i];
+    while (result < n && src[result] != '\0') {
+        dest[result] = src[result];
         result++;
     }
+
+    while (result < n) {
+        dest[result] = '\0';
+        result++;
+    }
+
     return result;
 }
 

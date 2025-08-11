@@ -3,7 +3,11 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "fs/vfs.h"
 #include "include/types.h"
+
+#define SHT_SYMTAB 2
+#define SHT_STRTAB 3
 
 struct elf_pheader_64 {
     uint32_t p_type;
@@ -46,12 +50,38 @@ struct elf_file_header_64 {
     uint16_t e_shstrndx;
 } __attribute__((packed));
 
-struct elf_64 {
+struct elf_symtab_entry_64 {
+    uint32_t st_name;
+    uint8_t st_info;
+    uint8_t st_other;
+    uint16_t st_shndx;
+    uint64_t st_value;
+    uint64_t st_size;
+} __attribute__((packed));
+
+struct elf64_symbol {
+    uint64_t address;
+    char* name;
+};
+typedef struct elf64_symbol elf64_symbol_t;
+
+struct elf64 {
     struct elf_file_header_64* file_header;
     struct elf_pheader_64* pheaders;
     struct elf_sheader_64* sheaders;
-} __attribute__((packed));
-typedef struct elf elf_t;
 
-struct elf_64* read_elf(char* path);
-void run_elf();
+    file_t* file;
+
+    size_t strtab;
+    size_t symtab;
+
+    elf64_symbol_t** symbols;
+    size_t symbols_count;
+};
+typedef struct elf64 elf64_t;
+
+
+elf64_t* read_elf(char* path);
+void destroy_elf(elf64_t* elf);
+
+elf64_t* g_kernel_elf;
