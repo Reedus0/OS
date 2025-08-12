@@ -14,7 +14,7 @@
 #define ARROW_UP 30
 #define ARROW_DOWN 31
 
-#define BUFFER_SIZE 50
+#define BUFFER_SIZE 200
 
 struct terminal_char {
     uint8_t character;

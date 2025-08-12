@@ -149,11 +149,14 @@ void destroy_elf(elf64_t* elf) {
     kfree(elf->pheaders);
     kfree(elf->sheaders);
 
-    // for (size_t i = 0; i < elf->symbols_count; i++) {
-    //     destroy_elf_symbol(elf->symbols[i]);
-    // }
+    rb_node_t* node = elf->symbols.root;
 
-    // kfree(elf->symbols);
+    while (node = rb_first(&elf->symbols)) {
+        elf64_symbol_t* symbol = container_of(node, elf64_symbol_t, node);
+
+        rb_remove(&elf->symbols.root, node);
+        destroy_elf_symbol(symbol);
+    }
 
     vfs_close_file(elf->file);
 
