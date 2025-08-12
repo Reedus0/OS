@@ -16,7 +16,6 @@ void kmain() {
     init_scheduler();
 
     g_kernel_elf = read_elf("/kernel/kernel.bin");
-    destroy_elf(g_kernel_elf);
 
     enable_irq();
 
