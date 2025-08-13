@@ -7,6 +7,7 @@
 #include "include/scheduler.h"
 #include "kernel/io.h"
 #include "drivers/pic/pic.h"
+#include "asm/io.h"
 
 static void save_task(struct regs* regs, irq_data_t* irq_data) {
     task_t* current_task = get_task(g_current_task_id);
@@ -27,6 +28,7 @@ static void load_task(struct regs* regs, irq_data_t* irq_data) {
 }
 
 void __attribute__((cdecl)) irq_handler(struct regs regs, irq_data_t irq_data) {
+    disable_irq();
     save_task(&regs, &irq_data);
 
     if (g_interrupt_handlers[irq_data.interrupt_number] != NULL) {
@@ -38,6 +40,7 @@ void __attribute__((cdecl)) irq_handler(struct regs regs, irq_data_t irq_data) {
     }
 
     load_task(&regs, &irq_data);
+    enable_irq();
 }
 
 static void set_irq_handler(size_t number, size_t handler) {

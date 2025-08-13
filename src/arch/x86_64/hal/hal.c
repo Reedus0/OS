@@ -51,4 +51,6 @@ void init_hal(multiboot2_info_t* mbd) {
     printk(SUCCESS, "Initiated modules!\n");
 
     printk(SUCCESS, "Initiated HAL!\n");
+
+    enable_irq();
 }

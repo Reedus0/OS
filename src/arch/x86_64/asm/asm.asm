@@ -157,6 +157,10 @@ get_stack:
     inc cl
 
     mov rdx, [rbx]
+
+    cmp rdx, rbx
+    jbe .done
+
     mov [rdi], rdx
     mov rdx, [rbx + 8]
     mov [rdi + 8], rdx

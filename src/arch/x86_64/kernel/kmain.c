@@ -17,8 +17,6 @@ void kmain() {
 
     g_kernel_elf = read_elf("/kernel/kernel.bin");
 
-    enable_irq();
-
     static shell_function_t functions[] = {
         {NULL, NULL},
         {"hello", sh_hello},

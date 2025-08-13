@@ -3,11 +3,11 @@
 #include "asm/io.h"
 
 void panic(char* string) {
-    struct regs regs;
+    disable_irq();
 
+    struct regs regs;
     get_regs(&regs);
 
-    disable_irq();
     print_regs(&regs);
     print_stack();
 
