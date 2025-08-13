@@ -8,8 +8,11 @@ LD := ld
 
 QEMU := qemu-system-x86_64
 BOCHS := bochs
+GDB := gdb
 
 QEMU_FLAGS := -m 1024 -d cpu_reset -no-reboot -drive id=disk,file=drive,if=none -device ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0
+QEMU_DEBUG_FLAGS := $(QEMU_FLAGS) -s -S
+GDB_FLAGS := -ex "target remote localhost:1234" -ex "symbol-file ./dist/x86_64/kernel.bin"
 
 # x86_64 target
 
@@ -47,10 +50,20 @@ run: $(TARGET)
 	$(QEMU) $(QEMU_FLAGS)
 
 dbg_win: $(TARGET)
+	make build-x86_64
+	./fs.sh
 	$(BOCHS) -f bochs_config_win.bxrc
 
 dbg_linux: $(TARGET)
+	make build-x86_64
+	./fs.sh
 	$(BOCHS) -f bochs_config_linux.bxrc
+
+dbg_gdb: $(TARGET)
+	make build-x86_64
+	./fs.sh
+	$(QEMU) $(QEMU_DEBUG_FLAGS) &
+	$(GDB) $(GDB_FLAGS)
 
 clean:
 	rm -rf $(BUILD_DIR) $(DIST_DIR)

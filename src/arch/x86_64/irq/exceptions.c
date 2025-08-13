@@ -42,6 +42,7 @@ static char* exceptions[] = {
 
 static void print_exception_info(irq_data_t* irq_data) {
     elf64_symbol_t* symbol = elf_get_symbol(g_kernel_elf, irq_data->rip);
+
     printk(NONE, "error code:   0x%x\n", irq_data->error_code);
     printk(NONE, "original rip: 0x%16x", irq_data->rip);
     if (irq_data->rip - symbol->address < 0x100000)
