@@ -9,10 +9,8 @@
 #define HEAP_DESCRIPTORS_SIZE 0x20000
 
 struct heap_descriptor {
-    union {
-        uint64_t address;
-        uint64_t available;
-    };
+    uint64_t address;
+    uint8_t available;
     uint64_t size;
 };
 typedef struct heap_descriptor heap_descriptor_t;

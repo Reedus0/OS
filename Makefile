@@ -12,7 +12,7 @@ GDB := gdb
 
 QEMU_FLAGS := -m 1024 -d cpu_reset -no-reboot -drive id=disk,file=drive,if=none -device ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0
 QEMU_DEBUG_FLAGS := $(QEMU_FLAGS) -s -S
-GDB_FLAGS := -ex "target remote localhost:1234" -ex "symbol-file ./dist/x86_64/kernel.bin" -ex "add-symbol-file ./dist/x86_64/kernel.bin 0xffff800001000000" -ex "source ./.vscode/breakpoints.gdb"
+GDB_FLAGS := -ex "target remote localhost:1234" -ex "symbol-file ./dist/x86_64/kernel.bin" -ex "add-symbol-file ./dist/x86_64/kernel.bin 0xffff800001000000" -ex "source ./.vscode/breakpoints.gdb" -ex "c"
 
 # x86_64 target
 

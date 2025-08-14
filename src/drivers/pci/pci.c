@@ -107,13 +107,8 @@ static void pci_check_buses() {
     }
 }
 
-static void map_pci_address_range() {
-    map_page(PCI_MMIO_BASE, PCI_MMIO_BASE, 0x82);
-}
-
 void init_pci() {
     pci_check_buses();
-    map_pci_address_range();
 }
 
 uint32_t pci_device_read(pci_device_t* pci_device, uint8_t offset) {

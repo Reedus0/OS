@@ -12,15 +12,15 @@ static void heap_descriptor_set_size(heap_descriptor_t* heap_descriptor, uint64_
 }
 
 static void heap_descriptor_set_available(heap_descriptor_t* heap_descriptor) {
-    heap_descriptor->available |= ((size_t)1 << MAX_ADDRESS_SIZE);
+    heap_descriptor->available = 1;
 }
 
 static void heap_descriptor_clear_available(heap_descriptor_t* heap_descriptor) {
-    heap_descriptor->available &= heap_descriptor->available ^ (size_t)1 << MAX_ADDRESS_SIZE;
+    heap_descriptor->available = 0;
 }
 
 static char heap_descriptor_is_available(heap_descriptor_t* heap_descriptor) {
-    return heap_descriptor->available >> MAX_ADDRESS_SIZE;
+    return heap_descriptor->available;
 }
 
 void init_heap() {
@@ -59,7 +59,7 @@ static void shift_heap_descriptors_left(size_t index) {
 static void insert_heap_descriptor(heap_descriptor_t new_descriptor) {
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
-        if ((current_descriptor->address & MAX_ADDRESS_MASK) > (new_descriptor.address & MAX_ADDRESS_MASK)) {
+        if ((current_descriptor->address) > (new_descriptor.address)) {
             shift_heap_descriptors_right(i);
             g_heap_descriptors[i] = new_descriptor;
             g_heap_descriptor_count += 1;
@@ -95,7 +95,7 @@ void* heap_alloc(size_t bytes) {
             return current_descriptor->address;
         }
 
-        uint32_t old_size = current_descriptor->size;
+        uint64_t old_size = current_descriptor->size;
         heap_descriptor_t new_descriptor;
 
         heap_descriptor_set_address(&new_descriptor, current_descriptor->address + bytes);
@@ -109,7 +109,8 @@ void* heap_alloc(size_t bytes) {
 
         return current_descriptor->address;
     }
-    // print_heap();
+
+    print_heap();
     panic("Couldn't allocate memory!");
 }
 
@@ -127,7 +128,7 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
             continue;
         }
 
-        uint64_t real_address = current_descriptor->address & MAX_ADDRESS_MASK;
+        uint64_t real_address = current_descriptor->address;
         uint64_t aligned_address = (real_address + alignment - 1) & ~(alignment - 1);
         uint64_t padding = aligned_address - real_address;
 
@@ -185,7 +186,7 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
 
 
 static void heap_descriptor_clear_memory(heap_descriptor_t* available_descriptor) {
-    memset(available_descriptor->address & MAX_ADDRESS_MASK, 0, available_descriptor->size);
+    memset(available_descriptor->address, 0, available_descriptor->size);
 }
 
 static void merge_descriptors(heap_descriptor_t* available_descriptor) {

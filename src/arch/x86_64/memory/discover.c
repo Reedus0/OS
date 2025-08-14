@@ -3,8 +3,8 @@
 #include "boot/multiboot2.h"
 
 static size_t validate_chunk(multiboot2_memory_map_t* map) {
-    char* start = map->address;
-    char* end = map->length + start;
+    uint64_t start = map->address;
+    uint64_t end = map->length + start;
 
     size_t memory_is_available = map->type == MEMORY_AVAILABLE;
     size_t not_zero_address = map->address != 0;
@@ -18,8 +18,8 @@ static memory_chunk_t get_memory_chunk(multiboot2_memory_map_t* map) {
     result.start = map->address;
     result.end = map->length + result.start;
 
-    if (result.start < HEAP_PHYSICAL_ADDRESS_OFFSET && result.end > HEAP_PHYSICAL_ADDRESS_OFFSET) {
-        result.start = HEAP_PHYSICAL_ADDRESS_OFFSET;
+    if (result.start < USUBABLE_MEMORY && result.end > USUBABLE_MEMORY) {
+        result.start = USUBABLE_MEMORY;
     }
 
     return result;

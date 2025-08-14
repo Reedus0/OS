@@ -17,11 +17,8 @@ struct page_table_entry {
 typedef struct page_table_entry page_table_entry_t;
 
 struct physical_page {
-    union {
-        uint64_t address;
-        uint64_t available;
-    };
-    uint64_t* virtual_address;
+    uint64_t address;
+    uint8_t available;
 };
 typedef struct physical_page physical_page_t;
 
@@ -32,7 +29,7 @@ struct page_table_descriptor {
 };
 typedef struct page_table_descriptor page_table_descriptor_t;
 
-physical_page_t g_phisycal_pages[4096];
+physical_page_t g_physical_pages[4096];
 page_table_descriptor_t* g_page_table_descriptors[512];
 size_t g_page_table_descriptors_size = 0;
 
@@ -43,10 +40,15 @@ page_table_entry_t g_kernel_table_l2[512] __attribute__((aligned(4096))) __attri
 size_t g_total_pages;
 size_t g_available_pages;
 
-size_t allocate_physical_page(size_t virtual_address);
+size_t find_physical_page();
+void allocate_physical_page(size_t physical_address);
+void free_physical_page(size_t physical_address);
+void add_physical_pages(memory_chunk_t chunk);
 size_t get_physical_address(size_t virtual_address);
+
 void init_paging();
+
 void map_page(size_t physical_address, size_t virtual_address, size_t flags);
 void unmap_page(size_t virtual_address);
-void add_physical_pages(memory_chunk_t chunk);
+
 void print_pages();

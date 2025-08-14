@@ -12,6 +12,9 @@ SECTIONS {
     .text : {
         *(.text)
     }
+    .rodata : {
+        *(.rodata)
+    }
     . = 128M;
     .bss : {
         *(.bss)

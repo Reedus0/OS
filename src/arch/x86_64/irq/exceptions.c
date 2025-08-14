@@ -63,7 +63,7 @@ interrupt_t irq_page_fault(irq_data_t* irq_data) {
     printk(NONE, "\nPage fault address: 0x%x\n", page_fault_address);
 
     size_t virtual_address = page_fault_address & 0xFFFFFFF00000;
-    size_t physical_page = allocate_physical_page(virtual_address);
+    size_t physical_page = find_physical_page(virtual_address);
 
     map_page(physical_page, virtual_address, 0x82);
 }
