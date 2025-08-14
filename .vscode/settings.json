@@ -10,5 +10,6 @@
         "initializer_list": "c",
         "string": "c",
         "random": "c"
-    }
+    },
+    "save-gdb-breakpoints.autoSave": true
 }

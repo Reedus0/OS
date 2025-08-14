@@ -12,7 +12,7 @@ GDB := gdb
 
 QEMU_FLAGS := -m 1024 -d cpu_reset -no-reboot -drive id=disk,file=drive,if=none -device ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0
 QEMU_DEBUG_FLAGS := $(QEMU_FLAGS) -s -S
-GDB_FLAGS := -ex "target remote localhost:1234" -ex "symbol-file ./dist/x86_64/kernel.bin"
+GDB_FLAGS := -ex "target remote localhost:1234" -ex "symbol-file ./dist/x86_64/kernel.bin" -ex "add-symbol-file ./dist/x86_64/kernel.bin 0xffff800001000000" -ex "source ./.vscode/breakpoints.gdb"
 
 # x86_64 target
 
@@ -43,25 +43,22 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
 build-x86_64: $(TARGET)
+	./fs.sh
 
 run: $(TARGET)
 	make build-x86_64
-	./fs.sh
 	$(QEMU) $(QEMU_FLAGS)
 
 dbg_win: $(TARGET)
 	make build-x86_64
-	./fs.sh
 	$(BOCHS) -f bochs_config_win.bxrc
 
 dbg_linux: $(TARGET)
 	make build-x86_64
-	./fs.sh
 	$(BOCHS) -f bochs_config_linux.bxrc
 
 dbg_gdb: $(TARGET)
 	make build-x86_64
-	./fs.sh
 	$(QEMU) $(QEMU_DEBUG_FLAGS) &
 	$(GDB) $(GDB_FLAGS)
 

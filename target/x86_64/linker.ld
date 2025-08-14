@@ -7,6 +7,8 @@ SECTIONS {
         KEEP(*(.multiboot_header))
     }
 
+    . = 16M;
+
     .text : {
         *(.text)
     }

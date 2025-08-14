@@ -1,7 +1,7 @@
 global start
 global gdt
 
-extern g_kernel_page_directory
+extern g_kernel_table_l4
 extern g_kernel_table_l3
 extern g_kernel_table_l2
 
@@ -18,11 +18,10 @@ start:
     call setup_pages
     call enable_paging
 
-    ; call remap_kernel
+    call remap_kernel
 
-    ; add esp, 0xC0000000
     lgdt [gdt.pointer]
-    jmp gdt.code_segment:long_mode_start ; + 0xC0000000
+    jmp gdt.code_segment:long_mode_start
 
 check_cpuid:
     pushfd
@@ -63,7 +62,7 @@ check_long_mode:
 setup_pages:
     mov eax, g_kernel_table_l3
     or eax, 0b11
-    mov [g_kernel_page_directory], eax
+    mov [g_kernel_table_l4], eax
 
     mov eax, g_kernel_table_l2
     or eax, 0b11
@@ -79,13 +78,13 @@ setup_pages:
     mov [g_kernel_table_l2 + ecx * 8], eax
 
     inc ecx
-    cmp ecx, 256
+    cmp ecx, 512
     jne .loop
 
     ret
     
 enable_paging:
-    mov eax, g_kernel_page_directory
+    mov eax, g_kernel_table_l4
     mov cr3, eax
 
     mov eax, cr4
@@ -104,24 +103,9 @@ enable_paging:
     ret
 
 remap_kernel:
-    mov ecx, 0
-    mov ebx, 512
-
-    lea eax, [g_kernel_table_l2 + 1536]
+    mov eax, g_kernel_table_l3
     or eax, 0b11
-    mov [g_kernel_table_l3 + 24], eax
-
-.loop:
-    mov eax, 0x200000
-    mul ecx
-
-    or eax, 0b10000011
-    mov [g_kernel_table_l2 + ebx * 8], eax
-
-    inc ecx
-    inc ebx
-    cmp ecx, 256
-    jne .loop
+    mov [g_kernel_table_l4 + 2048], eax
 
     ret
 

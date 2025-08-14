@@ -130,11 +130,12 @@ static page_table_descriptor_t* get_table_descriptor(byte level, uint32_t id) {
 }
 
 void init_paging() {
-    page_table_descriptor_t* g_kernel_page_directory_descriptor = kalloc(sizeof(page_table_descriptor_t));
-    g_kernel_page_directory_descriptor->level = 4;
-    g_kernel_page_directory_descriptor->id = 0;
-    g_kernel_page_directory_descriptor->table = g_kernel_page_directory;
-    g_page_table_descriptors[0] = g_kernel_page_directory_descriptor;
+
+    page_table_descriptor_t* g_kernel_table_l4_descriptor = kalloc(sizeof(page_table_descriptor_t));
+    g_kernel_table_l4_descriptor->level = 4;
+    g_kernel_table_l4_descriptor->id = 0;
+    g_kernel_table_l4_descriptor->table = g_kernel_table_l4;
+    g_page_table_descriptors[0] = g_kernel_table_l4_descriptor;
 
     page_table_descriptor_t* g_kernel_table_l3_descriptor = kalloc(sizeof(page_table_descriptor_t));
     g_kernel_table_l3_descriptor->level = 3;
@@ -144,6 +145,7 @@ void init_paging() {
 
     page_table_descriptor_t* g_kernel_table_l2_descriptor = kalloc(sizeof(page_table_descriptor_t));
     g_kernel_table_l2_descriptor->level = 2;
+    while (1);
     g_kernel_table_l2_descriptor->id = 0;
     g_kernel_table_l2_descriptor->table = g_kernel_table_l2;
     g_page_table_descriptors[2] = g_kernel_table_l2_descriptor;
@@ -198,6 +200,8 @@ void map_page(size_t physical_address, size_t virtual_address, size_t flags) {
     page_table_entry_t* l3_address = &l3_descriptor->table[l3_offset];
     page_table_entry_t* l2_address = &l2_descriptor->table[l2_offset];
 
+    printk(NONE, "l4 %x,l3 %x,l2 %x\n", l4_address, l3_address, l2_address);
+
     page_table_entry_set_address(l4_address, l3_address);
     page_table_entry_set_address(l3_address, l2_address);
     page_table_entry_set_address(l2_address, physical_address);
@@ -231,5 +235,5 @@ static print_page_table(page_table_entry_t* table, uint8_t level) {
 
 void print_pages() {
     printk(NONE, "Page table:\n");
-    print_page_table(g_kernel_page_directory, 4);
+    print_page_table(g_kernel_table_l4, 4);
 }

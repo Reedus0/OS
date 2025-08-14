@@ -27,7 +27,7 @@ void init_heap() {
     g_heap_descriptor_count = 0;
 
     heap_descriptor_t* base_descriptor = &g_heap_descriptors[g_heap_descriptor_count];
-    heap_descriptor_set_address(base_descriptor, g_heap_base);
+    heap_descriptor_set_address(base_descriptor, g_heap_base + 0xFFFF800000000000);
     heap_descriptor_set_size(base_descriptor, PAGE_SIZE * g_available_pages);
     heap_descriptor_set_available(base_descriptor);
 

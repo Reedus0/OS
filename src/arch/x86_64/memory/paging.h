@@ -36,7 +36,7 @@ physical_page_t g_phisycal_pages[4096];
 page_table_descriptor_t* g_page_table_descriptors[512];
 size_t g_page_table_descriptors_size = 0;
 
-page_table_entry_t g_kernel_page_directory[512] __attribute__((aligned(4096))) __attribute__((packed));
+page_table_entry_t g_kernel_table_l4[512] __attribute__((aligned(4096))) __attribute__((packed));
 page_table_entry_t g_kernel_table_l3[512] __attribute__((aligned(4096))) __attribute__((packed));
 page_table_entry_t g_kernel_table_l2[512] __attribute__((aligned(4096))) __attribute__((packed));
 

@@ -18,8 +18,8 @@ static memory_chunk_t get_memory_chunk(multiboot2_memory_map_t* map) {
     result.start = map->address;
     result.end = map->length + result.start;
 
-    if (result.start < KERNEL_PHYSICAL_ADDRESS_OFFSET && result.end > KERNEL_PHYSICAL_ADDRESS_OFFSET) {
-        result.start = KERNEL_PHYSICAL_ADDRESS_OFFSET;
+    if (result.start < HEAP_PHYSICAL_ADDRESS_OFFSET && result.end > HEAP_PHYSICAL_ADDRESS_OFFSET) {
+        result.start = HEAP_PHYSICAL_ADDRESS_OFFSET;
     }
 
     return result;

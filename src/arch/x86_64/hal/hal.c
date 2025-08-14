@@ -21,7 +21,6 @@
 void init_hal(multiboot2_info_t* mbd) {
 
     disable_irq();
-
     init_gdt();
 
     init_idt();
