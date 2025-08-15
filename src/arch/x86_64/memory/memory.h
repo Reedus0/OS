@@ -8,8 +8,6 @@
 #define HEAP_PHYSICAL_ADDRESS_OFFSET 0x10000000
 #define USUBABLE_MEMORY 0x1000000
 #define PAGE_SIZE 0x200000
-#define MAX_ADDRESS_SIZE 48
-#define MAX_ADDRESS_MASK 0xFFFFFFFFFF
 
 /*
 Reference: https://wiki.osdev.org/Memory_Map_(x86)
@@ -20,10 +18,10 @@ Physical
          hardware               kernel                     heap                       hardware                        heap
 #-----------------------#-----------------------#-----------------------------#----------------------------#------------------------------#
 Virtual
-#------------------------#---------------------------------------#----------------------------------------#----------------------------------------#
-    0x0-0x7fffffffffff    0xffff800001000000-0xffff80000fffffff     0xffff800010000000-0xffffefffffffffff    0xfffff00000000000-0xffffffffffff
-          heap                         kernel                                   kernel_heap                             physmap
-#------------------------#---------------------------------------#----------------------------------------#----------------------------------------#
+#------------------------#----------------------------------------#----------------------------------------#----------------------------------------#
+    0x0-0x7fffffffffff     0xffff800001000000-0xffff80000fffffff     0xffff800010000000-0xffffefffffffffff    0xfffff00000000000-0xffffffffffff
+          heap                          kernel                                   kernel_heap                             physmap
+#------------------------#----------------------------------------#----------------------------------------#----------------------------------------#
 */
 
 shell_command sh_memory(char* command);

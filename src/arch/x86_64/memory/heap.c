@@ -38,7 +38,7 @@ void print_heap() {
     printk(NONE, "Heap:\n");
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
-        printk(NONE, "desc: %x size: %x\n", current_descriptor->address, current_descriptor->size);
+        printk(NONE, "desc: %x size: %x available: %x\n", current_descriptor->address, current_descriptor->size, current_descriptor->available);
     }
 }
 
@@ -186,7 +186,9 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
 
 
 static void heap_descriptor_clear_memory(heap_descriptor_t* available_descriptor) {
-    memset(available_descriptor->address, 0, available_descriptor->size);
+    for (size_t i = 0; i < available_descriptor->size; i++) {
+        *(volatile char*)(available_descriptor->address + i) = 0;
+    }
 }
 
 static void merge_descriptors(heap_descriptor_t* available_descriptor) {

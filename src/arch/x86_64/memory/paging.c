@@ -161,19 +161,20 @@ void init_paging() {
 }
 
 size_t get_physical_address(size_t virtual_address) {
-    page_table_descriptor_t* l4_descriptor = get_table_descriptor(4, 0);
-    if (get_page_directory() != l4_descriptor->table) return virtual_address & 0xFFFFFFFFFFF;
-
     size_t l4_offset = (virtual_address >> 39) & 0x1FF;
     size_t l3_offset = (virtual_address >> 30) & 0x1FF;
     size_t l2_offset = (virtual_address >> 21) & 0x1FF;
 
-    page_table_descriptor_t* l2_descriptor = get_table_descriptor(2, ((l3_offset << 18) | (l4_offset << 9)));
+    page_table_entry_t* l4_address = get_page_directory();
+    page_table_entry_t l4_entry = l4_address[l4_offset];
 
-    if (!l2_descriptor) l2_descriptor = allocate_page_table(2, ((l3_offset << 18) | (l4_offset << 9)));
-    page_table_entry_t* l2_address = &l2_descriptor->table[l2_offset];
+    page_table_entry_t* l3_address = (page_table_entry_t*)(l4_entry.address & 0xFFFFFFFFFFFFF000);
+    page_table_entry_t l3_entry = l3_address[l3_offset];
 
-    return (*(size_t*)(l2_address) & 0xFFFFFFFFFFF00000) | (virtual_address & 0xFFFFF);
+    page_table_entry_t* l2_address = (page_table_entry_t*)(l3_entry.address & 0xFFFFFFFFFFFFF000);
+    page_table_entry_t l2_entry = l2_address[l2_offset];
+
+    return (l2_entry.address & 0xFFFFFFFFFFF00000) | (virtual_address & 0xFFFFF);
 }
 
 void map_page(size_t physical_address, size_t virtual_address, size_t flags) {

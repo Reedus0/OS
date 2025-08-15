@@ -278,8 +278,8 @@ typedef struct ahci_data ahci_data_t;
 struct ahci_drive_data {
     dev_t* ahci;
     hba_port_t* port;
-    // void* clb;
-    // void* fb;
+    void* clb;
+    void* fb;
 };
 typedef struct ahci_drive_data ahci_drive_data_t;
 

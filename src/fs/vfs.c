@@ -44,7 +44,8 @@ static void clean_dir(vfs_dir_t* root) {
 
 void vfs_mount(vfs_dir_t* root, vfs_fs_t* fs) {
     fs->mount_point = root;
-    fs->func->init(fs);
+    void (*init)(vfs_fs_t * fs) = fs->func->init + 0xFFFF800000000000;
+    init(fs);
 
     if (g_fs_list != NULL) {
         list_insert_after(&g_fs_list->list, &fs->list);
