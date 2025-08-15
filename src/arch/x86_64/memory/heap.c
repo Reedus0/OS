@@ -1,4 +1,5 @@
 #include "kernel/io.h"
+#include "kernel/panic.h"
 #include "memory/memory.h"
 #include "memory/paging.h"
 #include "heap.h"
@@ -19,8 +20,31 @@ static void heap_descriptor_clear_available(heap_descriptor_t* heap_descriptor) 
     heap_descriptor->available = 0;
 }
 
-static char heap_descriptor_is_available(heap_descriptor_t* heap_descriptor) {
+static uint8_t heap_descriptor_is_available(heap_descriptor_t* heap_descriptor) {
     return heap_descriptor->available;
+}
+
+static size_t heap_descriptor_calculate_canary(heap_descriptor_t* heap_descriptor) {
+    uint64_t canary = heap_descriptor->address;
+    canary ^= ((uint64_t)heap_descriptor->size << 32) | heap_descriptor->size;
+    canary ^= canary >> 33;
+    canary *= 0xFF51AFD7ED558CCD;
+    canary ^= canary >> 33;
+    canary *= 0xC4CEB9FE1A85EC53;
+    canary ^= canary >> 33;
+    return canary;
+}
+
+static void heap_descriptor_set_canary(heap_descriptor_t* heap_descriptor) {
+    size_t canary = heap_descriptor_calculate_canary(heap_descriptor);
+    *(size_t*)(heap_descriptor->address + heap_descriptor->size - HEAP_CANARY_SIZE) = canary;
+}
+
+static uint8_t heap_descriptor_check_canary(heap_descriptor_t* heap_descriptor) {
+    size_t canary = heap_descriptor_calculate_canary(heap_descriptor);
+    size_t real_canary = *(size_t*)(heap_descriptor->address + heap_descriptor->size - HEAP_CANARY_SIZE);
+
+    return canary == real_canary;
 }
 
 void init_heap() {
@@ -76,6 +100,7 @@ void* heap_alloc(size_t bytes) {
     }
 
     bytes = bytes % 8 == 0 ? bytes : (((bytes / 8) + 1) * 8);
+    bytes = bytes + HEAP_CANARY_SIZE;
 
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
@@ -91,6 +116,7 @@ void* heap_alloc(size_t bytes) {
         if (current_descriptor->size == bytes) {
             heap_descriptor_set_size(current_descriptor, bytes);
             heap_descriptor_clear_available(current_descriptor);
+            heap_descriptor_set_canary(current_descriptor);
 
             return current_descriptor->address;
         }
@@ -106,6 +132,7 @@ void* heap_alloc(size_t bytes) {
 
         heap_descriptor_set_size(current_descriptor, bytes);
         heap_descriptor_clear_available(current_descriptor);
+        heap_descriptor_set_canary(current_descriptor);
 
         return current_descriptor->address;
     }
@@ -120,6 +147,7 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
     }
 
     bytes = bytes % 8 == 0 ? bytes : (((bytes / 8) + 1) * 8);
+    bytes = bytes + HEAP_CANARY_SIZE;
 
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
@@ -142,6 +170,8 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
             if (remaining == 0) {
                 heap_descriptor_set_size(current_descriptor, bytes);
                 heap_descriptor_clear_available(current_descriptor);
+                heap_descriptor_set_canary(current_descriptor);
+
                 return real_address;
             }
             heap_descriptor_t new_descriptor;
@@ -154,6 +184,7 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
 
             heap_descriptor_set_size(current_descriptor, bytes);
             heap_descriptor_clear_available(current_descriptor);
+            heap_descriptor_set_canary(current_descriptor);
 
             return real_address;
         }
@@ -174,6 +205,7 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
         heap_descriptor_set_address(&new_descriptor, aligned_address);
         heap_descriptor_set_size(&new_descriptor, bytes);
         heap_descriptor_clear_available(&new_descriptor);
+        heap_descriptor_set_canary(&new_descriptor);
 
         insert_heap_descriptor(new_descriptor);
 
@@ -222,6 +254,8 @@ void heap_free(void* ptr) {
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
         if (current_descriptor->address == (uint64_t)ptr) {
+            if (!heap_descriptor_check_canary(current_descriptor)) panic("Heap smashing detected!");
+
             heap_descriptor_set_available(current_descriptor);
             heap_descriptor_clear_memory(current_descriptor);
             merge_descriptors(current_descriptor);

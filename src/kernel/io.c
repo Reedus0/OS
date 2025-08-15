@@ -5,7 +5,7 @@
 
 int printk(char* level, const char* format, ...) {
     char buffer[128] = { 0 };
-    char number[128] = { 0 };
+    char string[128] = { 0 };
     int padding = 0;
     int result = 0;
     size_t current_arg = 0;
@@ -28,49 +28,47 @@ int printk(char* level, const char* format, ...) {
                     type++;
                 }
             }
-            int offset = 0;
+
+            char fill = ' ';
+
             switch (*type) {
             case 's':
                 current_arg = va_arg(arg, char*);
-                offset = padding != 0 ? padding - strlen(current_arg) : 0;
-                for (size_t i = 0; i < offset; i++) {
-                    buffer[i] = ' ';
-                }
-                strncpy(buffer + offset, current_arg, strlen(current_arg));
+                strncpy(string, current_arg, strlen(current_arg));
+                fill = ' ';
                 break;
             case 'd':
                 current_arg = va_arg(arg, size_t);
-                itoa(current_arg, number, 10);
-                offset = padding != 0 ? padding - strlen(number) : 0;
-                for (size_t i = 0; i < offset; i++) {
-                    buffer[i] = '0';
-                }
-                strncpy(buffer + offset, number, strlen(number));
+                itoa(current_arg, string, 10);
+                fill = '0';
                 break;
             case 'x':
             case 'p':
                 current_arg = va_arg(arg, size_t);
-                itoa(current_arg, number, 16);
-                offset = padding != 0 ? padding - strlen(number) : 0;
-                for (size_t i = 0; i < offset; i++) {
-                    buffer[i] = '0';
-                }
-                strncpy(buffer + offset, number, strlen(number));
+                itoa(current_arg, string, 16);
+                fill = '0';
                 break;
             case 'c':
             default:
                 current_arg = va_arg(arg, size_t);
-                itoa(current_arg, number, 10);
-                offset = padding != 0 ? padding - strlen(number) : 0;
-                for (size_t i = 0; i < offset; i++) {
-                    buffer[i] = '0';
-                }
-                strncpy(buffer + offset, number, strlen(number));
+                itoa(current_arg, string, 10);
+                fill = '0';
                 break;
             }
+
+            int length = strlen(string);
+            int offset = padding != 0 && length < padding ? padding - length : 0;
+
+            for (size_t i = 0; i < offset; i++) {
+                buffer[i] = fill;
+            }
+            strncpy(buffer + offset, string, length);
+
             sysout_add_string(buffer);
-            memset(number, 0, 128);
+
+            memset(string, 0, 128);
             memset(buffer, 0, 128);
+
             format += 2;
             result += 2;
             padding = 0;

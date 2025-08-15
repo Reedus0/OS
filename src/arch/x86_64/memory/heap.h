@@ -7,6 +7,7 @@
 #include "memory/memory.h"
 
 #define HEAP_DESCRIPTORS_SIZE 0x20000
+#define HEAP_CANARY_SIZE 8
 
 struct heap_descriptor {
     uint64_t address;
