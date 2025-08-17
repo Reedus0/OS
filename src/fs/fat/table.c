@@ -93,8 +93,6 @@ void fat_write_table(vfs_fs_t* fs, size_t index, size_t data) {
         break;
     }
 
-
-
     write_table(fs, index);
 }
 

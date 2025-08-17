@@ -7,6 +7,10 @@ static void physical_page_set_address(physical_page_t* physical_page, uint64_t a
     physical_page->address = address;
 }
 
+static void physical_page_set_virtual_address(physical_page_t* physical_page, uint64_t virutal_address) {
+    physical_page->virutal_address = virutal_address;
+}
+
 static void physical_page_set_available(physical_page_t* physical_page) {
     physical_page->available = 1;
 }
@@ -19,38 +23,26 @@ static char physical_page_is_available(physical_page_t* physical_page) {
     return physical_page->available;
 }
 
-size_t find_physical_page() {
-    if (g_available_pages == 0) {
-        // TODO: SWAP
-    }
-
+size_t allocate_physical_page(size_t virutal_address) {
     for (size_t i = 0; i < g_total_pages; i++) {
         physical_page_t* current_page = &g_physical_pages[i];
-        if (physical_page_is_available(current_page)) {
+        if (current_page->virutal_address == virutal_address && physical_page_is_available(current_page)) {
             physical_page_clear_available(current_page);
-            return current_page->address;
-        }
-    }
-}
-
-void allocate_physical_page(size_t physical_address) {
-    for (size_t i = 0; i < g_total_pages; i++) {
-        physical_page_t* current_page = &g_physical_pages[i];
-        if (current_page->address == physical_address && physical_page_is_available(current_page)) {
-            physical_page_clear_available(current_page);
+            physical_page_set_virtual_address(current_page, virutal_address);
 
             g_available_pages -= 1;
-            return;
+            return current_page->address;
         }
     }
     panic("Couldn't allocate physical page!");
 }
 
-void free_physical_page(size_t physical_address) {
+void free_physical_page(size_t virutal_address) {
     for (size_t i = 0; i < g_total_pages; i++) {
         physical_page_t* current_page = &g_physical_pages[i];
-        if (current_page->address == physical_address) {
+        if (current_page->virutal_address == virutal_address) {
             physical_page_set_available(current_page);
+            physical_page_set_virtual_address(current_page, 0);
 
             g_available_pages += 1;
             return;
@@ -62,9 +54,13 @@ void free_physical_page(size_t physical_address) {
 void add_physical_pages(memory_chunk_t chunk) {
     size_t chunk_page_count = (chunk.end - chunk.start) / PAGE_SIZE;
     for (size_t i = 0; i < chunk_page_count; i++) {
+        size_t physical_page_address = i * PAGE_SIZE + chunk.start;
+
+        if (physical_page_address < 0x10000000 || (physical_page_address > 0xF0000000 && physical_page_address < 0x100000000)) continue;
+
         physical_page_t* current_page = &g_physical_pages[g_total_pages];
 
-        physical_page_set_address(current_page, i * PAGE_SIZE + chunk.start);
+        physical_page_set_address(current_page, physical_page_address);
         physical_page_set_available(current_page);
 
         g_total_pages += 1;
@@ -135,29 +131,37 @@ static page_table_descriptor_t* get_table_descriptor(byte level, uint32_t id) {
 
 static void map_kernel() {
     for (size_t i = 0; i < 120; i++) {
-        map_page(0x1000000 + 0x200000 * i, 0xFFFF800001000000 + 0x200000 * i, 0x82);
+        map_page(0x1000000 + PAGE_SIZE * i, 0xFFFF800001000000 + PAGE_SIZE * i, 0x82);
     }
 }
 
-static void map_bottom() {
-    for (size_t i = 0; i < 2048; i++) {
-        map_page(0x200000 * i, 0x200000 * i, 0x82);
+static void map_hardware() {
+    for (size_t i = 0; i < 8; i++) {
+        map_page(PAGE_SIZE * i, PAGE_SIZE * i, 0x82);
+    }
+    for (size_t i = 0; i < 128; i++) {
+        map_page(0xF0000000 + PAGE_SIZE * i, 0xF0000000 + PAGE_SIZE * i, 0x82);
     }
 }
 
 static void map_heap() {
-    for (size_t i = 0; i < 1792; i++) {
-        map_page(0x10000000 + 0x200000 * i, 0xFFFF800010000000 + 0x200000 * i, 0x82);
+    for (size_t i = 0; i < 64; i++) {
+        // size_t physical_page = allocate_physical_page(0xFFFF800010000000);
+        map_page(0x10000000 + PAGE_SIZE * i, 0xFFFF800010000000 + PAGE_SIZE * i, 0x82);
     }
 }
 
 void init_paging() {
     map_kernel();
-    map_bottom();
+    map_hardware();
     map_heap();
 
     page_table_descriptor_t* l4_descriptor = get_table_descriptor(4, 0);
     set_page_directory(get_physical_address(l4_descriptor->table));
+}
+
+size_t get_virtual_address(size_t physical_address) {
+    return physical_address | 0xFFFF800000000000;
 }
 
 size_t get_physical_address(size_t virtual_address) {
@@ -165,13 +169,13 @@ size_t get_physical_address(size_t virtual_address) {
     size_t l3_offset = (virtual_address >> 30) & 0x1FF;
     size_t l2_offset = (virtual_address >> 21) & 0x1FF;
 
-    page_table_entry_t* l4_address = get_page_directory();
+    page_table_entry_t* l4_address = get_virtual_address(get_page_directory());
     page_table_entry_t l4_entry = l4_address[l4_offset];
 
-    page_table_entry_t* l3_address = (page_table_entry_t*)(l4_entry.address & 0xFFFFFFFFFFFFF000);
+    page_table_entry_t* l3_address = (page_table_entry_t*)((get_virtual_address(l4_entry.address)) & 0xFFFFFFFFFFFFF000);
     page_table_entry_t l3_entry = l3_address[l3_offset];
 
-    page_table_entry_t* l2_address = (page_table_entry_t*)(l3_entry.address & 0xFFFFFFFFFFFFF000);
+    page_table_entry_t* l2_address = (page_table_entry_t*)(get_virtual_address(l3_entry.address) & 0xFFFFFFFFFFFFF000);
     page_table_entry_t l2_entry = l2_address[l2_offset];
 
     return (l2_entry.address & 0xFFFFFFFFFFF00000) | (virtual_address & 0xFFFFF);

@@ -140,3 +140,7 @@ void vfs_add_file(vfs_dir_t* root, vfs_file_t* file) {
     }
     list_insert_after(last_list, &file->list);
 }
+
+void deinit_vfs_func(vfs_func_t* vfs_func) {
+    kfree(vfs_func);
+}

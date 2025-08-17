@@ -7,6 +7,7 @@
 #include "include/scheduler.h"
 #include "kernel/io.h"
 #include "drivers/pic/pic.h"
+#include "memory/paging.h"
 #include "asm/io.h"
 
 static void save_task(struct regs* regs, irq_data_t* irq_data) {
@@ -32,7 +33,8 @@ void __attribute__((cdecl)) irq_handler(struct regs regs, irq_data_t irq_data) {
     save_task(&regs, &irq_data);
 
     if (g_interrupt_handlers[irq_data.interrupt_number] != NULL) {
-        g_interrupt_handlers[irq_data.interrupt_number](&irq_data);
+        interrupt_t interrupt = get_virtual_address(g_interrupt_handlers[irq_data.interrupt_number]);
+        interrupt(&irq_data);
     }
     else {
         printk(NONE, "\nUnhandeled interrupt: 0x%x!\n", irq_data.interrupt_number);
@@ -44,7 +46,7 @@ void __attribute__((cdecl)) irq_handler(struct regs regs, irq_data_t irq_data) {
 }
 
 static void set_irq_handler(size_t number, size_t handler) {
-    g_interrupt_handlers[number] = handler;
+    g_interrupt_handlers[number] = get_virtual_address(handler);
 }
 
 interrupt_t irq_ide(irq_data_t* irq_data) {

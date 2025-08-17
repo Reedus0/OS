@@ -9,7 +9,7 @@
 #include "include/fs.h"
 #include "include/macro.h"
 
-void init(vfs_fs_t* fs) {
+static void init(vfs_fs_t* fs) {
     fs->fs_data = fat_get_info(fs);
     struct fat_info* fat_info = fs->fs_data;
 
@@ -30,7 +30,7 @@ void init(vfs_fs_t* fs) {
     kfree(root_dir);
 }
 
-void deinit(vfs_fs_t* fs) {
+static void deinit(vfs_fs_t* fs) {
     struct fat_info* fat_info = fs->fs_data;
 
     kfree(fat_info->fat);
@@ -38,21 +38,21 @@ void deinit(vfs_fs_t* fs) {
     kfree(fs->mount_point->fs_data);
 }
 
-size_t read_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t offset, size_t count) {
+static size_t read_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t offset, size_t count) {
     struct fat_info* fat_info = fs->fs_data;
     fat_file_data_t* file_data = file->fs_data;
 
     fat_read_content(fs, file_data->cluster, buffer, offset, count);
 }
 
-size_t write_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t offset, size_t count) {
+static size_t write_file(vfs_fs_t* fs, vfs_file_t* file, byte* buffer, size_t offset, size_t count) {
     struct fat_info* fat_info = fs->fs_data;
     fat_file_data_t* file_data = file->fs_data;
 
     fat_write_content(fs, file_data->cluster, buffer, offset, count);
 }
 
-vfs_file_t* create_file(vfs_fs_t* fs, vfs_dir_t* dir, char* name) {
+static vfs_file_t* create_file(vfs_fs_t* fs, vfs_dir_t* dir, char* name) {
     struct fat_info* fat_info = fs->fs_data;
     fat_file_data_t* dir_data = dir->fs_data;
 
@@ -66,14 +66,14 @@ vfs_file_t* create_file(vfs_fs_t* fs, vfs_dir_t* dir, char* name) {
     return vfs_new_file(name, new_file_data);
 }
 
-void delete_file(vfs_fs_t* fs, vfs_file_t* file) {
+static void delete_file(vfs_fs_t* fs, vfs_file_t* file) {
     struct fat_info* fat_info = fs->fs_data;
     fat_file_data_t* file_data = file->fs_data;
 
     fat_delete_file(fs, file_data->cluster, file_data->dir_cluster, file->name);
 }
 
-vfs_dir_t* create_dir(vfs_fs_t* fs, vfs_dir_t* dir, char* name) {
+static vfs_dir_t* create_dir(vfs_fs_t* fs, vfs_dir_t* dir, char* name) {
     struct fat_info* fat_info = fs->fs_data;
     fat_file_data_t* dir_data = dir->fs_data;
 
@@ -87,9 +87,26 @@ vfs_dir_t* create_dir(vfs_fs_t* fs, vfs_dir_t* dir, char* name) {
     return vfs_new_dir(name, new_dir_data);
 }
 
-void delete_dir(vfs_fs_t* fs, vfs_dir_t* dir) {
+static void delete_dir(vfs_fs_t* fs, vfs_dir_t* dir) {
     struct fat_info* fat_info = fs->fs_data;
     fat_file_data_t* dir_data = dir->fs_data;
 
     fat_delete_file(fs, dir_data->cluster, dir_data->dir_cluster, dir->name);
+}
+
+vfs_func_t* init_vfs_func_fat() {
+    vfs_func_t* vfs_func = kalloc(sizeof(vfs_func_t));
+
+    vfs_func->init = init;
+    vfs_func->deinit = deinit;
+
+    vfs_func->read_file = read_file;
+    vfs_func->write_file = write_file;
+    vfs_func->create_file = create_file;
+    vfs_func->delete_file = delete_file;
+
+    vfs_func->create_dir = create_dir;
+    vfs_func->delete_dir = delete_dir;
+
+    return vfs_func;
 }

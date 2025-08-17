@@ -1,5 +1,6 @@
 #include "gdt.h"
 #include "asm/lgdt.h"
+#include "memory/paging.h"
 
 static void gdt_descriptor_set_access_byte(gdt_descriptor_t* gdt_descriptor, uint8_t access_byte) {
     gdt_descriptor->access_byte = access_byte;
@@ -27,7 +28,7 @@ void init_gdt() {
     gdt_descriptor_set_flags(user_data_segment, 0xa);
 
     g_gdt.size = GDT_DESCRIPTORS_COUNT * sizeof(gdt_descriptor_t) - 1;
-    g_gdt.offset = &g_gdt_descriptors;
+    g_gdt.offset = get_virtual_address(&g_gdt_descriptors);
 
-    load_gdt(&g_gdt);
+    load_gdt(get_virtual_address(&g_gdt));
 }

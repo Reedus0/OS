@@ -7,11 +7,14 @@
 #include "include/scheduler.h"
 #include "fs/vfs.h"
 #include "kernel/elf.h"
+#include "memory/paging.h"
 
 void kmain() {
     init_hal();
     init_vfs();
     init_scheduler();
+
+    enable_irq();
 
     g_kernel_elf = read_elf("/kernel/kernel.bin");
 
@@ -34,6 +37,6 @@ void kmain() {
         {NULL, NULL},
     };
 
-    schedule_task(create_task(init_shell, functions));
+    schedule_task(create_task(get_virtual_address(init_shell), functions));
     while (1);
 }

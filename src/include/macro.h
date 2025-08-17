@@ -4,3 +4,5 @@
 
 #define max(a, b) (a > b ? a : b)
 #define min(a, b) (a < b ? a : b)
+
+#define align(value, alignment) ((value + alignment - 1) & ~(alignment - 1))

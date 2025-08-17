@@ -2,12 +2,7 @@
 #include "irq/isr.h"
 #include "idt_init.h"
 #include "asm/lidt.h"
-
-static void idt_descriptor_set_isr(idt_descriptor_t* idt_descriptor, void (*isr)()) {
-    idt_descriptor->offset_1 = (size_t)isr & 0xFFFF;
-    idt_descriptor->offset_2 = ((size_t)isr >> 16) & 0xFFFF;
-    idt_descriptor->offset_3 = ((size_t)isr >> 32) & 0xFFFFFFFF;
-}
+#include "memory/paging.h"
 
 static void idt_descriptor_set_ist(idt_descriptor_t* idt_descriptor, uint8_t ist) {
     idt_descriptor->ist = ist;
@@ -43,8 +38,11 @@ static void init_trap(idt_descriptor_t* idt_descriptor) {
     idt_descriptor_enable(idt_descriptor);
 }
 
-void set_isr(idt_descriptor_t* idt_descriptor, void (*isr)()) {
-    idt_descriptor_set_isr(idt_descriptor, isr);
+void idt_descriptor_set_isr(idt_descriptor_t* idt_descriptor, void (*isr)()) {
+    isr = get_virtual_address(isr);
+    idt_descriptor->offset_1 = (size_t)isr & 0xFFFF;
+    idt_descriptor->offset_2 = ((size_t)isr >> 16) & 0xFFFF;
+    idt_descriptor->offset_3 = ((size_t)isr >> 32) & 0xFFFFFFFF;
 }
 
 void init_idt() {
@@ -52,7 +50,8 @@ void init_idt() {
         idt_descriptor_t* current_idt_descriptor = &g_idt_descriptors[i];
         if (i > 32) {
             init_interrupt(current_idt_descriptor);
-        } else {
+        }
+        else {
             init_trap(current_idt_descriptor);
         }
     };
@@ -60,7 +59,7 @@ void init_idt() {
     init_isrs();
 
     g_idt.size = IDT_DESCRIPTORS_COUNT * sizeof(idt_descriptor_t) - 1;
-    g_idt.offset = &g_idt_descriptors;
+    g_idt.offset = get_virtual_address(&g_idt_descriptors);
 
-    load_idt(&g_idt);
+    load_idt(get_virtual_address(&g_idt));
 }

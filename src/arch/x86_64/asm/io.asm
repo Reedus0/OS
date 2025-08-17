@@ -8,6 +8,8 @@ global io_wait
 global enable_irq
 global disable_irq
 
+extern g_io_buffer
+
 section .text
 bits 64
 
@@ -24,30 +26,56 @@ out8:
 
 in16:
     mov dx, di
-    mov rdi, io_buffer
+
+    mov rax, 0xFFFF800000000000
+    lea rsi, [rax + g_io_buffer]
+
+    mov rdi, rsi
+
     insw
-    mov eax, [io_buffer]
+
+    xor rax, rax
+    mov eax, [rsi]
     ret
 
 out16:
     mov dx, di
-    mov [io_buffer], rsi
-    mov rsi, io_buffer
+
+    mov rax, 0xFFFF800000000000
+    lea rax, [rax + g_io_buffer]
+
+    mov [rax], rsi
+    mov rsi, rax
+
     outsw
+
     ret
 
 in32:
     mov dx, di
-    mov rdi, io_buffer
+
+    mov rax, 0xFFFF800000000000
+    lea rsi, [rax + g_io_buffer]
+
+    mov rdi, rsi
+
     insd
-    mov eax, [io_buffer]
+
+    xor rax, rax
+    mov eax, [rsi]
     ret
 
 out32:
     mov dx, di
-    mov [io_buffer], rsi
-    mov rsi, io_buffer
+
+    mov rax, 0xFFFF800000000000
+    lea rax, [rax + g_io_buffer]
+
+    mov [rax], rsi
+    mov rsi, rax
+
     outsd
+    
     ret
 
 io_wait:
@@ -65,7 +93,3 @@ enable_irq:
 disable_irq:
     cli
     ret
-
-section .bss
-io_buffer:
-    dd 0

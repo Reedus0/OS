@@ -6,6 +6,7 @@
 #include "include/kalloc.h"
 #include "include/types.h"
 #include "asm/asm.h"
+#include "memory/paging.h"
 
 #define STACK_FRAMES_COUNT 8
 
@@ -29,13 +30,16 @@ void print_stack() {
     printk(NONE, "Stack trace:\n");
     for (size_t i = 1; i < count - 1; i++) {
         size_t call_address = stack[i].rip - 5;
+        if (call_address > get_virtual_address(0x1000000) && call_address < get_virtual_address(0xFFFFFFF)) {
+            call_address = get_physical_address(call_address);
+        }
         if (g_kernel_elf) {
             elf64_symbol_t* symbol = elf_get_symbol(g_kernel_elf, call_address);
             if (call_address == symbol->address) {
-                printk(NONE, "0x%%16x (%s)\n", call_address, symbol->name);
+                printk(NONE, "0x%16x (%s)\n", call_address, symbol->name);
             }
             else if (call_address - symbol->address < 0x100000) {
-                printk(NONE, "0x%%16x (%s+0x%x)\n", call_address, symbol->name, call_address - symbol->address);
+                printk(NONE, "0x%16x (%s+0x%x)\n", call_address, symbol->name, call_address - symbol->address);
             }
             else {
                 printk(NONE, "0x%16x\n", call_address);

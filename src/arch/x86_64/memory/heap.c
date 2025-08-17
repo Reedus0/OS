@@ -99,7 +99,7 @@ void* heap_alloc(size_t bytes) {
         panic("Tying to allocate 0 bytes!");
     }
 
-    bytes = bytes % 8 == 0 ? bytes : (((bytes / 8) + 1) * 8);
+    bytes = align(bytes, 8);
     bytes = bytes + HEAP_CANARY_SIZE;
 
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
@@ -146,7 +146,7 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
         panic("Invalid allocation size or alignment!");
     }
 
-    bytes = bytes % 8 == 0 ? bytes : (((bytes / 8) + 1) * 8);
+    bytes = (bytes + 7) & ~7;
     bytes = bytes + HEAP_CANARY_SIZE;
 
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {

@@ -9,8 +9,8 @@
 #include "boot/multiboot2.h"
 
 struct memory_chunk {
-    byte* start;
-    byte* end;
+    uint64_t start;
+    uint64_t end;
 };
 typedef struct memory_chunk memory_chunk_t;
 

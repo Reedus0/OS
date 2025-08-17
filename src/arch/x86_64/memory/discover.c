@@ -8,19 +8,16 @@ static size_t validate_chunk(multiboot2_memory_map_t* map) {
 
     size_t memory_is_available = map->type == MEMORY_AVAILABLE;
     size_t not_zero_address = map->address != 0;
+    size_t big_enough = (end - start) >= PAGE_SIZE;
 
-    return memory_is_available && not_zero_address;
+    return memory_is_available && not_zero_address && big_enough;
 }
 
 static memory_chunk_t get_memory_chunk(multiboot2_memory_map_t* map) {
     memory_chunk_t result;
 
-    result.start = map->address;
-    result.end = map->length + result.start;
-
-    if (result.start < USUBABLE_MEMORY && result.end > USUBABLE_MEMORY) {
-        result.start = USUBABLE_MEMORY;
-    }
+    result.start = align(map->address, PAGE_SIZE);
+    result.end = align(map->length + result.start, PAGE_SIZE);
 
     return result;
 }

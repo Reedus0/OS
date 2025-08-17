@@ -1,6 +1,7 @@
 #include "vfs.h"
 #include "include/macro.h"
 #include "include/dev.h"
+#include "memory/paging.h"
 #include "fs/fat/fs.h"
 
 static void clean_files(vfs_dir_t* root) {
@@ -44,8 +45,7 @@ static void clean_dir(vfs_dir_t* root) {
 
 void vfs_mount(vfs_dir_t* root, vfs_fs_t* fs) {
     fs->mount_point = root;
-    void (*init)(vfs_fs_t * fs) = fs->func->init + 0xFFFF800000000000;
-    init(fs);
+    fs->func->init(fs);
 
     if (g_fs_list != NULL) {
         list_insert_after(&g_fs_list->list, &fs->list);
@@ -61,6 +61,7 @@ void vfs_umount(vfs_dir_t* root) {
     while (1) {
         if (current_fs->mount_point == root) {
             current_fs->func->deinit(current_fs);
+            deinit_vfs_func(current_fs->func);
 
             clean_dir(root);
             list_remove(current_fs);
@@ -72,6 +73,7 @@ void vfs_umount(vfs_dir_t* root) {
         current_fs = container_of(current_fs->list.prev, vfs_fs_t, list);
     }
     root->mount_point = 0;
+
 }
 
 static vfs_dir_t* find_dir(vfs_dir_t* root, char* path) {
@@ -194,7 +196,7 @@ void init_vfs() {
     g_vfs_root.name = "/";
     g_vfs_root.parent = &g_vfs_root;
 
-    vfs_fs_t* fat = vfs_new_fs(g_partition, &g_vfs_func_fat);
+    vfs_fs_t* fat = vfs_new_fs(g_partition, init_vfs_func_fat());
 
     vfs_mount(&g_vfs_root, fat);
 

@@ -2,6 +2,7 @@
 
 #include "include/fs.h"
 #include "include/kalloc.h"
+#include "fs/vfs.h"
 
 static void elf_read_tables(elf64_t* elf) {
     struct elf_sheader_64* current_sheader = elf->sheaders;

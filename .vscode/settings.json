@@ -10,7 +10,11 @@
         "initializer_list": "c",
         "string": "c",
         "random": "c",
-        "algorithm": "c"
+        "algorithm": "c",
+        "system_error": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c"
     },
     "save-gdb-breakpoints.autoSave": true
 }

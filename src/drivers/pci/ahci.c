@@ -26,7 +26,7 @@ static void ahci_read(dev_t* dev, byte* buffer, size_t offset, size_t count) {
 
     ahci_drive_data->port->is = 0xFFFFFFFF;
 
-    hba_cmd_header_t* cmd_header = (hba_cmd_header_t*)ahci_drive_data->port->clb;
+    hba_cmd_header_t* cmd_header = (hba_cmd_header_t*)get_virtual_address(ahci_drive_data->port->clb);
     cmd_header->cfl = sizeof(fis_reg_h2d_t) / sizeof(uint32_t);
     cmd_header->w = 0;
     cmd_header->prdtl = (uint16_t)((count - 1) >> 4) + 1;
@@ -55,7 +55,7 @@ static void ahci_read(dev_t* dev, byte* buffer, size_t offset, size_t count) {
     cmd_table->prdt_entry[cmd_header->prdtl - 1].dbc = (__count * 512) - 1;
     cmd_table->prdt_entry[cmd_header->prdtl - 1].i = 0;
 
-    fis_reg_h2d_t* cmd_fis = (fis_reg_h2d_t*)get_physical_address((size_t)&cmd_table->cfis);
+    fis_reg_h2d_t* cmd_fis = (fis_reg_h2d_t*)(size_t)&cmd_table->cfis;
 
     cmd_fis->fis_type = FIS_TYPE_REG_H2D;
     cmd_fis->c = 1;
@@ -91,7 +91,7 @@ static void ahci_write(dev_t* dev, byte* buffer, size_t offset, size_t count) {
 
     ahci_drive_data->port->is = 0xFFFFFFFF;
 
-    hba_cmd_header_t* cmd_header = (hba_cmd_header_t*)ahci_drive_data->port->clb;
+    hba_cmd_header_t* cmd_header = (hba_cmd_header_t*)get_virtual_address(ahci_drive_data->port->clb);
     cmd_header->cfl = sizeof(fis_reg_h2d_t) / sizeof(uint32_t);
     cmd_header->w = 1;
     cmd_header->prdtl = (uint16_t)((count - 1) >> 4) + 1;
@@ -121,7 +121,7 @@ static void ahci_write(dev_t* dev, byte* buffer, size_t offset, size_t count) {
     cmd_table->prdt_entry[cmd_header->prdtl - 1].dbc = (__count * 512) - 1;
     cmd_table->prdt_entry[cmd_header->prdtl - 1].i = 0;
 
-    fis_reg_h2d_t* cmd_fis = (fis_reg_h2d_t*)get_physical_address((size_t)&cmd_table->cfis);
+    fis_reg_h2d_t* cmd_fis = (fis_reg_h2d_t*)(size_t)&cmd_table->cfis;
 
     cmd_fis->fis_type = FIS_TYPE_REG_H2D;
     cmd_fis->c = 1;
@@ -218,8 +218,8 @@ static void init_ahci_drive(dev_t* dev) {
         void* clb = kalloc_aligned(1024, 1024);
         void* fb = kalloc_aligned(256, 256);
 
-        // ahci_drive_data->clb = clb;
-        // ahci_drive_data->fb = fb;
+        ahci_drive_data->clb = clb;
+        ahci_drive_data->fb = fb;
 
         current_port->clb = (uint32_t)get_physical_address(clb);
         current_port->clbu = (uint32_t)((uint64_t)get_physical_address(clb) >> 32);
@@ -235,8 +235,8 @@ static void deinit_ahci_drive(dev_t* dev) {
 
     hba_port_t* current_port = ahci_drive_data->port;
 
-    // kfree(ahci_drive_data->clb);
-    // kfree(ahci_drive_data->fb);
+    kfree(ahci_drive_data->clb);
+    kfree(ahci_drive_data->fb);
 }
 
 module_t* init_ahci_drive_module() {

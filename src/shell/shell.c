@@ -5,15 +5,16 @@
 #include "lib/string.h"
 #include "asm/asm.h"
 #include "include/asm.h"
+#include "memory/paging.h"
 
 static size_t search_command(char* command, shell_function_t functions[]) {
     size_t i = 1;
-    char* current_command = functions[i].name;
-    while (current_command != NULL) {
-        current_command = functions[i].name;
+    char* current_command = get_virtual_address(functions[i].name);
+    while (current_command != get_virtual_address(NULL)) {
         if (strncmp(command, current_command, strlen(current_command))) {
-            return i;
+            return i - 1;
         }
+        current_command = get_virtual_address(functions[i].name);
         i++;
     }
     return 0;
@@ -25,7 +26,8 @@ static size_t shell_execute(char* command, shell_function_t functions[]) {
         printk(NONE, "Unknown command!\n");
         return 1;
     }
-    return functions[index].shell_command(command);
+    size_t(*shell_command)() = (size_t)get_virtual_address(functions[index].shell_command);
+    return shell_command(command);
 }
 
 static void clear_shell_buffer() {

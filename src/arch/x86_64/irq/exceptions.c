@@ -62,8 +62,7 @@ interrupt_t irq_page_fault(irq_data_t* irq_data) {
     uint64_t page_fault_address = get_page_fault_address();
     printk(NONE, "\nPage fault address: 0x%x\n", page_fault_address);
 
-    size_t virtual_address = page_fault_address & 0xFFFFFFF00000;
-    size_t physical_page = find_physical_page(virtual_address);
-
-    map_page(physical_page, virtual_address, 0x82);
+    panic("Page fault!");
+    // size_t virtual_address = page_fault_address & 0xFFFFFFF00000;
+    // map_page(page_fault_address, virtual_address, 0x82);
 }

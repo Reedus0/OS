@@ -23,12 +23,13 @@ void init_hal(multiboot2_info_t* mbd) {
     disable_irq();
     init_gdt();
 
-    init_idt();
-    init_irq_handlers();
-
     discover_memory(mbd);
     init_heap();
     init_paging();
+
+    init_io();
+    init_idt();
+    init_irq_handlers();
 
     g_terminal = init_tty_dev();
 
@@ -50,7 +51,4 @@ void init_hal(multiboot2_info_t* mbd) {
     printk(SUCCESS, "Initiated modules!\n");
 
     printk(SUCCESS, "Initiated HAL!\n");
-
-
-    enable_irq();
 }

@@ -49,4 +49,5 @@ void set_fs(uint16_t value);
 uint64_t __rdmsr(uint64_t register);
 void __wrmsr(uint64_t register, uint64_t value);
 
+size_t get_context_register();
 size_t get_stack(struct stack_frame* buffer, size_t max_frames);
