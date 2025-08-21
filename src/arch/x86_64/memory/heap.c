@@ -116,38 +116,81 @@ static void remove_heap_descriptor(heap_descriptor_t* heap_descriptor) {
     panic("Couldn't remove heap descriptor!");
 }
 
-heap_page_t* allocate_heap_page() {
-    size_t physical_page = allocate_physical_page();
+heap_page_t* allocate_heap_page(size_t count) {
     size_t base_address = HEAP_OFFSET + 0xFFFF800000000000;
 
     for (size_t i = 0; i < g_heap_pages_count; i++) {
         heap_page_t* current_page = &g_heap_pages[i];
-        if (current_page->available) {
-            heap_page_set_address(current_page, base_address + i * PAGE_SIZE);
-            heap_page_set_page_address(current_page, physical_page);
-            heap_page_clear_available(current_page);
 
-            return current_page;
+        if (current_page->available) {
+
+            size_t available_count = 1;
+            for (size_t j = 0; j < count - 1; j++) {
+                heap_page_t* next_page = &g_heap_pages[i + j];
+                if (next_page->available) available_count += 1;
+            }
+
+            if (available_count == count) {
+                size_t physical_page = allocate_physical_page();
+
+                heap_page_set_address(current_page, base_address + i * PAGE_SIZE);
+                heap_page_set_page_address(current_page, physical_page);
+                heap_page_clear_available(current_page);
+
+                for (size_t j = 0; j < count; j++) {
+                    size_t physical_page = allocate_physical_page();
+
+                    heap_page_t* next_page = &g_heap_pages[i + j];
+                    heap_page_set_address(next_page, base_address + (i + j) * PAGE_SIZE);
+                    heap_page_set_page_address(next_page, physical_page);
+                    heap_page_clear_available(next_page);
+
+                    list_insert_after(&current_page->list, &next_page->list);
+                }
+
+                return current_page;
+            }
         }
     }
 
-    heap_page_t* new_page = &g_heap_pages[g_heap_pages_count];
+    heap_page_t* current_page = &g_heap_pages[g_heap_pages_count];
+    size_t physical_page = allocate_physical_page();
 
-    heap_page_set_address(new_page, base_address + g_heap_pages_count * PAGE_SIZE);
-    heap_page_set_page_address(new_page, physical_page);
-    heap_page_clear_available(new_page);
+    heap_page_set_address(current_page, base_address + g_heap_pages_count * PAGE_SIZE);
+    heap_page_set_page_address(current_page, physical_page);
+    heap_page_clear_available(current_page);
 
     g_heap_pages_count += 1;
 
-    return new_page;
+    for (size_t j = 0; j < count - 1; j++) {
+        size_t physical_page = allocate_physical_page();
+
+        heap_page_t* next_page = &g_heap_pages[g_heap_pages_count + j];
+        heap_page_set_address(next_page, base_address + (g_heap_pages_count + j) * PAGE_SIZE);
+        heap_page_set_page_address(next_page, physical_page);
+        heap_page_clear_available(next_page);
+
+        list_insert_after(&current_page->list, &next_page->list);
+        g_heap_pages_count += 1;
+    }
+
+    return current_page;
 }
 
 void free_heap_page(heap_page_t* heap_page) {
-    free_physical_page(heap_page->page_address);
+    while (1) {
+        list_t* next = heap_page->list.next;
 
-    heap_page_set_address(heap_page, 0);
-    heap_page_set_page_address(heap_page, 0);
-    heap_page_set_available(heap_page);
+        free_physical_page(heap_page->page_address);
+        heap_page_set_address(heap_page, 0);
+        heap_page_set_page_address(heap_page, 0);
+        heap_page_set_available(heap_page);
+
+        if (next == NULL) {
+            break;
+        }
+        heap_page = container_of(next, heap_page_t, list);
+    }
 }
 
 void* heap_alloc(size_t bytes) {
@@ -157,6 +200,19 @@ void* heap_alloc(size_t bytes) {
 
     bytes = align(bytes, 8);
     bytes = bytes + HEAP_CANARY_SIZE;
+
+    if (bytes > PAGE_SIZE) {
+        size_t pages_count = (bytes / PAGE_SIZE) + 1;
+        heap_page_t* new_page = allocate_heap_page(pages_count);
+        heap_descriptor_t new_descriptor;
+
+        heap_descriptor_set_address(&new_descriptor, new_page->address);
+        heap_descriptor_set_size(&new_descriptor, PAGE_SIZE * pages_count);
+        heap_descriptor_set_available(&new_descriptor);
+        heap_descriptor_set_page(&new_descriptor, new_page);
+
+        insert_heap_descriptor(&new_descriptor);
+    }
 
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
@@ -194,7 +250,7 @@ void* heap_alloc(size_t bytes) {
         return current_descriptor->address;
     }
 
-    heap_page_t* new_page = allocate_heap_page();
+    heap_page_t* new_page = allocate_heap_page(1);
     heap_descriptor_t new_descriptor;
 
     heap_descriptor_set_address(&new_descriptor, new_page->address);
@@ -214,6 +270,19 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
 
     bytes = (bytes + 7) & ~7;
     bytes = bytes + HEAP_CANARY_SIZE;
+
+    if (bytes > PAGE_SIZE) {
+        size_t pages_count = (bytes / PAGE_SIZE) + 1;
+        heap_page_t* new_page = allocate_heap_page(pages_count);
+        heap_descriptor_t new_descriptor;
+
+        heap_descriptor_set_address(&new_descriptor, new_page->address);
+        heap_descriptor_set_size(&new_descriptor, PAGE_SIZE * pages_count);
+        heap_descriptor_set_available(&new_descriptor);
+        heap_descriptor_set_page(&new_descriptor, new_page);
+
+        insert_heap_descriptor(&new_descriptor);
+    }
 
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
@@ -281,6 +350,16 @@ void* heap_alloc_aligned(size_t bytes, size_t alignment) {
         return new_descriptor.address;
     }
 
+    heap_page_t* new_page = allocate_heap_page(1);
+    heap_descriptor_t new_descriptor;
+
+    heap_descriptor_set_address(&new_descriptor, new_page->address);
+    heap_descriptor_set_size(&new_descriptor, PAGE_SIZE);
+    heap_descriptor_set_available(&new_descriptor);
+    heap_descriptor_set_page(&new_descriptor, new_page);
+
+    insert_heap_descriptor(&new_descriptor);
+
     return heap_alloc_aligned(bytes, alignment);
 }
 
@@ -328,7 +407,7 @@ void heap_free(void* ptr) {
 
             merge_descriptors(current_descriptor);
 
-            if (current_descriptor->size == PAGE_SIZE) {
+            if (current_descriptor->size % PAGE_SIZE == 0) {
                 free_heap_page(current_descriptor->page);
                 remove_heap_descriptor(current_descriptor);
                 return;

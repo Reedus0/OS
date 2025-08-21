@@ -5,6 +5,7 @@
 
 #include "include/types.h"
 #include "memory/memory.h"
+#include "include/list.h"
 
 #define HEAP_DESCRIPTORS_SIZE 0x20000
 #define HEAP_CANARY_SIZE 8
@@ -13,6 +14,7 @@ struct heap_page {
     uint64_t address;
     uint64_t page_address;
     uint8_t available;
+    list_t list;
 };
 typedef struct heap_page heap_page_t;
 
