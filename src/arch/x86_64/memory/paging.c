@@ -143,8 +143,7 @@ static void map_hardware() {
 }
 
 static void map_heap() {
-    for (size_t i = 0; i < 64; i++) {
-        // size_t physical_page = allocate_physical_page(0xFFFF800010000000);
+    for (size_t i = 0; i < g_total_pages; i++) {
         map_page(0x10000000 + PAGE_SIZE * i, 0xFFFF800010000000 + PAGE_SIZE * i, 0x82);
     }
 }

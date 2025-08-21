@@ -41,7 +41,6 @@ page_table_entry_t g_kernel_table_l2[512] __attribute__((aligned(4096))) __attri
 size_t g_total_pages;
 size_t g_available_pages;
 
-
 size_t allocate_physical_page();
 void free_physical_page(size_t address);
 void add_physical_pages(memory_chunk_t chunk);

@@ -24,18 +24,9 @@ void init_hal(multiboot2_info_t* mbd) {
     init_gdt();
 
     discover_memory(mbd);
-
     g_terminal = init_tty_dev();
 
     printk(INFO, "Initiating devices...\n");
-    void* ptr = kalloc(PAGE_SIZE);
-    void* ptr2 = kalloc(PAGE_SIZE);
-    print_heap();
-    kfree(ptr);
-    print_heap();
-    void* ptr3 = kalloc(PAGE_SIZE);
-    print_heap();
-    while (1);
     init_paging();
 
     init_io();

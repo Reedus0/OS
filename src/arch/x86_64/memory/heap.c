@@ -405,6 +405,8 @@ void heap_free(void* ptr) {
         if (current_descriptor->address == (uint64_t)ptr) {
             if (!heap_descriptor_check_canary(current_descriptor)) panic("Heap smashing detected!");
 
+            heap_descriptor_set_available(current_descriptor);
+            heap_descriptor_clear_memory(current_descriptor);
             merge_descriptors(current_descriptor);
 
             if (current_descriptor->size % PAGE_SIZE == 0) {
@@ -412,8 +414,6 @@ void heap_free(void* ptr) {
                 remove_heap_descriptor(current_descriptor);
                 return;
             }
-            heap_descriptor_set_available(current_descriptor);
-            heap_descriptor_clear_memory(current_descriptor);
             return;
         }
     }
