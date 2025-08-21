@@ -6,6 +6,7 @@
 // Reference: https://wiki.osdev.org/Paging
 
 #include "memory/discover.h"
+#include "memory/memory.h"
 
 struct page_table_entry {
     union {
@@ -29,7 +30,7 @@ struct page_table_descriptor {
 };
 typedef struct page_table_descriptor page_table_descriptor_t;
 
-physical_page_t g_physical_pages[4096];
+physical_page_t g_physical_pages[MAX_PAGE_COUNT];
 page_table_descriptor_t* g_page_table_descriptors[512];
 size_t g_page_table_descriptors_size = 0;
 

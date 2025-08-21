@@ -29,8 +29,15 @@ void init_hal(multiboot2_info_t* mbd) {
 
     printk(INFO, "Initiating devices...\n");
     void* ptr = kalloc(PAGE_SIZE - 0x1000);
+    void* ptr2 = kalloc(PAGE_SIZE - 0x1000);
     print_heap();
     kfree(ptr);
+    print_heap();
+    void* ptr3 = kalloc(PAGE_SIZE - 0x1000);
+    print_heap();
+    kfree(ptr2);
+    print_heap();
+    void* ptr4 = kalloc(PAGE_SIZE - 0x1000);
     print_heap();
     while (1);
     init_paging();

@@ -5,9 +5,10 @@
 
 #include "shell/shell.h"
 
-#define HEAP_PHYSICAL_ADDRESS_OFFSET 0x10000000
+#define HEAP_OFFSET 0x10000000
 #define USUBABLE_MEMORY 0x1000000
 #define PAGE_SIZE 0x200000
+#define MAX_PAGE_COUNT 4096
 
 /*
 Reference: https://wiki.osdev.org/Memory_Map_(x86)
