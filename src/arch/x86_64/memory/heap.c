@@ -67,13 +67,21 @@ static uint8_t heap_descriptor_check_canary(heap_descriptor_t* heap_descriptor) 
     return canary == real_canary;
 }
 
-void print_heap() {
+void print_heap_pages() {
+    printk(NONE, "Pages:\n");
+    for (size_t i = 0; i < g_heap_pages_count; i++) {
+        heap_page_t* current_page = &g_heap_pages[i];
+        printk(NONE, "page: 0x%16x physical: 0x%16x available: %x\n", current_page->address, current_page->page_address, current_page->available);
+    }
+}
+
+void print_heap_descriptors() {
     printk(NONE, "Heap:\n");
     for (size_t i = 0; i < g_heap_descriptor_count; i++) {
         heap_descriptor_t* current_descriptor = &g_heap_descriptors[i];
         printk(NONE, "desc: 0x%16x size: 0x%8x page: 0x%16x available: %x\n", current_descriptor->address, current_descriptor->size, current_descriptor->page->page_address, current_descriptor->available);
     }
-    printk(NONE, "Descriptors: %x Pages: %x\n", g_heap_descriptor_count, g_heap_pages_count);
+    printk(NONE, "Descriptors: %d Pages: %d\n", g_heap_descriptor_count, g_heap_pages_count);
 }
 
 static void shift_heap_descriptors_right(size_t index) {
@@ -125,7 +133,7 @@ heap_page_t* allocate_heap_page(size_t count) {
         if (current_page->available) {
 
             size_t available_count = 1;
-            for (size_t j = 0; j < count - 1; j++) {
+            for (size_t j = 1; j < count; j++) {
                 heap_page_t* next_page = &g_heap_pages[i + j];
                 if (next_page->available) available_count += 1;
             }
@@ -137,7 +145,7 @@ heap_page_t* allocate_heap_page(size_t count) {
                 heap_page_set_page_address(current_page, physical_page);
                 heap_page_clear_available(current_page);
 
-                for (size_t j = 0; j < count; j++) {
+                for (size_t j = 1; j < count; j++) {
                     size_t physical_page = allocate_physical_page();
 
                     heap_page_t* next_page = &g_heap_pages[i + j];
@@ -165,8 +173,8 @@ heap_page_t* allocate_heap_page(size_t count) {
     for (size_t j = 0; j < count - 1; j++) {
         size_t physical_page = allocate_physical_page();
 
-        heap_page_t* next_page = &g_heap_pages[g_heap_pages_count + j];
-        heap_page_set_address(next_page, base_address + (g_heap_pages_count + j) * PAGE_SIZE);
+        heap_page_t* next_page = &g_heap_pages[g_heap_pages_count];
+        heap_page_set_address(next_page, base_address + (g_heap_pages_count)*PAGE_SIZE);
         heap_page_set_page_address(next_page, physical_page);
         heap_page_clear_available(next_page);
 
@@ -185,6 +193,9 @@ void free_heap_page(heap_page_t* heap_page) {
         heap_page_set_address(heap_page, 0);
         heap_page_set_page_address(heap_page, 0);
         heap_page_set_available(heap_page);
+
+        heap_page->list.next = NULL;
+        heap_page->list.prev = NULL;
 
         if (next == NULL) {
             break;
@@ -417,6 +428,7 @@ void heap_free(void* ptr) {
             return;
         }
     }
-    print_heap();
+    print_heap_pages();
+    print_heap_descriptors();
     panic("Couldn't free memory!");
 }
