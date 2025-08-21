@@ -18,7 +18,6 @@ typedef struct page_table_entry page_table_entry_t;
 
 struct physical_page {
     uint64_t address;
-    uint64_t virutal_address;
     uint8_t available;
 };
 typedef struct physical_page physical_page_t;
@@ -42,8 +41,8 @@ size_t g_total_pages;
 size_t g_available_pages;
 
 
-size_t allocate_physical_page(size_t physical_address);
-void free_physical_page(size_t physical_address);
+size_t allocate_physical_page();
+void free_physical_page(size_t address);
 void add_physical_pages(memory_chunk_t chunk);
 
 size_t get_virtual_address(size_t physical_address);

@@ -7,10 +7,6 @@ static void physical_page_set_address(physical_page_t* physical_page, uint64_t a
     physical_page->address = address;
 }
 
-static void physical_page_set_virtual_address(physical_page_t* physical_page, uint64_t virutal_address) {
-    physical_page->virutal_address = virutal_address;
-}
-
 static void physical_page_set_available(physical_page_t* physical_page) {
     physical_page->available = 1;
 }
@@ -23,12 +19,15 @@ static char physical_page_is_available(physical_page_t* physical_page) {
     return physical_page->available;
 }
 
-size_t allocate_physical_page(size_t virutal_address) {
+size_t allocate_physical_page() {
+    if (g_available_pages == 0) {
+        // TODO: SWAP
+        panic("No available pages left!");
+    }
     for (size_t i = 0; i < g_total_pages; i++) {
         physical_page_t* current_page = &g_physical_pages[i];
-        if (current_page->virutal_address == virutal_address && physical_page_is_available(current_page)) {
+        if (physical_page_is_available(current_page)) {
             physical_page_clear_available(current_page);
-            physical_page_set_virtual_address(current_page, virutal_address);
 
             g_available_pages -= 1;
             return current_page->address;
@@ -37,12 +36,11 @@ size_t allocate_physical_page(size_t virutal_address) {
     panic("Couldn't allocate physical page!");
 }
 
-void free_physical_page(size_t virutal_address) {
+void free_physical_page(size_t address) {
     for (size_t i = 0; i < g_total_pages; i++) {
         physical_page_t* current_page = &g_physical_pages[i];
-        if (current_page->virutal_address == virutal_address) {
+        if (current_page->address == address) {
             physical_page_set_available(current_page);
-            physical_page_set_virtual_address(current_page, 0);
 
             g_available_pages += 1;
             return;

@@ -24,16 +24,21 @@ void init_hal(multiboot2_info_t* mbd) {
     init_gdt();
 
     discover_memory(mbd);
-    init_heap();
+
+    g_terminal = init_tty_dev();
+
+    printk(INFO, "Initiating devices...\n");
+    void* ptr = kalloc(PAGE_SIZE - 0x1000);
+    print_heap();
+    kfree(ptr);
+    print_heap();
+    while (1);
     init_paging();
 
     init_io();
     init_idt();
     init_irq_handlers();
 
-    g_terminal = init_tty_dev();
-
-    printk(INFO, "Initiating devices...\n");
 
     g_pic = init_pic_dev(PIC_DEFAULT_PORT_1, PIC_DEFAULT_PORT_2);
     MODULE_FUNCTION(g_pic->driver, PIC_REMAP)(g_pic, 0x20, 0x28);
