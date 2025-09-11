@@ -1,7 +1,5 @@
 #include "kernel/io.h"
 #include "kernel/panic.h"
-#include "memory/memory.h"
-#include "memory/paging.h"
 #include "heap.h"
 
 static void heap_page_set_address(heap_page_t* heap_page, uint64_t address) {

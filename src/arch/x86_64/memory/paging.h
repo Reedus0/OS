@@ -5,8 +5,11 @@
 
 // Reference: https://wiki.osdev.org/Paging
 
-#include "memory/discover.h"
-#include "memory/memory.h"
+#include "kernel/io.h"
+#include "discover.h"
+
+#define PAGE_SIZE 0x200000
+#define MAX_PAGE_COUNT 4096
 
 struct page_table_entry {
     union {

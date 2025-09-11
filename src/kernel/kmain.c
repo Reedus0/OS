@@ -1,5 +1,4 @@
 #include "hal/hal.h"
-#include "memory/memory.h"
 #include "drivers/pci/pci.h"
 #include "shell/utils.h"
 #include "shell/shell.h"

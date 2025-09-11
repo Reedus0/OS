@@ -7,6 +7,8 @@
 #include "drivers/tty/tty.h"
 #include "kernel/io.h"
 #include "kernel/elf.h"
+#include "memory/paging.h"
+#include "memory/heap.h"
 #include "lib/string.h"
 
 shell_command sh_hello(char* command) {
@@ -156,4 +158,12 @@ shell_command sh_task(char* command) {
         current_task = container_of(next, task_t, list);
         if (current_task->id == 0) break;
     }
+}
+
+shell_command sh_memory(char* command) {
+    printk(NONE, "Total pages: %d\n", g_total_pages);
+    printk(NONE, "Used: %d\n", g_total_pages - g_available_pages);
+    printk(NONE, "Heap:\n");
+    printk(NONE, "Descriptors: %d, Pages: %d\n", g_heap_descriptor_count, g_heap_pages_count);
+    return 0;
 }

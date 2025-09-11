@@ -4,9 +4,10 @@
 #include <stddef.h>
 
 #include "include/types.h"
-#include "memory/memory.h"
 #include "include/list.h"
+#include "paging.h"
 
+#define HEAP_OFFSET 0x10000000
 #define HEAP_DESCRIPTORS_SIZE 0x20000
 #define HEAP_CANARY_SIZE 8
 

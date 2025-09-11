@@ -1,4 +1,4 @@
-#include "memory.h"
+#include "paging.h"
 #include "discover.h"
 #include "boot/multiboot2.h"
 
